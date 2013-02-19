@@ -1,5 +1,5 @@
 {
-    "name": "contao/module-installer",
+    "name": "contao-community-alliance/composer-installer",
     "type": "composer-installer",
     "license": "LGPLv3",
     "autoload": {
