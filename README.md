@@ -1,4 +1,4 @@
 ComposerInstaller
 =================
 
-composer / packagist integration in contao
+contao composer installer

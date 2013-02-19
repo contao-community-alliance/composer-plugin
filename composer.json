@@ -1,0 +1,11 @@
+{
+    "name": "contao/module-installer",
+    "type": "composer-installer",
+    "license": "LGPLv3",
+    "autoload": {
+        "psr-0": {"ContaoCommunityAlliance\\ComposerInstaller": "src/"}
+    },
+    "extra": {
+        "class": "ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller"
+    }
+}
