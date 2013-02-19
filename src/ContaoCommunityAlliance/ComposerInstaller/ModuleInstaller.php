@@ -7,6 +7,11 @@ use Composer\Installer\LibraryInstaller;
 
 class ModuleInstaller extends LibraryInstaller
 {
+    public function getInstallPath(PackageInterface $package)
+    {
+        return 'system/modules';
+    }
+
     /**
      * {@inheritDoc}
      */
