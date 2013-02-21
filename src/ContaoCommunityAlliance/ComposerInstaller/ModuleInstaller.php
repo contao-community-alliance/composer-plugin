@@ -10,6 +10,51 @@ use Composer\Package\Version\VersionParser;
 
 class ModuleInstaller extends LibraryInstaller
 {
+	static public function updateContaoPackage(\Composer\Script\Event $event)
+	{
+		if (!defined('TL_ROOT')) {
+			$root = dirname(getcwd());
+			define('TL_ROOT', $root);
+		}
+		else {
+			$root = TL_ROOT;
+		}
+
+		// Contao 3+
+		if (file_exists($root . '/system/config/constants.php')) {
+			require_once($root . '/system/config/constants.php');
+		}
+		// Contao 2+
+		else if (file_exists($root . '/system/constants.php')) {
+			require_once($root . '/system/constants.php');
+		}
+
+		$composer = $event->getComposer();
+
+		/** @var \Composer\Package\RootPackage $package */
+		$package = $composer->getPackage();
+
+		$versionParser = new VersionParser();
+
+		$version = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
+		$prettyVersion = $versionParser->normalize($version);
+
+		if ($package->getVersion() !== $prettyVersion) {
+			$json = file_get_contents('composer.json');
+			$json = preg_replace(
+				'#("version"\s*:\s*)"\d+(\.\d+)*"#',
+				'$1' . $version,
+				$json,
+				1
+			);
+			file_put_contents('composer.json', $json);
+
+			$io = $event->getIO();
+			$io->write("Contao version changed from <info>" . $package->getPrettyVersion() . "</info> to <info>" . $version . "</info>, please restart composer");
+			exit;
+		}
+	}
+
     public function getInstallPath(PackageInterface $package)
     {
         $extra = $package->getExtra();
