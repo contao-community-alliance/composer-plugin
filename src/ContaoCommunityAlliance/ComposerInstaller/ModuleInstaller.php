@@ -9,7 +9,7 @@ class ModuleInstaller extends LibraryInstaller
 {
     public function getInstallPath(PackageInterface $package)
     {
-        return 'system/modules' . $package->getPrettyName();
+        return '../system/modules/' . $package->getPrettyName();
     }
 
     /**
