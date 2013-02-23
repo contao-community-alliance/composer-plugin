@@ -200,6 +200,8 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$map = $this->calculateSymlinkMap($package);
 
+		$root = dirname(getcwd());
+
 		if ($initial) {
 			$previousMap = $this->calculateSymlinkMap($initial);
 
@@ -209,7 +211,10 @@ class ModuleInstaller extends LibraryInstaller
 			);
 
 			foreach ($obsoleteLinks as $linkReal) {
-				unlink($linkReal);
+				if (is_link($linkReal)) {
+					$this->io->write("  - Remove symlink <info>" . str_replace($root, '', $linkReal) . "</info> to <info>" . readlink($linkReal) . "</info> for package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+					unlink($linkReal);
+				}
 			}
 		}
 
@@ -218,6 +223,7 @@ class ModuleInstaller extends LibraryInstaller
 				if (is_link($linkReal)) {
 					unlink($linkReal);
 				}
+				$this->io->write("  - Create symlink <info>" . str_replace($root, '', $linkReal) . "</info> to <info>" . $linkTarget . "</info> for package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 				symlink($linkTarget, $linkReal);
 			}
 		}
