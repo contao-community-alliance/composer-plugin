@@ -100,6 +100,7 @@ class ModuleInstaller extends LibraryInstaller
 		parent::installCode($package);
 		$this->updateSymlinks($package);
 		$this->updateUserfiles($package);
+		$this->updateRunonce($package);
 	}
 
 	protected function updateCode(PackageInterface $initial, PackageInterface $target)
@@ -107,6 +108,7 @@ class ModuleInstaller extends LibraryInstaller
 		parent::updateCode($initial, $target);
 		$this->updateSymlinks($target, $initial);
 		$this->updateUserfiles($target);
+		$this->updateRunonce($target);
 	}
 
 	protected function removeCode(PackageInterface $package)
