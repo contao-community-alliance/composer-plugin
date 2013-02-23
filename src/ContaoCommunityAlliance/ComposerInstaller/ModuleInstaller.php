@@ -123,51 +123,60 @@ class ModuleInstaller extends LibraryInstaller
 		$contao = $extra['contao'];
 		$map = array();
 
-		if (array_key_exists('symlinks', $contao)) {
-			$symlinks = (array) $contao['symlinks'];
-
-			if (empty($symlinks)) {
-				$symlinks[''] = 'system/modules/' . $package->getName();
-			}
-
-			$installPath = $this->getInstallPath($package);
-
-			foreach ($symlinks as $target => $link) {
-				$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-				$linkReal = realpath('..' . DIRECTORY_SEPARATOR . $target);
-
-				if (file_exists($linkReal)) {
-					if (!is_link($linkReal)) {
-						throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
-					}
-				}
-
-				$targetParts = array_filter(explode(DIRECTORY_SEPARATOR, $targetReal));
-				$linkParts = array_filter(explode(DIRECTORY_SEPARATOR, $linkReal));
-
-				// calculate a relative link target
-				$linkTargetParts = array();
-
-				while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
-					array_shift($targetParts);
-					array_shift($linkParts);
-
-					$n = count($linkParts);
-					for ($i=0; $i<$n; $i++) {
-						$linkTargetParts[] = '..';
-					}
-				}
-
-				$linkTargetParts = array_merge(
-					$linkTargetParts,
-					$targetParts
-				);
-
-				$linkTarget = implode(DIRECTORY_SEPARATOR, $linkTargetParts);
-
-				$map[$linkReal] = $linkTarget;
-			}
+		if (!array_key_exists('symlinks', $contao)) {
+			$contao['symlinks'] = array();
 		}
+
+		$symlinks = (array) $contao['symlinks'];
+
+		// symlinks disabled
+		if ($symlinks === false) {
+			return array();
+		}
+
+		// add fallback symlink
+		if (empty($symlinks)) {
+			$symlinks[''] = 'system/modules/' . $package->getName();
+		}
+
+		$installPath = $this->getInstallPath($package);
+
+		foreach ($symlinks as $target => $link) {
+			$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
+			$linkReal = realpath('..' . DIRECTORY_SEPARATOR . $target);
+
+			if (file_exists($linkReal)) {
+				if (!is_link($linkReal)) {
+					throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
+				}
+			}
+
+			$targetParts = array_filter(explode(DIRECTORY_SEPARATOR, $targetReal));
+			$linkParts = array_filter(explode(DIRECTORY_SEPARATOR, $linkReal));
+
+			// calculate a relative link target
+			$linkTargetParts = array();
+
+			while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
+				array_shift($targetParts);
+				array_shift($linkParts);
+
+				$n = count($linkParts);
+				for ($i=0; $i<$n; $i++) {
+					$linkTargetParts[] = '..';
+				}
+			}
+
+			$linkTargetParts = array_merge(
+				$linkTargetParts,
+				$targetParts
+			);
+
+			$linkTarget = implode(DIRECTORY_SEPARATOR, $linkTargetParts);
+
+			$map[$linkReal] = $linkTarget;
+		}
+
 
 		return $map;
 	}
