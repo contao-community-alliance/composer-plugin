@@ -7,12 +7,14 @@ use RecursiveIteratorIterator;
 use Composer\Package\PackageInterface;
 use Composer\Installer\LibraryInstaller;
 use Composer\Package\Version\VersionParser;
+use Composer\Script\Event;
+use Composer\Script\CommandEvent;
 
 class ModuleInstaller extends LibraryInstaller
 {
 	static protected $runonces = array();
 
-	static public function updateContaoPackage(\Composer\Script\Event $event)
+	static public function updateContaoPackage(Event $event)
 	{
 		if (!defined('TL_ROOT')) {
 			$root = dirname(getcwd());
@@ -60,7 +62,7 @@ class ModuleInstaller extends LibraryInstaller
 		}
 	}
 
-	static public function createRunonce(Event $event)
+	static public function createRunonce(CommandEvent $event)
 	{
 		if (count(static::$runonces)) {
 			$file = 'system/runonce.php';
