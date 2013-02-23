@@ -136,19 +136,19 @@ class ModuleInstaller extends LibraryInstaller
 
 		// add fallback symlink
 		if (empty($symlinks)) {
-			$symlinks[''] = 'system/modules/' . $package->getName();
+			$symlinks[''] = 'system/modules/' . preg_replace('#^.*/#', '', $package->getName());
 		}
 
 		$installPath = $this->getInstallPath($package);
 
 		foreach ($symlinks as $target => $link) {
 			$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-			$linkReal = realpath('..' . DIRECTORY_SEPARATOR . $target);
+			$linkReal = realpath('..') . DIRECTORY_SEPARATOR . $link;
 
 			if (file_exists($linkReal)) {
 				if (!is_link($linkReal)) {
 					// special behavior for composer extension
-					if ($package->getUniqueName() == 'contao-community-alliance/composer') {
+					if ($package->getName() == 'contao-community-alliance/composer') {
 						$this->filesystem->removeDirectory('../system/modules/_composer');
 					}
 					else {
@@ -157,8 +157,16 @@ class ModuleInstaller extends LibraryInstaller
 				}
 			}
 
-			$targetParts = array_filter(explode(DIRECTORY_SEPARATOR, $targetReal));
-			$linkParts = array_filter(explode(DIRECTORY_SEPARATOR, $linkReal));
+			$targetParts = array_values(
+				array_filter(
+					explode(DIRECTORY_SEPARATOR, $targetReal)
+				)
+			);
+			$linkParts = array_values(
+				array_filter(
+					explode(DIRECTORY_SEPARATOR, $linkReal)
+				)
+			);
 
 			// calculate a relative link target
 			$linkTargetParts = array();
@@ -166,11 +174,12 @@ class ModuleInstaller extends LibraryInstaller
 			while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
 				array_shift($targetParts);
 				array_shift($linkParts);
+			}
 
-				$n = count($linkParts);
-				for ($i=0; $i<$n; $i++) {
-					$linkTargetParts[] = '..';
-				}
+			$n = count($linkParts);
+			// start on $i=1 -> skip the link name itself
+			for ($i=1; $i<$n; $i++) {
+				$linkTargetParts[] = '..';
 			}
 
 			$linkTargetParts = array_merge(
@@ -206,7 +215,7 @@ class ModuleInstaller extends LibraryInstaller
 
 		foreach ($map as $linkReal => $linkTarget) {
 			if (!file_exists($linkReal) || readlink($linkReal) != $linkTarget) {
-				if (file_exists($linkReal)) {
+				if (is_link($linkReal)) {
 					unlink($linkReal);
 				}
 				symlink($linkTarget, $linkReal);
