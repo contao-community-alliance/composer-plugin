@@ -229,6 +229,20 @@ class ModuleInstaller extends LibraryInstaller
 		}
 	}
 
+	protected function removeSymlinks(PackageInterface $package)
+	{
+		$map = $this->calculateSymlinkMap($package);
+
+		$root = dirname(getcwd());
+
+		foreach ($map as $linkReal => $linkTarget) {
+			if (is_link($linkReal)) {
+				$this->io->write("  - Remove symlink <info>" . str_replace($root, '', $linkReal) . "</info> to <info>" . readlink($linkReal) . "</info> for package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+				unlink($linkReal);
+			}
+		}
+	}
+
 	protected function updateUserfiles(PackageInterface $package)
 	{
 		$extra = $package->getExtra();
