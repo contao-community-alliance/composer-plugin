@@ -8,7 +8,6 @@ use Composer\Package\PackageInterface;
 use Composer\Installer\LibraryInstaller;
 use Composer\Package\Version\VersionParser;
 use Composer\Script\Event;
-use Composer\Script\CommandEvent;
 
 class ModuleInstaller extends LibraryInstaller
 {
@@ -62,7 +61,7 @@ class ModuleInstaller extends LibraryInstaller
 		}
 	}
 
-	static public function createRunonce(CommandEvent $event)
+	static public function createRunonce(Event $event)
 	{
 		if (count(static::$runonces)) {
 			$file = 'system/runonce.php';
@@ -84,14 +83,17 @@ class ModuleInstaller extends LibraryInstaller
 
 			$template = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'RunonceExecutorTemplate.php');
 			$template = str_replace(
-				'',
+				'TEMPLATE_RUNONCE_ARRAY',
 				var_export(static::$runonces, true),
 				$template
 			);
 			file_put_contents('../system/runonce.php', $template);
 
 			$io = $event->getIO();
-			$io->write("  - Runonce created with " . count(static::$runonces) . " updates");
+			$io->write("<info>Runonce created with " . count(static::$runonces) . " updates</info>");
+			foreach (static::$runonces as $runonce) {
+				$io->write("  - " . $runonce);
+			}
 		}
 	}
 
