@@ -293,12 +293,13 @@ class ModuleInstaller extends LibraryInstaller
 		$contao = $extra['contao'];
 
 		if (array_key_exists('runonce', $contao)) {
+			$root = dirname(getcwd()) . DIRECTORY_SEPARATOR;
 			$runonces = (array) $contao['runonce'];
 
-			$installPath = $this->getInstallPath($package);
+			$installPath = str_replace($root, '', $this->getInstallPath($package));
 
 			foreach ($runonces as $file) {
-				static::$runonces[] = 'composer' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $installPath . DIRECTORY_SEPARATOR . $file;
+				static::$runonces[] = $installPath . DIRECTORY_SEPARATOR . $file;
 			}
 		}
 	}
