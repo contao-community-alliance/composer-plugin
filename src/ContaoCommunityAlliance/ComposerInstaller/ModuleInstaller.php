@@ -21,12 +21,15 @@ class ModuleInstaller extends LibraryInstaller
 		}
 
 		// Contao 3+
-		if (file_exists($root . '/system/config/constants.php')) {
-			require_once($root . '/system/config/constants.php');
+		if (file_exists($constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php')) {
+			require_once($constantsFile);
 		}
 		// Contao 2+
-		else if (file_exists($root . '/system/constants.php')) {
-			require_once($root . '/system/constants.php');
+		else if (file_exists($constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'constants.php')) {
+			require_once($constantsFile);
+		}
+		else {
+			throw new \Exception('Could not find constants.php in ' . $root);
 		}
 
 		$composer = $event->getComposer();
