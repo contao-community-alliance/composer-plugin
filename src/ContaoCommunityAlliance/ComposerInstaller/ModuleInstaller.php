@@ -10,6 +10,8 @@ use Composer\Package\Version\VersionParser;
 
 class ModuleInstaller extends LibraryInstaller
 {
+	static protected $runonces = array();
+
 	static public function updateContaoPackage(\Composer\Script\Event $event)
 	{
 		if (!defined('TL_ROOT')) {
@@ -58,68 +60,161 @@ class ModuleInstaller extends LibraryInstaller
 		}
 	}
 
-    public function getInstallPath(PackageInterface $package)
-    {
-        $extra = $package->getExtra();
+	static public function createRunonce(Event $event)
+	{
+		if (count(static::$runonces)) {
+			$file = 'system/runonce.php';
+			$n = 0;
+			while (file_exists('..' . DIRECTORY_SEPARATOR . $file)) {
+				$n ++;
+				$file = 'system/runonce_' . $n . '.php';
+			}
+			if ($n > 0) {
+				rename(
+					'../system/runonce.php',
+					'..' . DIRECTORY_SEPARATOR . $file
+				);
+				array_unshift(
+					static::$runonces,
+					$file
+				);
+			}
 
-        if(!array_key_exists('contao', $extra))
-        {
-            throw new \ErrorException("A contao-module needs the contao declaration within the extra block!");
-        }
+			$template = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'RunonceExecutorTemplate.php');
+			$template = str_replace(
+				'',
+				var_export(static::$runonces, true),
+				$template
+			);
+			file_put_contents('../system/runonce.php', $template);
 
-        $contao = $extra['contao'];
-
-        if(!array_key_exists('target', $contao) && !array_key_exists('targets', $contao))
-        {
-            throw new \ErrorException("Please add a target or targets key to the contao section, { target: \"_composer\" } for example (folder name in contao)!");
-        }
-
-        if(array_key_exists('target', $contao) && array_key_exists('targets', $contao))
-        {
-            throw new \ErrorException("You can not combine target and targets key in the contao section!");
-        }
-
-		if (!array_key_exists('targets', $contao))
-		{
-        	return '../system/modules/' . $contao['target'];
+			$io = $event->getIO();
+			$io->write("  - Runonce created with " . count(static::$runonces) . " updates");
 		}
-
-		return parent::getInstallPath($package);
-    }
+	}
 
 	protected function installCode(PackageInterface $package)
 	{
 		parent::installCode($package);
-		$this->updateTargets($package);
+		$this->updateSymlinks($package);
+		$this->updateUserfiles($package);
 	}
 
 	protected function updateCode(PackageInterface $initial, PackageInterface $target)
 	{
 		parent::updateCode($initial, $target);
-		$this->removeTargets($initial);
-		$this->updateTargets($target);
+		$this->updateSymlinks($target, $initial);
+		$this->updateUserfiles($target);
 	}
 
 	protected function removeCode(PackageInterface $package)
 	{
 		parent::removeCode($package);
-		$this->removeTargets($package);
+		$this->removeSymlinks($package);
 	}
 
-	protected function updateTargets(PackageInterface $package)
+	protected function calculateSymlinkMap(PackageInterface $package)
+	{
+		$extra = $package->getExtra();
+		$contao = $extra['contao'];
+		$map = array();
+
+		if (array_key_exists('symlinks', $contao)) {
+			$symlinks = (array) $contao['symlinks'];
+
+			if (empty($symlinks)) {
+				$symlinks[''] = 'system/modules/' . $package->getName();
+			}
+
+			$installPath = $this->getInstallPath($package);
+
+			foreach ($symlinks as $target => $link) {
+				$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
+				$linkReal = realpath('..' . DIRECTORY_SEPARATOR . $target);
+
+				if (file_exists($linkReal)) {
+					if (!is_link($linkReal)) {
+						throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
+					}
+				}
+
+				$targetParts = array_filter(explode(DIRECTORY_SEPARATOR, $targetReal));
+				$linkParts = array_filter(explode(DIRECTORY_SEPARATOR, $linkReal));
+
+				// calculate a relative link target
+				$linkTargetParts = array();
+
+				while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
+					array_shift($targetParts);
+					array_shift($linkParts);
+
+					$n = count($linkParts);
+					for ($i=0; $i<$n; $i++) {
+						$linkTargetParts[] = '..';
+					}
+				}
+
+				$linkTargetParts = array_merge(
+					$linkTargetParts,
+					$targetParts
+				);
+
+				$linkTarget = implode(DIRECTORY_SEPARATOR, $linkTargetParts);
+
+				$map[$linkReal] = $linkTarget;
+			}
+		}
+
+		return $map;
+	}
+
+	protected function updateSymlinks(PackageInterface $package, PackageInterface $initial = null)
+	{
+		$map = $this->calculateSymlinkMap($package);
+
+		if ($initial) {
+			$previousMap = $this->calculateSymlinkMap($initial);
+
+			$obsoleteLinks = array_diff(
+				array_keys($previousMap),
+				array_keys($map)
+			);
+
+			foreach ($obsoleteLinks as $linkReal) {
+				unlink($linkReal);
+			}
+		}
+
+		foreach ($map as $linkReal => $linkTarget) {
+			if (!file_exists($linkReal) || readlink($linkReal) != $linkTarget) {
+				if (file_exists($linkReal)) {
+					unlink($linkReal);
+				}
+				symlink($linkTarget, $linkReal);
+			}
+		}
+	}
+
+	protected function updateUserfiles(PackageInterface $package)
 	{
 		$extra = $package->getExtra();
 		$contao = $extra['contao'];
 
-		if (array_key_exists('targets', $contao)) {
-			$targets = $contao['targets'];
+		if (array_key_exists('userfiles', $contao)) {
+			$configDir = TL_ROOT . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
+			require_once($configDir . 'config.php');
+			require_once($configDir . 'localconfig.php');
+
+			$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
+
+			$userfiles = (array) $contao['userfiles'];
 			$installPath = $this->getInstallPath($package);
 
-			foreach ($targets as $source => $target) {
-				$this->io->write("  - Copy target <info>" . $source . "</info> to <info>" . $target . "</info> from package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+			foreach ($userfiles as $source => $target) {
+				$target = $uploadPath . DIRECTORY_SEPARATOR . $target;
 
 				$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
-				$targetReal = '../' . $target;
+				$targetReal = '..' . DIRECTORY_SEPARATOR . $target;
 
 				$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
 				$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
@@ -127,42 +222,34 @@ class ModuleInstaller extends LibraryInstaller
 				if ( !file_exists($targetReal)) {
 					mkdir($targetReal, 0777, true);
 				}
-				else {
-					$this->io->write("  - Skip target <info>" . $source . "</info> because <info>" . $target . "</info> already exists");
-					continue;
-				}
 
 				foreach ($ri as $file) {
 					$targetPath = $targetReal . DIRECTORY_SEPARATOR . $ri->getSubPathName();
-					if ($file->isDir()) {
-						mkdir($targetPath);
-					} else {
-						copy($file->getPathname(), $targetPath);
+					if (!file_exists($targetPath)) {
+						if ($file->isDir()) {
+							mkdir($targetPath);
+						} else {
+							$this->io->write("  - Copy userfile <info>" . $ri->getSubPathName() . "</info> to <info>" . $target . DIRECTORY_SEPARATOR . $ri->getSubPathName() . "</info> from package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+							copy($file->getPathname(), $targetPath);
+						}
 					}
 				}
 			}
 		}
 	}
 
-	protected function removeTargets(PackageInterface $package)
+	protected function updateRunonce(PackageInterface $package)
 	{
 		$extra = $package->getExtra();
 		$contao = $extra['contao'];
 
-		if (array_key_exists('targets', $contao)) {
-			$targets = $contao['targets'];
+		if (array_key_exists('runonce', $contao)) {
+			$runonces = (array) $contao['runonce'];
 
-			foreach ($targets as $path) {
-				$this->io->write("  - Removing <info>" . $path . "</info> from package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+			$installPath = $this->getInstallPath($package);
 
-				$path = '../' . $path;
-
-				if (!$this->filesystem->removeDirectory($path)) {
-					// retry after a bit on windows since it tends to be touchy with mass removals
-					if (!defined('PHP_WINDOWS_VERSION_BUILD') || (usleep(250) && !$this->filesystem->removeDirectory($path))) {
-						throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-					}
-				}
+			foreach ($runonces as $file) {
+				static::$runonces[] = 'composer' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $installPath . DIRECTORY_SEPARATOR . $file;
 			}
 		}
 	}
