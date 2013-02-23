@@ -249,7 +249,8 @@ class ModuleInstaller extends LibraryInstaller
 		$contao = $extra['contao'];
 
 		if (array_key_exists('userfiles', $contao)) {
-			$configDir = TL_ROOT . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
+			$root = dirname(getcwd());
+			$configDir = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
 			require_once($configDir . 'config.php');
 			require_once($configDir . 'localconfig.php');
 
