@@ -125,6 +125,9 @@ class ModuleInstaller extends LibraryInstaller
 		$contao = $extra['contao'];
 		$map = array();
 
+		if (!is_array($contao)) {
+			return;
+		}
 		if (!array_key_exists('symlinks', $contao)) {
 			$contao['symlinks'] = array();
 		}
@@ -250,7 +253,7 @@ class ModuleInstaller extends LibraryInstaller
 		$extra = $package->getExtra();
 		$contao = $extra['contao'];
 
-		if (array_key_exists('userfiles', $contao)) {
+		if (is_array($contao) && array_key_exists('userfiles', $contao)) {
 			$root = dirname(getcwd());
 			$configDir = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
 			require_once($configDir . 'config.php');
@@ -294,7 +297,7 @@ class ModuleInstaller extends LibraryInstaller
 		$extra = $package->getExtra();
 		$contao = $extra['contao'];
 
-		if (array_key_exists('runonce', $contao)) {
+		if (is_array($contao) && array_key_exists('runonce', $contao)) {
 			$root = dirname(getcwd()) . DIRECTORY_SEPARATOR;
 			$runonces = (array) $contao['runonce'];
 
