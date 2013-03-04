@@ -154,7 +154,7 @@ class ModuleInstaller extends LibraryInstaller
 				if (!is_link($linkReal)) {
 					// special behavior for composer extension
 					if ($package->getName() == 'contao-community-alliance/composer') {
-						$this->filesystem->removeDirectory('../system/modules/_composer');
+						$this->filesystem->removeDirectory('../system/modules/!composer');
 					}
 					else {
 						throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
