@@ -224,7 +224,7 @@ class ModuleInstaller extends LibraryInstaller
 		}
 
 		foreach ($map as $linkReal => $linkTarget) {
-			if (!file_exists($linkReal) || readlink($linkReal) != $linkTarget) {
+			if (!is_link($linkReal) || readlink($linkReal) != $linkTarget) {
 				if (is_link($linkReal)) {
 					unlink($linkReal);
 				}
