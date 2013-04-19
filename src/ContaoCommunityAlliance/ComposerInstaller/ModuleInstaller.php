@@ -18,15 +18,33 @@ class ModuleInstaller extends LibraryInstaller
 
 	static protected $runonces = array();
 
-	static public function updateContaoPackage(Event $event)
+	static public function getContaoRoot(PackageInterface $package)
 	{
 		if (!defined('TL_ROOT')) {
 			$root = dirname(getcwd());
+
+			$extra = $package->getExtra();
+			if (array_key_exists('contao', $extra) && array_key_exists('root', $extra['contao'])) {
+				$root = getcwd() . '/' . $extra['contao']['root'];
+			}
+
 			define('TL_ROOT', $root);
 		}
 		else {
 			$root = TL_ROOT;
 		}
+
+		return $root;
+	}
+
+	static public function updateContaoPackage(Event $event)
+	{
+		$composer = $event->getComposer();
+
+		/** @var \Composer\Package\RootPackage $package */
+		$package = $composer->getPackage();
+
+		$root = static::getContaoRoot($package);
 
 		// Contao 3+
 		if (file_exists($constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php')) {
@@ -49,11 +67,6 @@ class ModuleInstaller extends LibraryInstaller
 				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php');
 			}
 		}
-
-		$composer = $event->getComposer();
-
-		/** @var \Composer\Package\RootPackage $package */
-		$package = $composer->getPackage();
 
 		$versionParser = new VersionParser();
 
@@ -381,7 +394,7 @@ class ModuleInstaller extends LibraryInstaller
 		if ($package->getType() == self::MODULE_TYPE) {
 			$map = $this->calculateSymlinkMap($package);
 
-			$root = dirname(getcwd());
+			$root = static::getContaoRoot($this->composer->getPackage());
 
 			if ($initial) {
 				$previousMap = $this->calculateSymlinkMap($initial);
@@ -416,7 +429,7 @@ class ModuleInstaller extends LibraryInstaller
 		if ($package->getType() == self::MODULE_TYPE) {
 			$map = $this->calculateSymlinkMap($package);
 
-			$root = dirname(getcwd());
+			$root = static::getContaoRoot($this->composer->getPackage());
 
 			foreach ($map as $linkReal => $linkTarget) {
 				if (is_link($linkReal)) {
@@ -478,7 +491,7 @@ class ModuleInstaller extends LibraryInstaller
 				$contao = $extra['contao'];
 
 				if (is_array($contao) && array_key_exists('runonce', $contao)) {
-					$root = dirname(getcwd()) . DIRECTORY_SEPARATOR;
+					$root = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 					$runonces = (array) $contao['runonce'];
 
 					$installPath = str_replace($root, '', $this->getInstallPath($package));
