@@ -4,8 +4,9 @@ namespace ContaoCommunityAlliance\ComposerInstaller;
 
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Composer\Package\PackageInterface;
 use Composer\Installer\LibraryInstaller;
+use Composer\Json\JsonFile;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Script\Event;
 
@@ -46,14 +47,10 @@ class ModuleInstaller extends LibraryInstaller
 		$prettyVersion = $versionParser->normalize($version);
 
 		if ($package->getVersion() !== $prettyVersion) {
-			$json = file_get_contents('composer.json');
-			$json = preg_replace(
-				'#("version"\s*:\s*)"\d+(\.\d+)*"#',
-				'$1' . $version,
-				$json,
-				1
-			);
-			file_put_contents('composer.json', $json);
+			$configFile            = new JsonFile('composer.json');
+			$configJson            = $configFile->read();
+			$configJson['version'] = $version;
+			$configFile->write($configJson);
 
 			$io = $event->getIO();
 			$io->write("Contao version changed from <info>" . $package->getPrettyVersion() . "</info> to <info>" . $version . "</info>, please restart composer");
