@@ -162,9 +162,11 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function playBackShadowCopies(PackageInterface $package)
 	{
+		$root = static::getContaoRoot($this->composer->getPackage());
+
 		$this->walkShadowCopies(
 			$package,
-			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
 				// copy back existing files
 				if (file_exists($targetFile->getPathname()) &&
 					md5_file($sourceFile->getPathname()) != md5_file($targetFile->getPathname())
@@ -172,8 +174,8 @@ class ModuleInstaller extends LibraryInstaller
 					$this->io->write(
 						sprintf(
 							"  - play back modified shadow copy <info>%s</info> -> <info>%s</info>",
-							str_replace(TL_ROOT, '', $targetFile->getPathname()),
-							str_replace(TL_ROOT, '', $sourceFile->getPathname())
+							str_replace($root, '', $targetFile->getPathname()),
+							str_replace($root, '', $sourceFile->getPathname())
 						)
 					);
 					copy($targetFile->getPathname(), $sourceFile->getPathname());
@@ -184,9 +186,11 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function updateShadowCopies(PackageInterface $package, PackageInterface $initial = null)
 	{
+		$root = static::getContaoRoot($this->composer->getPackage());
+
 		$this->walkShadowCopies(
 			$package,
-			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
 				// copy non existing files
 				if (!file_exists($targetFile->getPathname())) {
 					$dir = dirname($targetFile->getPathname());
@@ -196,8 +200,8 @@ class ModuleInstaller extends LibraryInstaller
 					$this->io->write(
 						sprintf(
 							"  - create shadow copy <info>%s</info> -> <info>%s</info>",
-							str_replace(TL_ROOT, '', $sourceFile->getPathname()),
-							str_replace(TL_ROOT, '', $targetFile->getPathname())
+							str_replace($root, '', $sourceFile->getPathname()),
+							str_replace($root, '', $targetFile->getPathname())
 						)
 					);
 					copy($sourceFile->getPathname(), $targetFile->getPathname());
@@ -208,8 +212,8 @@ class ModuleInstaller extends LibraryInstaller
 					$this->io->write(
 						sprintf(
 							"  - update shadow copy <info>%s</info> -> <info>%s</info>",
-							str_replace(TL_ROOT, '', $sourceFile->getPathname()),
-							str_replace(TL_ROOT, '', $targetFile->getPathname())
+							str_replace($root, '', $sourceFile->getPathname()),
+							str_replace($root, '', $targetFile->getPathname())
 						)
 					);
 					copy($sourceFile->getPathname(), $targetFile->getPathname());
@@ -220,15 +224,17 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function removeShadowCopies(PackageInterface $package)
 	{
+		$root = static::getContaoRoot($this->composer->getPackage());
+
 		$this->walkShadowCopies(
 			$package,
-			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
 				// remove existing shadow copies
 				if (file_exists($targetFile->getPathname())) {
 					$this->io->write(
 						sprintf(
 							"  - remove shadow copy <info>%s</info>",
-							str_replace(TL_ROOT, '', $targetFile->getPathname())
+							str_replace($root, '', $targetFile->getPathname())
 						)
 					);
 					unlink($targetFile->getPathname());
@@ -239,6 +245,8 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function walkShadowCopies(PackageInterface $package, $closure)
 	{
+		$root = static::getContaoRoot($this->composer->getPackage());
+
 		if ($package->getType() == self::LEGACY_MODULE_TYPE) {
 			$downloadPath = $this->getInstallPath($package);
 
@@ -261,7 +269,7 @@ class ModuleInstaller extends LibraryInstaller
 
 					switch ($matches[1]) {
 						case 'TL_ROOT':
-							$base     = TL_ROOT;
+							$base     = $root;
 							$userfile = false;
 							break;
 						case 'TL_FILES':
@@ -289,8 +297,8 @@ class ModuleInstaller extends LibraryInstaller
 					$shadowCopies = (array) $contao['shadow-copies'];
 
 					foreach ($shadowCopies as $source => $target) {
-						$sourceFile = new \SplFileInfo(TL_ROOT . '/' . $source);
-						$targetFile = new \SplFileInfo(TL_ROOT . '/' . $target);
+						$sourceFile = new \SplFileInfo($root . '/' . $source);
+						$targetFile = new \SplFileInfo($root . '/' . $target);
 
 						$closure($sourceFile, $targetFile, false);
 					}
@@ -301,6 +309,8 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function removeEmptyDirectories($pathname)
 	{
+		$root = static::getContaoRoot($this->composer->getPackage());
+
 		$contents = array_filter(
 			scandir($pathname),
 			function ($item) {
@@ -311,7 +321,7 @@ class ModuleInstaller extends LibraryInstaller
 			$this->io->write(
 				sprintf(
 					"  - remove empty directory <info>%s</info>",
-					str_replace(TL_ROOT, '', $pathname)
+					str_replace($root, '', $pathname)
 				)
 			);
 			rmdir($pathname);
