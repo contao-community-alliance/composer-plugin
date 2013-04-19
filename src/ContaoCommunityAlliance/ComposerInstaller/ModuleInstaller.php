@@ -47,11 +47,17 @@ class ModuleInstaller extends LibraryInstaller
 		$root = static::getContaoRoot($package);
 
 		// Contao 3+
-		if (file_exists($constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php')) {
+		if (file_exists(
+			$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php'
+		)
+		) {
 			require_once($constantsFile);
 		}
 		// Contao 2+
-		else if (file_exists($constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'constants.php')) {
+		else if (file_exists(
+			$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'constants.php'
+		)
+		) {
 			require_once($constantsFile);
 		}
 		else {
@@ -63,14 +69,17 @@ class ModuleInstaller extends LibraryInstaller
 			require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
 
 			// load localconfig.php
-			if (file_exists($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php')) {
+			if (file_exists(
+				$root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php'
+			)
+			) {
 				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php');
 			}
 		}
 
 		$versionParser = new VersionParser();
 
-		$version = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
+		$version       = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
 		$prettyVersion = $versionParser->normalize($version);
 
 		if ($package->getVersion() !== $prettyVersion) {
@@ -80,19 +89,22 @@ class ModuleInstaller extends LibraryInstaller
 			$configFile->write($configJson);
 
 			$io = $event->getIO();
-			$io->write("Contao version changed from <info>" . $package->getPrettyVersion() . "</info> to <info>" . $version . "</info>, please restart composer");
+			$io->write(
+				"Contao version changed from <info>" . $package->getPrettyVersion(
+				) . "</info> to <info>" . $version . "</info>, please restart composer"
+			);
 			exit;
 		}
 	}
 
 	static public function createRunonce(Event $event)
 	{
-		$runonces = &static::$runonces;
+		$runonces = & static::$runonces;
 		if (count($runonces)) {
 			$file = 'system/runonce.php';
-			$n = 0;
+			$n    = 0;
 			while (file_exists('..' . DIRECTORY_SEPARATOR . $file)) {
-				$n ++;
+				$n++;
 				$file = 'system/runonce_' . $n . '.php';
 			}
 			if ($n > 0) {
@@ -152,7 +164,7 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$this->walkShadowCopies(
 			$package,
-			function(\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
 				// copy back existing files
 				if (file_exists($targetFile->getPathname()) &&
 					md5_file($sourceFile->getPathname()) != md5_file($targetFile->getPathname())
@@ -174,7 +186,7 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$this->walkShadowCopies(
 			$package,
-			function(\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
 				// copy non existing files
 				if (!file_exists($targetFile->getPathname())) {
 					$dir = dirname($targetFile->getPathname());
@@ -210,7 +222,7 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$this->walkShadowCopies(
 			$package,
-			function(\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) {
 				// remove existing shadow copies
 				if (file_exists($targetFile->getPathname())) {
 					$this->io->write(
@@ -249,18 +261,18 @@ class ModuleInstaller extends LibraryInstaller
 
 					switch ($matches[1]) {
 						case 'TL_ROOT':
-							$base = TL_ROOT;
+							$base     = TL_ROOT;
 							$userfile = false;
 							break;
 						case 'TL_FILES':
-							$base = $GLOBALS['TL_CONFIG']['uploadPath'];
+							$base     = $GLOBALS['TL_CONFIG']['uploadPath'];
 							$userfile = true;
 							break;
 						default:
 							continue;
 					}
 
-					$target = $base . '/' . $matches[2];
+					$target     = $base . '/' . $matches[2];
 					$targetFile = new \SplFileInfo($target);
 
 					$closure($sourceFile, $targetFile, $userfile);
@@ -291,7 +303,7 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$contents = array_filter(
 			scandir($pathname),
-			function($item) {
+			function ($item) {
 				return $item != '.' && $item != '..';
 			}
 		);
@@ -309,7 +321,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function calculateSymlinkMap(PackageInterface $package)
 	{
-		$map = array();
+		$map   = array();
 		$extra = $package->getExtra();
 		if (array_key_exists('contao', $extra)) {
 			$contao = $extra['contao'];
@@ -337,7 +349,7 @@ class ModuleInstaller extends LibraryInstaller
 
 			foreach ($symlinks as $target => $link) {
 				$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-				$linkReal = realpath('..') . DIRECTORY_SEPARATOR . $link;
+				$linkReal   = realpath('..') . DIRECTORY_SEPARATOR . $link;
 
 				if (file_exists($linkReal)) {
 					if (!is_link($linkReal)) {
@@ -356,7 +368,7 @@ class ModuleInstaller extends LibraryInstaller
 						explode(DIRECTORY_SEPARATOR, $targetReal)
 					)
 				);
-				$linkParts = array_values(
+				$linkParts   = array_values(
 					array_filter(
 						explode(DIRECTORY_SEPARATOR, $linkReal)
 					)
@@ -372,7 +384,7 @@ class ModuleInstaller extends LibraryInstaller
 
 				$n = count($linkParts);
 				// start on $i=1 -> skip the link name itself
-				for ($i=1; $i<$n; $i++) {
+				for ($i = 1; $i < $n; $i++) {
 					$linkTargetParts[] = '..';
 				}
 
@@ -406,7 +418,16 @@ class ModuleInstaller extends LibraryInstaller
 
 				foreach ($obsoleteLinks as $linkReal) {
 					if (is_link($linkReal)) {
-						$this->io->write("  - Remove symlink <info>" . str_replace($root, '', $linkReal) . "</info> to <info>" . readlink($linkReal) . "</info> for package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+						$this->io->write(
+							"  - Remove symlink <info>" . str_replace(
+								$root,
+								'',
+								$linkReal
+							) . "</info> to <info>" . readlink(
+								$linkReal
+							) . "</info> for package <info>" . $package->getName(
+							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
+						);
 						unlink($linkReal);
 					}
 				}
@@ -417,7 +438,14 @@ class ModuleInstaller extends LibraryInstaller
 					if (is_link($linkReal)) {
 						unlink($linkReal);
 					}
-					$this->io->write("  - Create symlink <info>" . str_replace($root, '', $linkReal) . "</info> to <info>" . $linkTarget . "</info> for package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+					$this->io->write(
+						"  - Create symlink <info>" . str_replace(
+							$root,
+							'',
+							$linkReal
+						) . "</info> to <info>" . $linkTarget . "</info> for package <info>" . $package->getName(
+						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
+					);
 					symlink($linkTarget, $linkReal);
 				}
 			}
@@ -433,7 +461,16 @@ class ModuleInstaller extends LibraryInstaller
 
 			foreach ($map as $linkReal => $linkTarget) {
 				if (is_link($linkReal)) {
-					$this->io->write("  - Remove symlink <info>" . str_replace($root, '', $linkReal) . "</info> to <info>" . readlink($linkReal) . "</info> for package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+					$this->io->write(
+						"  - Remove symlink <info>" . str_replace(
+							$root,
+							'',
+							$linkReal
+						) . "</info> to <info>" . readlink(
+							$linkReal
+						) . "</info> for package <info>" . $package->getName(
+						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
+					);
 					unlink($linkReal);
 				}
 			}
@@ -450,7 +487,7 @@ class ModuleInstaller extends LibraryInstaller
 				if (is_array($contao) && array_key_exists('userfiles', $contao)) {
 					$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
 
-					$userfiles = (array) $contao['userfiles'];
+					$userfiles   = (array) $contao['userfiles'];
 					$installPath = $this->getInstallPath($package);
 
 					foreach ($userfiles as $source => $target) {
@@ -462,7 +499,7 @@ class ModuleInstaller extends LibraryInstaller
 						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
 						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
 
-						if ( !file_exists($targetReal)) {
+						if (!file_exists($targetReal)) {
 							mkdir($targetReal, 0777, true);
 						}
 
@@ -471,8 +508,16 @@ class ModuleInstaller extends LibraryInstaller
 							if (!file_exists($targetPath)) {
 								if ($file->isDir()) {
 									mkdir($targetPath);
-								} else {
-									$this->io->write("  - Copy userfile <info>" . $ri->getSubPathName() . "</info> to <info>" . $target . DIRECTORY_SEPARATOR . $ri->getSubPathName() . "</info> from package <info>" . $package->getName() . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+								}
+								else {
+									$this->io->write(
+										"  - Copy userfile <info>" . $ri->getSubPathName(
+										) . "</info> to <info>" . $target . DIRECTORY_SEPARATOR . $ri->getSubPathName(
+										) . "</info> from package <info>" . $package->getName(
+										) . "</info> (<comment>" . VersionParser::formatVersion(
+											$package
+										) . "</comment>)"
+									);
 									copy($file->getPathname(), $targetPath);
 								}
 							}
@@ -491,7 +536,7 @@ class ModuleInstaller extends LibraryInstaller
 				$contao = $extra['contao'];
 
 				if (is_array($contao) && array_key_exists('runonce', $contao)) {
-					$root = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+					$root     = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 					$runonces = (array) $contao['runonce'];
 
 					$installPath = str_replace($root, '', $this->getInstallPath($package));
@@ -505,10 +550,10 @@ class ModuleInstaller extends LibraryInstaller
 	}
 
 	/**
-     * {@inheritDoc}
-     */
-    public function supports($packageType)
-    {
-        return self::MODULE_TYPE === $packageType || self::LEGACY_MODULE_TYPE == $packageType;
-    }
+	 * {@inheritDoc}
+	 */
+	public function supports($packageType)
+	{
+		return self::MODULE_TYPE === $packageType || self::LEGACY_MODULE_TYPE == $packageType;
+	}
 }
