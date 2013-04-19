@@ -104,7 +104,7 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$runonces = & static::$runonces;
 		if (count($runonces)) {
-			$root = static::getContaoRoot($this->composer->getPackage());
+			$root = static::getContaoRoot($event->getComposer()->getPackage());
 			$file = 'system/runonce.php';
 			$n    = 0;
 			while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
