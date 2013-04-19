@@ -446,6 +446,10 @@ class ModuleInstaller extends LibraryInstaller
 						) . "</info> to <info>" . $linkTarget . "</info> for package <info>" . $package->getName(
 						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
 					);
+					$dir = dirname($linkReal);
+					if (!is_dir($dir)) {
+						mkdir($dir, 0777, true);
+					}
 					symlink($linkTarget, $linkReal);
 				}
 			}
