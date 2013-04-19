@@ -34,34 +34,24 @@ class ModuleInstaller extends LibraryInstaller
 			$root = TL_ROOT;
 		}
 
-		return $root;
-	}
-
-	static public function updateContaoPackage(Event $event)
-	{
-		$composer = $event->getComposer();
-
-		/** @var \Composer\Package\RootPackage $package */
-		$package = $composer->getPackage();
-
-		$root = static::getContaoRoot($package);
-
-		// Contao 3+
-		if (file_exists(
-			$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php'
-		)
-		) {
-			require_once($constantsFile);
-		}
-		// Contao 2+
-		else if (file_exists(
-			$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'constants.php'
-		)
-		) {
-			require_once($constantsFile);
-		}
-		else {
-			throw new \Exception('Could not find constants.php in ' . $root);
+		if (!defined('VERSION')) {
+			// Contao 3+
+			if (file_exists(
+				$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php'
+			)
+			) {
+				require_once($constantsFile);
+			}
+			// Contao 2+
+			else if (file_exists(
+				$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'constants.php'
+			)
+			) {
+				require_once($constantsFile);
+			}
+			else {
+				throw new \Exception('Could not find constants.php in ' . $root);
+			}
 		}
 
 		if (empty($GLOBALS['TL_CONFIG'])) {
@@ -76,6 +66,19 @@ class ModuleInstaller extends LibraryInstaller
 				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php');
 			}
 		}
+
+		return $root;
+	}
+
+	static public function updateContaoPackage(Event $event)
+	{
+		$composer = $event->getComposer();
+
+		/** @var \Composer\Package\RootPackage $package */
+		$package = $composer->getPackage();
+
+		// load constants
+		static::getContaoRoot($package);
 
 		$versionParser = new VersionParser();
 
