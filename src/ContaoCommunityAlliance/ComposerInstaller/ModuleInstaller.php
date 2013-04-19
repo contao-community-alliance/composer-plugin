@@ -104,16 +104,17 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$runonces = & static::$runonces;
 		if (count($runonces)) {
+			$root = static::getContaoRoot($this->composer->getPackage());
 			$file = 'system/runonce.php';
 			$n    = 0;
-			while (file_exists('..' . DIRECTORY_SEPARATOR . $file)) {
+			while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
 				$n++;
 				$file = 'system/runonce_' . $n . '.php';
 			}
 			if ($n > 0) {
 				rename(
-					'../system/runonce.php',
-					'..' . DIRECTORY_SEPARATOR . $file
+					$root . '/system/runonce.php',
+					$root . DIRECTORY_SEPARATOR . $file
 				);
 				array_unshift(
 					$runonces,
@@ -127,7 +128,7 @@ class ModuleInstaller extends LibraryInstaller
 				var_export($runonces, true),
 				$template
 			);
-			file_put_contents('../system/runonce.php', $template);
+			file_put_contents($root . '/system/runonce.php', $template);
 
 			$io = $event->getIO();
 			$io->write("<info>Runonce created with " . count($runonces) . " updates</info>");
@@ -358,17 +359,18 @@ class ModuleInstaller extends LibraryInstaller
 				$symlinks[''] = 'system/modules/' . preg_replace('#^.*/#', '', $package->getName());
 			}
 
+			$root = static::getContaoRoot($this->composer->getPackage());
 			$installPath = $this->getInstallPath($package);
 
 			foreach ($symlinks as $target => $link) {
 				$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-				$linkReal   = realpath('..') . DIRECTORY_SEPARATOR . $link;
+				$linkReal   = $root . DIRECTORY_SEPARATOR . $link;
 
 				if (file_exists($linkReal)) {
 					if (!is_link($linkReal)) {
 						// special behavior for composer extension
 						if ($package->getName() == 'contao-community-alliance/composer') {
-							$this->filesystem->removeDirectory('../system/modules/!composer');
+							$this->filesystem->removeDirectory($root . '/system/modules/!composer');
 						}
 						else {
 							throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
@@ -502,6 +504,7 @@ class ModuleInstaller extends LibraryInstaller
 				$contao = $extra['contao'];
 
 				if (is_array($contao) && array_key_exists('userfiles', $contao)) {
+					$root = static::getContaoRoot($this->composer->getPackage());
 					$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
 
 					$userfiles   = (array) $contao['userfiles'];
@@ -511,7 +514,7 @@ class ModuleInstaller extends LibraryInstaller
 						$target = $uploadPath . DIRECTORY_SEPARATOR . $target;
 
 						$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
-						$targetReal = '..' . DIRECTORY_SEPARATOR . $target;
+						$targetReal = $root . DIRECTORY_SEPARATOR . $target;
 
 						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
 						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
