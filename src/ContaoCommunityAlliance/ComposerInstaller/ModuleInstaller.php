@@ -60,7 +60,8 @@ class ModuleInstaller extends LibraryInstaller
 
 	static public function createRunonce(Event $event)
 	{
-		if (count(static::$runonces)) {
+		$runonces = &static::$runonces;
+		if (count($runonces)) {
 			$file = 'system/runonce.php';
 			$n = 0;
 			while (file_exists('..' . DIRECTORY_SEPARATOR . $file)) {
@@ -73,7 +74,7 @@ class ModuleInstaller extends LibraryInstaller
 					'..' . DIRECTORY_SEPARATOR . $file
 				);
 				array_unshift(
-					static::$runonces,
+					$runonces,
 					$file
 				);
 			}
@@ -81,14 +82,14 @@ class ModuleInstaller extends LibraryInstaller
 			$template = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'RunonceExecutorTemplate.php');
 			$template = str_replace(
 				'TEMPLATE_RUNONCE_ARRAY',
-				var_export(static::$runonces, true),
+				var_export($runonces, true),
 				$template
 			);
 			file_put_contents('../system/runonce.php', $template);
 
 			$io = $event->getIO();
-			$io->write("<info>Runonce created with " . count(static::$runonces) . " updates</info>");
-			foreach (static::$runonces as $runonce) {
+			$io->write("<info>Runonce created with " . count($runonces) . " updates</info>");
+			foreach ($runonces as $runonce) {
 				$io->write("  - " . $runonce);
 			}
 		}
