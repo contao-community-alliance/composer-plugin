@@ -312,6 +312,6 @@ class ModuleInstaller extends LibraryInstaller
      */
     public function supports($packageType)
     {
-        return 'contao-module' === $packageType;
+        return 'contao-module' === $packageType || 'legacy-contao-module' == $packageType;
     }
 }
