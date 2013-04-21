@@ -55,8 +55,14 @@ class ModuleInstaller extends LibraryInstaller
 		}
 
 		if (empty($GLOBALS['TL_CONFIG'])) {
-			// load config.php
-			require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+			if (version_compare(VERSION, '3', '>=')) {
+				// load default.php
+				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'default.php');
+			}
+			else {
+				// load config.php
+				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+			}
 
 			// load localconfig.php
 			if (file_exists(
