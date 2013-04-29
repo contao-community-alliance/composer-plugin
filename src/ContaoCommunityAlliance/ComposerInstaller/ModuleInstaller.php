@@ -27,6 +27,10 @@ class ModuleInstaller extends LibraryInstaller
 			if (array_key_exists('contao', $extra) && array_key_exists('root', $extra['contao'])) {
 				$root = getcwd() . '/' . $extra['contao']['root'];
 			}
+			// test, do we have the core within vendor/contao/core.
+			else if (is_dir(getcwd() . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'contao' . DIRECTORY_SEPARATOR . 'core')) {
+				$root = getcwd() . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'contao' . DIRECTORY_SEPARATOR . 'core';
+			}
 
 			define('TL_ROOT', $root);
 		}
