@@ -250,6 +250,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function removeShadowCopies(PackageInterface $package)
 	{
+		$self = $this;
 		$root = static::getContaoRoot($this->composer->getPackage());
 
 		$this->io->write("  - Remove shadow copies for package <info>" . $package->getName(
@@ -257,7 +258,7 @@ class ModuleInstaller extends LibraryInstaller
 
 		$this->walkShadowCopies(
 			$package,
-			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($self, $root) {
 				// remove existing shadow copies
 				if (file_exists($targetFile->getPathname())) {
 					$this->io->write(
@@ -267,6 +268,7 @@ class ModuleInstaller extends LibraryInstaller
 						)
 					);
 					unlink($targetFile->getPathname());
+					$self->removeEmptyDirectories(dirname($targetFile->getPathname()));
 				}
 			},
 			false
