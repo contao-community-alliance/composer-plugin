@@ -277,7 +277,7 @@ class ModuleInstaller extends LibraryInstaller
 
 				if (preg_match('#^(TL_ROOT|TL_FILES)/(.*)$#e', $pathname, $matches)) {
 					if ($matches[2] == 'system/runonce.php') {
-						static::$runonces[] = $pathname;
+						static::$runonces[] = str_replace($root . '/', '', $sourceFile->getRealPath());
 						continue;
 					}
 
