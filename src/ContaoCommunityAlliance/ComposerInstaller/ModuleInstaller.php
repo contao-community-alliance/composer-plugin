@@ -178,6 +178,9 @@ class ModuleInstaller extends LibraryInstaller
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
+		$this->io->write("  - Play back shadow copies for package <info>" . $package->getName(
+						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+
 		$this->walkShadowCopies(
 			$package,
 			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
@@ -187,7 +190,7 @@ class ModuleInstaller extends LibraryInstaller
 				) {
 					$this->io->write(
 						sprintf(
-							"  - play back modified shadow copy <info>%s</info> -> <info>%s</info>",
+							"  - cp <info>%s</info> -> <info>%s</info>",
 							str_replace($root, '', $targetFile->getPathname()),
 							str_replace($root, '', $sourceFile->getPathname())
 						)
@@ -197,11 +200,16 @@ class ModuleInstaller extends LibraryInstaller
 			},
 			false
 		);
+
+		$this->io->write('');
 	}
 
 	protected function updateShadowCopies(PackageInterface $package, PackageInterface $initial = null)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
+
+		$this->io->write("  - Update shadow copies for package <info>" . $package->getName(
+						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
 		$this->walkShadowCopies(
 			$package,
@@ -214,7 +222,7 @@ class ModuleInstaller extends LibraryInstaller
 					}
 					$this->io->write(
 						sprintf(
-							"  - create shadow copy <info>%s</info> -> <info>%s</info>",
+							"  - cp <info>%s</info> -> <info>%s</info>",
 							str_replace($root, '', $sourceFile->getPathname()),
 							str_replace($root, '', $targetFile->getPathname())
 						)
@@ -226,7 +234,7 @@ class ModuleInstaller extends LibraryInstaller
 				else if (md5_file($sourceFile->getPathname()) != md5_file($targetFile->getPathname())) {
 					$this->io->write(
 						sprintf(
-							"  - update shadow copy <info>%s</info> -> <info>%s</info>",
+							"  - cp <info>%s</info> -> <info>%s</info>",
 							str_replace($root, '', $sourceFile->getPathname()),
 							str_replace($root, '', $targetFile->getPathname())
 						)
@@ -236,11 +244,16 @@ class ModuleInstaller extends LibraryInstaller
 			},
 			true
 		);
+
+		$this->io->write('');
 	}
 
 	protected function removeShadowCopies(PackageInterface $package)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
+
+		$this->io->write("  - Remove shadow copies for package <info>" . $package->getName(
+						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
 		$this->walkShadowCopies(
 			$package,
@@ -249,7 +262,7 @@ class ModuleInstaller extends LibraryInstaller
 				if (file_exists($targetFile->getPathname())) {
 					$this->io->write(
 						sprintf(
-							"  - remove shadow copy <info>%s</info>",
+							"  - rm <info>%s</info>",
 							str_replace($root, '', $targetFile->getPathname())
 						)
 					);
@@ -258,6 +271,8 @@ class ModuleInstaller extends LibraryInstaller
 			},
 			false
 		);
+
+		$this->io->write('');
 	}
 
 	protected function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce)
@@ -434,6 +449,9 @@ class ModuleInstaller extends LibraryInstaller
 	protected function updateSymlinks(PackageInterface $package, PackageInterface $initial = null)
 	{
 		if ($package->getType() == self::MODULE_TYPE) {
+			$this->io->write("  - Update symlinks for package <info>" . $package->getName(
+							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+
 			$map = $this->calculateSymlinkMap($package);
 
 			$root = static::getContaoRoot($this->composer->getPackage());
@@ -449,14 +467,13 @@ class ModuleInstaller extends LibraryInstaller
 				foreach ($obsoleteLinks as $linkReal) {
 					if (is_link($linkReal)) {
 						$this->io->write(
-							"  - Remove symlink <info>" . str_replace(
+							"  - rm <info>" . str_replace(
 								$root,
 								'',
 								$linkReal
 							) . "</info> to <info>" . readlink(
 								$linkReal
-							) . "</info> for package <info>" . $package->getName(
-							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
+							) . "</info>"
 						);
 						unlink($linkReal);
 					}
@@ -469,12 +486,11 @@ class ModuleInstaller extends LibraryInstaller
 						unlink($linkReal);
 					}
 					$this->io->write(
-						"  - Create symlink <info>" . str_replace(
+						"  - ln <info>" . str_replace(
 							$root,
 							'',
 							$linkReal
-						) . "</info> to <info>" . $linkTarget . "</info> for package <info>" . $package->getName(
-						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
+						) . "</info> to <info>" . $linkTarget . "</info>"
 					);
 					$dir = dirname($linkReal);
 					if (!is_dir($dir)) {
@@ -483,12 +499,17 @@ class ModuleInstaller extends LibraryInstaller
 					symlink($linkTarget, $linkReal);
 				}
 			}
+
+			$this->io->write('');
 		}
 	}
 
 	protected function removeSymlinks(PackageInterface $package)
 	{
 		if ($package->getType() == self::MODULE_TYPE) {
+			$this->io->write("  - Remove symlinks for package <info>" . $package->getName(
+							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+
 			$map = $this->calculateSymlinkMap($package);
 
 			$root = static::getContaoRoot($this->composer->getPackage());
@@ -496,24 +517,28 @@ class ModuleInstaller extends LibraryInstaller
 			foreach ($map as $linkReal => $linkTarget) {
 				if (is_link($linkReal)) {
 					$this->io->write(
-						"  - Remove symlink <info>" . str_replace(
+						"  - rm <info>" . str_replace(
 							$root,
 							'',
 							$linkReal
 						) . "</info> to <info>" . readlink(
 							$linkReal
-						) . "</info> for package <info>" . $package->getName(
-						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)"
+						) . "</info>"
 					);
 					unlink($linkReal);
 				}
 			}
+
+			$this->io->write('');
 		}
 	}
 
 	protected function updateUserfiles(PackageInterface $package)
 	{
 		if ($package->getType() == self::MODULE_TYPE) {
+			$this->io->write("  - Update userfiles for package <info>" . $package->getName(
+							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
+
 			$extra = $package->getExtra();
 			if (array_key_exists('contao', $extra)) {
 				$contao = $extra['contao'];
@@ -546,12 +571,9 @@ class ModuleInstaller extends LibraryInstaller
 								}
 								else {
 									$this->io->write(
-										"  - Copy userfile <info>" . $ri->getSubPathName(
+										"  - cp <info>" . $ri->getSubPathName(
 										) . "</info> to <info>" . $target . DIRECTORY_SEPARATOR . $ri->getSubPathName(
-										) . "</info> from package <info>" . $package->getName(
-										) . "</info> (<comment>" . VersionParser::formatVersion(
-											$package
-										) . "</comment>)"
+										) . "</info>"
 									);
 									copy($file->getPathname(), $targetPath);
 								}
@@ -560,6 +582,8 @@ class ModuleInstaller extends LibraryInstaller
 					}
 				}
 			}
+
+			$this->io->write('');
 		}
 	}
 
