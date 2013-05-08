@@ -194,7 +194,8 @@ class ModuleInstaller extends LibraryInstaller
 					);
 					copy($targetFile->getPathname(), $sourceFile->getPathname());
 				}
-			}
+			},
+			false
 		);
 	}
 
@@ -232,7 +233,8 @@ class ModuleInstaller extends LibraryInstaller
 					);
 					copy($sourceFile->getPathname(), $targetFile->getPathname());
 				}
-			}
+			},
+			true
 		);
 	}
 
@@ -253,11 +255,12 @@ class ModuleInstaller extends LibraryInstaller
 					);
 					unlink($targetFile->getPathname());
 				}
-			}
+			},
+			false
 		);
 	}
 
-	protected function walkShadowCopies(PackageInterface $package, $closure)
+	protected function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
@@ -277,7 +280,9 @@ class ModuleInstaller extends LibraryInstaller
 
 				if (preg_match('#^(TL_ROOT|TL_FILES)/(.*)$#e', $pathname, $matches)) {
 					if ($matches[2] == 'system/runonce.php') {
-						static::$runonces[] = str_replace($root . '/', '', $sourceFile->getRealPath());
+						if ($registerRunonce) {
+							static::$runonces[] = str_replace($root . '/', '', $sourceFile->getRealPath());
+						}
 						continue;
 					}
 
