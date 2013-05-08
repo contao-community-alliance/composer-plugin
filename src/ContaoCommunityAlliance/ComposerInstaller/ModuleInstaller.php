@@ -151,7 +151,7 @@ class ModuleInstaller extends LibraryInstaller
 	protected function installCode(PackageInterface $package)
 	{
 		parent::installCode($package);
-		$this->updateShadowCopies($package);
+		$this->updateShadowCopies(array(), $package);
 		$this->updateSymlinks($package);
 		$this->updateUserfiles($package);
 		$this->updateRunonce($package);
@@ -159,9 +159,9 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function updateCode(PackageInterface $initial, PackageInterface $target)
 	{
-		$this->playBackShadowCopies($initial);
+		$map = $this->playBackShadowCopies($initial);
 		parent::updateCode($initial, $target);
-		$this->updateShadowCopies($target, $initial);
+		$this->updateShadowCopies($map, $target, $initial);
 		$this->updateSymlinks($target, $initial);
 		$this->updateUserfiles($target);
 		$this->updateRunonce($target);
@@ -181,7 +181,7 @@ class ModuleInstaller extends LibraryInstaller
 		$this->io->write("  - Play back shadow copies for package <info>" . $package->getName(
 						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-		$this->walkShadowCopies(
+		$map = $this->walkShadowCopies(
 			$package,
 			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
 				// copy back existing files
@@ -202,16 +202,18 @@ class ModuleInstaller extends LibraryInstaller
 		);
 
 		$this->io->write('');
+
+		return $map;
 	}
 
-	protected function updateShadowCopies(PackageInterface $package, PackageInterface $initial = null)
+	protected function updateShadowCopies($previousMap, PackageInterface $package, PackageInterface $initial = null)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
 		$this->io->write("  - Update shadow copies for package <info>" . $package->getName(
 						) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-		$this->walkShadowCopies(
+		$updatedMap = $this->walkShadowCopies(
 			$package,
 			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
 				// copy non existing files
@@ -244,6 +246,20 @@ class ModuleInstaller extends LibraryInstaller
 			},
 			true
 		);
+
+		foreach ($previousMap as $type => $paths) {
+			foreach ($paths as $path) {
+				if (!in_array($path, $updatedMap[$type])) {
+					$this->io->write(
+						sprintf(
+							"  - rm <info>%s</info>",
+							str_replace($root, '', $path)
+						)
+					);
+					unlink($path);
+				}
+			}
+		}
 
 		$this->io->write('');
 	}
@@ -279,6 +295,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce)
 	{
+		$map = array('userfile' => array(), 'module' => array());
 		$root = static::getContaoRoot($this->composer->getPackage());
 
 		if ($package->getType() == self::LEGACY_MODULE_TYPE) {
@@ -320,6 +337,7 @@ class ModuleInstaller extends LibraryInstaller
 					$targetFile = new \SplFileInfo($target);
 
 					$closure($sourceFile, $targetFile, $userfile);
+					$map[$userfile ? 'userfile' : 'module'][] = $target;
 				}
 			}
 		}
@@ -337,10 +355,13 @@ class ModuleInstaller extends LibraryInstaller
 						$targetFile = new \SplFileInfo($root . '/' . $target);
 
 						$closure($sourceFile, $targetFile, false);
+						$map['module'][] = $root . '/' . $target;
 					}
 				}
 			}
 		}
+
+		return $map;
 	}
 
 	protected function removeEmptyDirectories($pathname)
