@@ -80,7 +80,16 @@ class ModuleInstaller extends LibraryInstaller
 		return $root;
 	}
 
+	/**
+	 * @deprecated
+	 * @param Event $event
+	 */
 	static public function updateContaoPackage(Event $event)
+	{
+		static::updateComposerConfig($event);
+	}
+
+	static public function updateComposerConfig(Event $event)
 	{
 		$composer = $event->getComposer();
 
@@ -90,24 +99,45 @@ class ModuleInstaller extends LibraryInstaller
 		// load constants
 		static::getContaoRoot($package);
 
-		$versionParser = new VersionParser();
 
+		$messages     = array();
+		$jsonModified = false;
+		$configFile   = new JsonFile('composer.json');
+		$configJson   = $configFile->read();
+
+		if (!array_key_exists('contao-community-alliance/composer', $configJson['require'])) {
+			$configJson['require']['contao-community-alliance/composer'] = '*';
+
+			$jsonModified = true;
+			$messages[]   = 'The contao integration contao-community-alliance/composer is missing and has been readded to dependencies!';
+		}
+
+		$versionParser = new VersionParser();
 		$version       = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
 		$prettyVersion = $versionParser->normalize($version);
-
 		if ($package->getVersion() !== $prettyVersion) {
-			$configFile            = new JsonFile('composer.json');
-			$configJson            = $configFile->read();
 			$configJson['version'] = $version;
-			$configFile->write($configJson);
 
-			$io = $event->getIO();
-			$io->write(
-				"Contao version changed from <info>" . $package->getPrettyVersion(
-				) . "</info> to <info>" . $version . "</info>, please restart composer"
+			$jsonModified = true;
+			$messages[]   = sprintf(
+				'Contao version changed from <info>%s</info> to <info>%s</info>!',
+				$package->getPrettyVersion(),
+				$version
 			);
-			exit;
 		}
+
+		if ($jsonModified) {
+			$configFile->write($configJson);
+		}
+		if (count($messages)) {
+			$exception = null;
+			foreach ($messages as $message) {
+				$exception = new \RuntimeException($message, 0, $exception);
+			}
+			throw $exception;
+		}
+
+		throw new \RuntimeException('break');
 	}
 
 	static public function createRunonce(Event $event)
