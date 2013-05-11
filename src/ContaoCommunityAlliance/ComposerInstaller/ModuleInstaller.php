@@ -136,8 +136,6 @@ class ModuleInstaller extends LibraryInstaller
 			}
 			throw $exception;
 		}
-
-		throw new \RuntimeException('break');
 	}
 
 	static public function createRunonce(Event $event)
