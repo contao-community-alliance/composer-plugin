@@ -2,6 +2,7 @@
 
 namespace ContaoCommunityAlliance\ComposerInstaller;
 
+use Composer\Autoload\ClassMapGenerator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
@@ -157,6 +158,7 @@ class ModuleInstaller extends LibraryInstaller
 			array(
 				'pre-update-cmd' => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::preUpdate',
 				'post-update-cmd' => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postUpdate',
+				'post-autoload-dump' => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postAutoloadDump',
 			) as $key => $script
 		) {
 			if (!array_key_exists($key, $configJson['scripts']) || empty($configJson['scripts'][$key])) {
@@ -261,6 +263,95 @@ class ModuleInstaller extends LibraryInstaller
 				$io->write("  - " . $runonce);
 			}
 		}
+	}
+
+	static public function postAutoloadDump(Event $event)
+	{
+		$root = static::getContaoRoot($event->getComposer()->getPackage());
+
+		$localconfig = $root . '/system/config/localconfig.php';
+		$lines = file($localconfig);
+		$remove = false;
+		foreach ($lines as $index => $line) {
+			$tline = trim($line);
+			if ($tline == '### COMPOSER CLASSES START ###') {
+				$remove = true;
+				unset($lines[$index]);
+			}
+			else if ($tline == '### COMPOSER CLASSES STOP ###') {
+				$remove = true;
+				unset($lines[$index]);
+			}
+			else if ($remove || $tline == '?>') {
+				unset($lines[$index]);
+			}
+		}
+		$file = implode('', $lines);
+		$file = rtrim($file);
+
+		if (version_compare(VERSION, '3', '<')) {
+			$classmapGenerator = new ClassMapGenerator();
+			$classmapClasses = array();
+			$installationManager = $event->getComposer()->getInstallationManager();
+			$localRepository = $event->getComposer()
+				->getRepositoryManager()
+				->getLocalRepository();
+			/** @var PackageInterface $package */
+			foreach ($localRepository->getPackages() as $package) {
+				if ($package->getType() == 'contao-module' || $package->getType() == 'legacy-contao-module') {
+					$installPath = $installationManager->getInstallPath($package);
+					$autoload = $package->getAutoload();
+					if (array_key_exists('psr-0', $autoload)) {
+						foreach ($autoload['psr-0'] as $source) {
+							$classmapClasses = array_merge(
+								$classmapClasses,
+								$classmapGenerator->createMap($installPath . '/' . $source)
+							);
+						}
+					}
+					if (array_key_exists('classmap', $autoload)) {
+						foreach ($autoload['classmap'] as $source) {
+							$classmapClasses = array_merge(
+								$classmapClasses,
+								$classmapGenerator->createMap($installPath . '/' . $source)
+							);
+						}
+					}
+				}
+			}
+			$classmapClasses = array_keys($classmapClasses);
+			$classmapClasses = array_map(
+				function($className) {
+					return var_export($className, true);
+				},
+				$classmapClasses
+			);
+			$classmapClasses = implode(",\n\t\t", $classmapClasses);
+
+			$file .= <<<EOF
+
+
+### COMPOSER CLASSES START ###
+if (!empty(\$GLOBALS['TL_CONFIG']['dbDatabase']) && version_compare(VERSION, '3', '<') && class_exists('FileCache')) {
+	\$classes = array(
+		$classmapClasses
+	);
+	\$cache = FileCache::getInstance('classes');
+	foreach (\$classes as \$class) {
+		if (!\$cache->\$class) {
+			\$cache->\$class = true;
+		}
+	}
+}
+### COMPOSER CLASSES STOP ###
+
+
+EOF;
+		}
+		else {
+			$file .= "\n";
+		}
+		file_put_contents($root . '/system/config/localconfig.php', $file);
 	}
 
 	protected function installCode(PackageInterface $package)
