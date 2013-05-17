@@ -332,7 +332,7 @@ class ModuleInstaller extends LibraryInstaller
 
 
 ### COMPOSER CLASSES START ###
-if (!empty(\$GLOBALS['TL_CONFIG']['dbDatabase']) && version_compare(VERSION, '3', '<') && class_exists('FileCache')) {
+if (version_compare(VERSION, '3', '<') && class_exists('FileCache')) {
 	\$classes = array(
 		$classmapClasses
 	);
