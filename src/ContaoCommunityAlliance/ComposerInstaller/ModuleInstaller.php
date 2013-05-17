@@ -86,10 +86,19 @@ class ModuleInstaller extends LibraryInstaller
 	 */
 	static public function updateContaoPackage(Event $event)
 	{
-		static::updateComposerConfig($event);
+		static::preUpdate($event);
 	}
 
+	/**
+	 * @deprecated
+	 * @param Event $event
+	 */
 	static public function updateComposerConfig(Event $event)
+	{
+		static::preUpdate($event);
+	}
+
+	static public function preUpdate(Event $event)
 	{
 		$composer = $event->getComposer();
 
@@ -105,6 +114,75 @@ class ModuleInstaller extends LibraryInstaller
 		$configFile   = new JsonFile('composer.json');
 		$configJson   = $configFile->read();
 
+
+		// remove old installer scripts
+		foreach (
+			array(
+				'pre-update-cmd' =>array(
+					'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateContaoPackage',
+					'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateComposerConfig'
+				),
+				'post-update-cmd' => array(
+					'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::createRunonce'
+				),
+			) as $key => $scripts
+		) {
+			foreach ($scripts as $script) {
+				if (array_key_exists($key, $configJson['scripts'])) {
+					if (is_array($configJson['scripts'][$key])) {
+						$index = array_search($script, $configJson['scripts'][$key]);
+						if ($index !== false) {
+							unset($configJson['scripts'][$key][$index]);
+							if (empty($configJson['scripts'][$key])) {
+								unset($configJson['scripts'][$key]);
+							}
+
+							$jsonModified = true;
+							$messages[] = 'obsolete ' . $key . ' script was removed!';
+						}
+					}
+					else if ($configJson['scripts'][$key] == $script) {
+						unset($configJson['scripts'][$key]);
+
+						$jsonModified = true;
+						$messages[] = 'obsolete ' . $key . ' script was removed!';
+					}
+				}
+			}
+		}
+
+
+		// add installer scripts
+		foreach (
+			array(
+				'pre-update-cmd' => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::preUpdate',
+				'post-update-cmd' => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postUpdate',
+			) as $key => $script
+		) {
+			if (!array_key_exists($key, $configJson['scripts']) || empty($configJson['scripts'][$key])) {
+				$configJson['scripts'][$key] = $script;
+
+				$jsonModified = true;
+				$messages[] = $key . ' script was missing and readded!';
+			}
+			else if (is_array($configJson['scripts'][$key])) {
+				if (!in_array($script, $configJson['scripts'][$key])) {
+					$configJson['scripts'][$key][] = $script;
+
+					$jsonModified = true;
+					$messages[] = $key . ' script was missing and readded!';
+				}
+			}
+			else if ($configJson['scripts'][$key] != $script) {
+				$configJson['scripts'][$key] = $script;
+
+				$jsonModified = true;
+				$messages[] = $key . ' script was missing and readded!';
+			}
+		}
+
+
+		// add contao-community-alliance/composer dependency
 		if (!array_key_exists('contao-community-alliance/composer', $configJson['require'])) {
 			$configJson['require']['contao-community-alliance/composer'] = '*';
 
@@ -112,6 +190,8 @@ class ModuleInstaller extends LibraryInstaller
 			$messages[]   = 'The contao integration contao-community-alliance/composer is missing and has been readded to dependencies!';
 		}
 
+
+		// update contao version
 		$versionParser = new VersionParser();
 		$version       = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
 		$prettyVersion = $versionParser->normalize($version);
@@ -126,12 +206,13 @@ class ModuleInstaller extends LibraryInstaller
 			);
 		}
 
+
 		if ($jsonModified) {
 			$configFile->write($configJson);
 		}
 		if (count($messages)) {
 			$exception = null;
-			foreach ($messages as $message) {
+			foreach (array_reverse($messages) as $message) {
 				$exception = new \RuntimeException($message, 0, $exception);
 			}
 			throw $exception;
@@ -140,9 +221,15 @@ class ModuleInstaller extends LibraryInstaller
 
 	static public function createRunonce(Event $event)
 	{
+		static::postUpdate($event);
+	}
+
+	static public function postUpdate(Event $event)
+	{
+		$root = static::getContaoRoot($event->getComposer()->getPackage());
+
 		$runonces = & static::$runonces;
 		if (count($runonces)) {
-			$root = static::getContaoRoot($event->getComposer()->getPackage());
 			$file = 'system/runonce.php';
 			$n    = 0;
 			while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
