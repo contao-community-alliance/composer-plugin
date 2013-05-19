@@ -303,18 +303,22 @@ class ModuleInstaller extends LibraryInstaller
 					$autoload = $package->getAutoload();
 					if (array_key_exists('psr-0', $autoload)) {
 						foreach ($autoload['psr-0'] as $source) {
-							$classmapClasses = array_merge(
-								$classmapClasses,
-								$classmapGenerator->createMap($installPath . '/' . $source)
-							);
+							if (file_exists($installPath . '/' . $source)) {
+								$classmapClasses = array_merge(
+									$classmapClasses,
+									$classmapGenerator->createMap($installPath . '/' . $source)
+								);
+							}
 						}
 					}
 					if (array_key_exists('classmap', $autoload)) {
 						foreach ($autoload['classmap'] as $source) {
-							$classmapClasses = array_merge(
-								$classmapClasses,
-								$classmapGenerator->createMap($installPath . '/' . $source)
-							);
+							if ($installPath . '/' . $source) {
+								$classmapClasses = array_merge(
+									$classmapClasses,
+									$classmapGenerator->createMap($installPath . '/' . $source)
+								);
+							}
 						}
 					}
 				}
