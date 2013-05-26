@@ -3,6 +3,8 @@
 namespace ContaoCommunityAlliance\ComposerInstaller;
 
 use Composer\Autoload\ClassMapGenerator;
+use Composer\Composer;
+use Composer\Package\RootPackageInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
@@ -79,6 +81,16 @@ class ModuleInstaller extends LibraryInstaller
 		}
 
 		return $root;
+	}
+
+	static public function getPreferredInstall(Composer $composer)
+	{
+		return $composer->getConfig()->get('preferred-install');
+	}
+
+	static public function isDistInstallPreferred(Composer $composer)
+	{
+		return static::getPreferredInstall($composer) == 'dist';
 	}
 
 	/**
@@ -369,6 +381,9 @@ EOF;
 
 	protected function updateCode(PackageInterface $initial, PackageInterface $target)
 	{
+		if (static::isDistInstallPreferred($this->composer)) {
+			$this->removeSymlinks($initial);
+		}
 		$map = $this->playBackShadowCopies($initial);
 		parent::updateCode($initial, $target);
 		$this->updateShadowCopies($map, $target, $initial);
@@ -379,9 +394,9 @@ EOF;
 
 	protected function removeCode(PackageInterface $package)
 	{
+		$this->removeSymlinks($package);
 		$this->removeShadowCopies($package);
 		parent::removeCode($package);
-		$this->removeSymlinks($package);
 	}
 
 	protected function playBackShadowCopies(PackageInterface $package)
@@ -408,7 +423,8 @@ EOF;
 					copy($targetFile->getPathname(), $sourceFile->getPathname());
 				}
 			},
-			false
+			false,
+			true
 		);
 
 		$this->io->write('');
@@ -454,19 +470,23 @@ EOF;
 					copy($sourceFile->getPathname(), $targetFile->getPathname());
 				}
 			},
-			true
+			true,
+			false
 		);
 
 		foreach ($previousMap as $type => $paths) {
 			foreach ($paths as $path) {
 				if (!in_array($path, $updatedMap[$type])) {
-					$this->io->write(
-						sprintf(
-							"  - rm <info>%s</info>",
-							str_replace($root, '', $path)
-						)
-					);
-					unlink($path);
+					if (file_exists($path)) {
+						$this->io->write(
+							sprintf(
+								"  - rm <info>%s</info>",
+								str_replace($root, '', $path)
+							)
+						);
+						unlink($path);
+					}
+					$this->removeEmptyDirectories(dirname($path));
 				}
 			}
 		}
@@ -497,59 +517,28 @@ EOF;
 					$self->removeEmptyDirectories(dirname($targetFile->getPathname()));
 				}
 			},
-			false
+			false,
+			true
 		);
 
 		$this->io->write('');
 	}
 
-	protected function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce)
+	protected function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce, $evenSymlinks)
 	{
 		$map = array('userfile' => array(), 'module' => array());
+		$downloadPath = $this->getInstallPath($package);
 		$root = static::getContaoRoot($this->composer->getPackage());
 
 		if ($package->getType() == self::LEGACY_MODULE_TYPE) {
-			$downloadPath = $this->getInstallPath($package);
-
-			$iterator = new \RecursiveIteratorIterator(
-				new \RecursiveDirectoryIterator(
-					$downloadPath,
-					\FilesystemIterator::SKIP_DOTS
-				)
+			$this->walkShadowCopyPaths(
+				true,
+				$downloadPath,
+				$root,
+				$closure,
+				$registerRunonce,
+				$map
 			);
-
-			/** @var \SplFileInfo $sourceFile */
-			foreach ($iterator as $sourceFile) {
-				$pathname = str_replace($downloadPath . '/', '', $sourceFile->getRealPath());
-
-				if (preg_match('#^(TL_ROOT|TL_FILES)/(.*)$#e', $pathname, $matches)) {
-					if ($matches[2] == 'system/runonce.php') {
-						if ($registerRunonce) {
-							static::$runonces[] = str_replace($root . '/', '', $sourceFile->getRealPath());
-						}
-						continue;
-					}
-
-					switch ($matches[1]) {
-						case 'TL_ROOT':
-							$base     = $root;
-							$userfile = false;
-							break;
-						case 'TL_FILES':
-							$base     = $GLOBALS['TL_CONFIG']['uploadPath'];
-							$userfile = true;
-							break;
-						default:
-							continue;
-					}
-
-					$target     = $base . '/' . $matches[2];
-					$targetFile = new \SplFileInfo($target);
-
-					$closure($sourceFile, $targetFile, $userfile);
-					$map[$userfile ? 'userfile' : 'module'][] = $target;
-				}
-			}
 		}
 
 		else {
@@ -561,11 +550,31 @@ EOF;
 					$shadowCopies = (array) $contao['shadow-copies'];
 
 					foreach ($shadowCopies as $source => $target) {
-						$sourceFile = new \SplFileInfo($root . '/' . $source);
-						$targetFile = new \SplFileInfo($root . '/' . $target);
+						$this->walkShadowCopyPaths(
+							false,
+							$downloadPath . '/' . $source,
+							$root . '/' . $target,
+							$closure,
+							$registerRunonce,
+							$map
+						);
+					}
+				}
 
-						$closure($sourceFile, $targetFile, false);
-						$map['module'][] = $root . '/' . $target;
+				if ((static::isDistInstallPreferred($this->composer) || $evenSymlinks) && array_key_exists('symlinks', $contao)) {
+					$symlinks = (array) $contao['symlinks'];
+
+					foreach ($symlinks as $source => $target) {
+						if (!is_link($root . '/' . $target)) {
+							$this->walkShadowCopyPaths(
+								false,
+								$downloadPath . '/' . $source,
+								$root . '/' . $target,
+								$closure,
+								$registerRunonce,
+								$map
+							);
+						}
 					}
 				}
 			}
@@ -574,29 +583,83 @@ EOF;
 		return $map;
 	}
 
-	protected function removeEmptyDirectories($pathname)
+	protected function walkShadowCopyPaths($legacy, $sourcePath, $targetPath, $closure, $registerRunonce, &$map)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
-		$contents = array_filter(
-			scandir($pathname),
-			function ($item) {
-				return $item != '.' && $item != '..';
-			}
+		$iterator = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator(
+				$sourcePath,
+				\FilesystemIterator::SKIP_DOTS
+			)
 		);
-		if (empty($contents)) {
-			$this->io->write(
-				sprintf(
-					"  - remove empty directory <info>%s</info>",
-					str_replace($root, '', $pathname)
-				)
-			);
-			rmdir($pathname);
-			$this->removeEmptyDirectories(dirname($pathname));
+
+		/** @var \SplFileInfo $sourceFile */
+		foreach ($iterator as $sourceFile) {
+			$pathname = str_replace($sourcePath . '/', '', $sourceFile->getRealPath());
+
+			if ($legacy && preg_match('#^(TL_ROOT|TL_FILES)/(.*)$#e', $pathname, $matches)) {
+				if ($matches[2] == 'system/runonce.php') {
+					if ($registerRunonce) {
+						static::$runonces[] = str_replace($root . '/', '', $sourceFile->getRealPath());
+					}
+					continue;
+				}
+
+				switch ($matches[1]) {
+					case 'TL_ROOT':
+						$base     = $targetPath;
+						$userfile = false;
+						break;
+					case 'TL_FILES':
+						$base     = $GLOBALS['TL_CONFIG']['uploadPath'];
+						$userfile = true;
+						break;
+					default:
+						continue;
+				}
+
+				$target     = $base . '/' . $matches[2];
+				$targetFile = new \SplFileInfo($target);
+
+				$closure($sourceFile, $targetFile, $userfile);
+				$map[$userfile ? 'userfile' : 'module'][] = $target;
+			}
+			else if (!$legacy) {
+				$target     = $targetPath . '/' . $pathname;
+				$targetFile = new \SplFileInfo($target);
+
+				$closure($sourceFile, $targetFile, false);
+				$map['module'][] = $target;
+			}
 		}
 	}
 
-	protected function calculateSymlinkMap(PackageInterface $package)
+	protected function removeEmptyDirectories($pathname)
+	{
+		if (is_dir($pathname)) {
+			$root = static::getContaoRoot($this->composer->getPackage());
+
+			$contents = array_filter(
+				scandir($pathname),
+				function ($item) {
+					return $item != '.' && $item != '..';
+				}
+			);
+			if (empty($contents)) {
+				$this->io->write(
+					sprintf(
+						"  - remove empty directory <info>%s</info>",
+						str_replace($root, '', $pathname)
+					)
+				);
+				rmdir($pathname);
+				$this->removeEmptyDirectories(dirname($pathname));
+			}
+		}
+	}
+
+	protected function calculateSymlinkMap(PackageInterface $package, $complainNonSymlinks)
 	{
 		$map   = array();
 		$extra = $package->getExtra();
@@ -635,7 +698,7 @@ EOF;
 						if ($package->getName() == 'contao-community-alliance/composer') {
 							$this->filesystem->removeDirectory($root . '/system/modules/!composer');
 						}
-						else {
+						else if ($complainNonSymlinks) {
 							throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
 						}
 					}
@@ -681,16 +744,16 @@ EOF;
 
 	protected function updateSymlinks(PackageInterface $package, PackageInterface $initial = null)
 	{
-		if ($package->getType() == self::MODULE_TYPE) {
+		if (!static::isDistInstallPreferred($this->composer) && $package->getType() == self::MODULE_TYPE) {
 			$this->io->write("  - Update symlinks for package <info>" . $package->getName(
 							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-			$map = $this->calculateSymlinkMap($package);
+			$map = $this->calculateSymlinkMap($package, true);
 
 			$root = static::getContaoRoot($this->composer->getPackage());
 
 			if ($initial) {
-				$previousMap = $this->calculateSymlinkMap($initial);
+				$previousMap = $this->calculateSymlinkMap($initial, true);
 
 				$obsoleteLinks = array_diff(
 					array_keys($previousMap),
@@ -743,7 +806,7 @@ EOF;
 			$this->io->write("  - Remove symlinks for package <info>" . $package->getName(
 							) . "</info> (<comment>" . VersionParser::formatVersion($package) . "</comment>)");
 
-			$map = $this->calculateSymlinkMap($package);
+			$map = $this->calculateSymlinkMap($package, false);
 
 			$root = static::getContaoRoot($this->composer->getPackage());
 
