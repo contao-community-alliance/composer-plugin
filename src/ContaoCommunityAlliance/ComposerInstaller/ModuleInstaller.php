@@ -587,6 +587,14 @@ EOF;
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
+		if (is_file($sourcePath)) {
+			$sourceFile = new \SplFileInfo($sourcePath);
+			$targetFile = new \SplFileInfo($targetPath);
+			$closure($sourceFile, $targetFile, false);
+			$map['module'][] = $targetPath;
+			return;
+		}
+
 		$iterator = new \RecursiveIteratorIterator(
 			new \RecursiveDirectoryIterator(
 				$sourcePath,
