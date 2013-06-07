@@ -5,6 +5,7 @@ namespace ContaoCommunityAlliance\ComposerInstaller;
 use Composer\Autoload\ClassMapGenerator;
 use Composer\Composer;
 use Composer\Package\RootPackageInterface;
+use Composer\Util\Filesystem;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
@@ -240,8 +241,10 @@ class ModuleInstaller extends LibraryInstaller
 
 	static public function postUpdate(Event $event)
 	{
+		$io = $event->getIO();
 		$root = static::getContaoRoot($event->getComposer()->getPackage());
 
+		// create runonce
 		$runonces = & static::$runonces;
 		if (count($runonces)) {
 			$file = 'system/runonce.php';
@@ -269,10 +272,20 @@ class ModuleInstaller extends LibraryInstaller
 			);
 			file_put_contents($root . '/system/runonce.php', $template);
 
-			$io = $event->getIO();
 			$io->write("<info>Runonce created with " . count($runonces) . " updates</info>");
 			foreach ($runonces as $runonce) {
 				$io->write("  - " . $runonce);
+			}
+		}
+
+		// clean cache
+		$fs = new Filesystem();
+		foreach (array('config', 'dca', 'language', 'sql') as $dir)
+		{
+			$cache = $root . '/system/cache/' . $dir;
+			if (is_dir($cache)) {
+				$io->write("<info>Clean contao internal " . $dir . " cache</info>");
+				$fs->removeDirectory($cache);
 			}
 		}
 	}
