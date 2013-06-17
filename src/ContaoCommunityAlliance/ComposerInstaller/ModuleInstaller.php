@@ -120,7 +120,7 @@ class ModuleInstaller extends LibraryInstaller
 		$package = $composer->getPackage();
 
 		// load constants
-		static::getContaoRoot($package);
+		$root = static::getContaoRoot($package);
 
 
 		$messages     = array();
@@ -194,6 +194,50 @@ class ModuleInstaller extends LibraryInstaller
 				$jsonModified = true;
 				$messages[] = $key . ' script was missing and readded!';
 			}
+		}
+
+
+		// add custom repository
+		if (!array_key_exists('repositories', $configJson)) {
+			$configJson['repositories'] = array();
+		}
+		$hasContaoRepository = false;
+		$hasArtifactRepository = false;
+		foreach ($configJson['repositories'] as $repository) {
+			if ($repository['type'] == 'composer' &&
+				($repository['url'] == 'http://legacy-packages-via.contao-community-alliance.org/' ||
+					$repository['url'] == 'https://legacy-packages-via.contao-community-alliance.org/')) {
+				$hasContaoRepository = true;
+			}
+			if ($repository['type'] == 'artifact' &&
+				$repository['url'] == 'packages') {
+				$hasArtifactRepository = true;
+			}
+		}
+
+		// add contao repository
+		if (!$hasContaoRepository) {
+			$configJson['repositories'][] = array(
+				'type' => 'composer',
+				'url'  => 'https://legacy-packages-via.contao-community-alliance.org/'
+			);
+
+			$jsonModified = true;
+			$messages[]   = 'The contao repository is missing and has been readded to repositories!';
+		}
+
+		// add artifact repository
+		if (!$hasArtifactRepository) {
+			$configJson['repositories'][] = array(
+				'type' => 'artifact',
+				'url'  => 'packages'
+			);
+
+			$jsonModified = true;
+			$messages[]   = 'The artifact repository is missing and has been readded to repositories!';
+		}
+		if (!is_dir($root . '/composer/packages')) {
+			mkdir($root . '/composer/packages', 0777, true);
 		}
 
 
