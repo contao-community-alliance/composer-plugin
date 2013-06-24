@@ -458,6 +458,7 @@ EOF;
 
 	protected function playBackShadowCopies(PackageInterface $package)
 	{
+		$self = $this;
 		$root = static::getContaoRoot($this->composer->getPackage());
 
 		$this->io->write("  - Play back shadow copies for package <info>" . $package->getName(
@@ -465,12 +466,12 @@ EOF;
 
 		$map = $this->walkShadowCopies(
 			$package,
-			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($root) {
+			function (\SplFileInfo $sourceFile, \SplFileInfo $targetFile, $userfile) use ($self, $root) {
 				// copy back existing files
 				if (file_exists($targetFile->getPathname()) &&
 					md5_file($sourceFile->getPathname()) != md5_file($targetFile->getPathname())
 				) {
-					$this->io->write(
+					$self->io->write(
 						sprintf(
 							"  - cp <info>%s</info> -> <info>%s</info>",
 							str_replace($root, '', $targetFile->getPathname()),
