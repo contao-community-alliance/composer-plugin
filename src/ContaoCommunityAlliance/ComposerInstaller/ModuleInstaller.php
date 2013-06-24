@@ -20,7 +20,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	const LEGACY_MODULE_TYPE = 'legacy-contao-module';
 
-	static protected $runonces = array();
+	static public $runonces = array();
 
 	static public function getContaoRoot(PackageInterface $package)
 	{
@@ -427,7 +427,7 @@ EOF;
 		file_put_contents($root . '/system/config/localconfig.php', $file);
 	}
 
-	protected function installCode(PackageInterface $package)
+	public function installCode(PackageInterface $package)
 	{
 		parent::installCode($package);
 		$this->updateShadowCopies(array(), $package);
@@ -436,7 +436,7 @@ EOF;
 		$this->updateRunonce($package);
 	}
 
-	protected function updateCode(PackageInterface $initial, PackageInterface $target)
+	public function updateCode(PackageInterface $initial, PackageInterface $target)
 	{
 		if (static::isDistInstallPreferred($this->composer)) {
 			$this->removeSymlinks($initial);
@@ -449,14 +449,14 @@ EOF;
 		$this->updateRunonce($target);
 	}
 
-	protected function removeCode(PackageInterface $package)
+	public function removeCode(PackageInterface $package)
 	{
 		$this->removeSymlinks($package);
 		$this->removeShadowCopies($package);
 		parent::removeCode($package);
 	}
 
-	protected function playBackShadowCopies(PackageInterface $package)
+	public function playBackShadowCopies(PackageInterface $package)
 	{
 		$self = $this;
 		$root = static::getContaoRoot($this->composer->getPackage());
@@ -490,7 +490,7 @@ EOF;
 		return $map;
 	}
 
-	protected function updateShadowCopies($previousMap, PackageInterface $package, PackageInterface $initial = null)
+	public function updateShadowCopies($previousMap, PackageInterface $package, PackageInterface $initial = null)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
@@ -552,7 +552,7 @@ EOF;
 		$this->io->write('');
 	}
 
-	protected function removeShadowCopies(PackageInterface $package)
+	public function removeShadowCopies(PackageInterface $package)
 	{
 		$self = $this;
 		$root = static::getContaoRoot($this->composer->getPackage());
@@ -582,7 +582,7 @@ EOF;
 		$this->io->write('');
 	}
 
-	protected function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce, $evenSymlinks)
+	public function walkShadowCopies(PackageInterface $package, $closure, $registerRunonce, $evenSymlinks)
 	{
 		$map = array('userfile' => array(), 'module' => array());
 		$downloadPath = $this->getInstallPath($package);
@@ -641,7 +641,7 @@ EOF;
 		return $map;
 	}
 
-	protected function walkShadowCopyPaths($legacy, $sourcePath, $targetPath, $closure, $registerRunonce, &$map)
+	public function walkShadowCopyPaths($legacy, $sourcePath, $targetPath, $closure, $registerRunonce, &$map)
 	{
 		$root = static::getContaoRoot($this->composer->getPackage());
 
@@ -701,7 +701,7 @@ EOF;
 		}
 	}
 
-	protected function removeEmptyDirectories($pathname)
+	public function removeEmptyDirectories($pathname)
 	{
 		if (is_dir($pathname)) {
 			$root = static::getContaoRoot($this->composer->getPackage());
@@ -725,7 +725,7 @@ EOF;
 		}
 	}
 
-	protected function calculateSymlinkMap(PackageInterface $package, $complainNonSymlinks)
+	public function calculateSymlinkMap(PackageInterface $package, $complainNonSymlinks)
 	{
 		$map   = array();
 		$extra = $package->getExtra();
@@ -808,7 +808,7 @@ EOF;
 		return $map;
 	}
 
-	protected function updateSymlinks(PackageInterface $package, PackageInterface $initial = null)
+	public function updateSymlinks(PackageInterface $package, PackageInterface $initial = null)
 	{
 		if (!static::isDistInstallPreferred($this->composer) && $package->getType() == self::MODULE_TYPE) {
 			$this->io->write("  - Update symlinks for package <info>" . $package->getName(
@@ -866,7 +866,7 @@ EOF;
 		}
 	}
 
-	protected function removeSymlinks(PackageInterface $package)
+	public function removeSymlinks(PackageInterface $package)
 	{
 		if ($package->getType() == self::MODULE_TYPE) {
 			$this->io->write("  - Remove symlinks for package <info>" . $package->getName(
@@ -895,7 +895,7 @@ EOF;
 		}
 	}
 
-	protected function updateUserfiles(PackageInterface $package)
+	public function updateUserfiles(PackageInterface $package)
 	{
 		if ($package->getType() == self::MODULE_TYPE) {
 			$this->io->write("  - Update userfiles for package <info>" . $package->getName(
@@ -949,7 +949,7 @@ EOF;
 		}
 	}
 
-	protected function updateRunonce(PackageInterface $package)
+	public function updateRunonce(PackageInterface $package)
 	{
 		if ($package->getType() == self::MODULE_TYPE) {
 			$extra = $package->getExtra();
