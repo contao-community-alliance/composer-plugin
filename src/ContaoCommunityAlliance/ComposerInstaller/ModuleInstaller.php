@@ -576,7 +576,7 @@ EOF;
 		$sourcePath = self::unprefixPath($installPath . DIRECTORY_SEPARATOR, $currentPath);
 		$targetPath = self::unprefixPath($startPath . DIRECTORY_SEPARATOR, $currentPath);
 
-		if ($targetPath == 'system/runonce.php') {
+		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
 			static::$runonces[] = $currentPath;
 		}
 		else if (is_file($currentPath) || preg_match('#^system/modules/[^/]+$#', self::getNativePath($targetPath, '/'))) {
