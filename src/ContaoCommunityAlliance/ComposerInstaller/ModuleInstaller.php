@@ -559,7 +559,7 @@ EOF;
 		$sourcePath = str_replace($installPath . DIRECTORY_SEPARATOR, '', $currentPath);
 		$targetPath = str_replace($startPath . DIRECTORY_SEPARATOR, '', $currentPath);
 
-		if ($targetPath == 'system/runcone.php') {
+		if ($targetPath == 'system/runonce.php') {
 			static::$runonces[] = $currentPath;
 		}
 		else if (is_file($currentPath) || preg_match('#^system/modules/[^/]+$#', $targetPath)) {
