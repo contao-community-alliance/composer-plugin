@@ -470,6 +470,23 @@ EOF;
 		file_put_contents($root . '/system/config/localconfig.php', $file);
 	}
 
+	static public function unprefixPath($prefix, $path) {
+		$len = strlen($prefix);
+		if(!$len || $len > strlen($path)) {
+			return $path;
+		}
+		$prefix = self::getNativePath($prefix);
+		$match = self::getNativePath(substr($path, 0, $len));
+		if($prefix == $match) {
+			return substr($path, $len);
+		}
+		return $path;
+	}
+
+	static public function getNativePath($path, $sep = DIRECTORY_SEPARATOR) {
+		return str_replace(array('/', '\\'), $sep, $path);
+	}
+
 	public function installCode(PackageInterface $package)
 	{
 		parent::installCode($package);
@@ -556,13 +573,13 @@ EOF;
 		&$sources,
 		PackageInterface $package
 	) {
-		$sourcePath = str_replace($installPath . DIRECTORY_SEPARATOR, '', $currentPath);
-		$targetPath = str_replace($startPath . DIRECTORY_SEPARATOR, '', $currentPath);
+		$sourcePath = self::unprefixPath($installPath . DIRECTORY_SEPARATOR, $currentPath);
+		$targetPath = self::unprefixPath($startPath . DIRECTORY_SEPARATOR, $currentPath);
 
 		if ($targetPath == 'system/runonce.php') {
 			static::$runonces[] = $currentPath;
 		}
-		else if (is_file($currentPath) || preg_match('#^system/modules/[^/]+$#', $targetPath)) {
+		else if (is_file($currentPath) || preg_match('#^system/modules/[^/]+$#', self::getNativePath($targetPath, '/'))) {
 			$sources[$sourcePath] = $targetPath;
 		}
 		else if (is_dir($currentPath)) {
@@ -597,11 +614,10 @@ EOF;
 
 				/** @var \SplFileInfo $targetFile */
 				foreach ($iterator as $targetFile) {
-					$pathname = str_replace($root . DIRECTORY_SEPARATOR, '', $targetFile->getRealPath());
+					$pathname = self::unprefixPath($root . DIRECTORY_SEPARATOR, $targetFile->getRealPath());
 
-					$map['copies'][$source . DIRECTORY_SEPARATOR . str_replace(
+					$map['copies'][$source . DIRECTORY_SEPARATOR . self::unprefixPath(
 						$target . DIRECTORY_SEPARATOR,
-						'',
 						$pathname
 					)] = $pathname;
 				}
@@ -653,9 +669,8 @@ EOF;
 
 				/** @var \SplFileInfo $sourceFile */
 				foreach ($iterator as $sourceFile) {
-					$targetPath = $target . DIRECTORY_SEPARATOR . str_replace(
+					$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
 							$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
-							'',
 							$sourceFile->getRealPath()
 						);
 
@@ -705,7 +720,7 @@ EOF;
 			foreach ($sources as $target => $link) {
 				$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
 				$linkReal   = $root . DIRECTORY_SEPARATOR . $link;
-				$linkRel    = str_replace($root . DIRECTORY_SEPARATOR, '', $linkReal);
+				$linkRel    = self::unprefixPath($root . DIRECTORY_SEPARATOR, $linkReal);
 
 				if (file_exists($linkReal)) {
 					if (!is_link($linkReal)) {
@@ -880,7 +895,7 @@ EOF;
 					$this->io->write(
 						sprintf(
 							"  - rm dir <info>%s</info>",
-							str_replace($root, '', $pathname)
+							self::unprefixPath($root, $pathname)
 						)
 					);
 				}
@@ -984,7 +999,7 @@ EOF;
 				$root     = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 				$runonces = (array) $contao['runonce'];
 
-				$installPath = str_replace($root, '', $this->getInstallPath($package));
+				$installPath = self::unprefixPath($root, $this->getInstallPath($package));
 
 				foreach ($runonces as $file) {
 					static::$runonces[] = $installPath . DIRECTORY_SEPARATOR . $file;
