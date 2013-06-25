@@ -389,7 +389,7 @@ class ModuleInstaller extends LibraryInstaller
 				->getLocalRepository();
 			/** @var PackageInterface $package */
 			foreach ($localRepository->getPackages() as $package) {
-				if ($package->getType() == 'contao-module' || $package->getType() == 'legacy-contao-module') {
+				if ($package->getType() == self::MODULE_TYPE || $package->getType() == self::LEGACY_MODULE_TYPE) {
 					$installPath = $installationManager->getInstallPath($package);
 					$autoload    = $package->getAutoload();
 					if (array_key_exists('psr-0', $autoload)) {
@@ -476,7 +476,7 @@ EOF;
 	{
 		$sources = array();
 
-		if ($package->getType() == 'legacy-contao-module') {
+		if ($package->getType() == self::LEGACY_MODULE_TYPE) {
 			$installPath = $this->getInstallPath($package);
 
 			$this->createLegacySourcesSpec(
@@ -891,30 +891,53 @@ EOF;
 					$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
 					$targetReal = $root . DIRECTORY_SEPARATOR . $target;
 
-					$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
-					$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
+					if (is_dir($sourceReal))
+					{
 
-					if (!file_exists($targetReal)) {
-						$this->filesystem->ensureDirectoryExists($targetReal);
-					}
+						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
+						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
 
-					foreach ($ri as $file) {
-						$targetPath = $targetReal . DIRECTORY_SEPARATOR . $ri->getSubPathName();
-						if (!file_exists($targetPath)) {
-							if ($file->isDir()) {
-								$this->filesystem->ensureDirectoryExists($targetPath);
-							}
-							else {
-								if ($this->io->isVerbose()) {
-									$this->io->write(
-										'  - install userfile <info>%s</info>',
-										$ri->getSubPathName()
-									);
+						if (!file_exists($targetReal)) {
+							$this->filesystem->ensureDirectoryExists($targetReal);
+						}
+
+						foreach ($ri as $file) {
+							$targetPath = $targetReal . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+							if (!file_exists($targetPath)) {
+								if ($file->isDir()) {
+									$this->filesystem->ensureDirectoryExists($targetPath);
 								}
-								copy($file->getPathname(), $targetPath);
-								$count++;
+								else {
+									if ($this->io->isVerbose()) {
+										$this->io->write(
+											sprintf(
+											'  - install userfile <info>%s</info>',
+											$ri->getSubPathName()
+											)
+										);
+									}
+									copy($file->getPathname(), $targetPath);
+									$count++;
+								}
 							}
 						}
+					} else {
+						if (file_exists($targetReal)) {
+							continue;
+						}
+
+						$targetPath = dirname($targetReal);
+						$this->filesystem->ensureDirectoryExists($targetPath);
+						if ($this->io->isVerbose()) {
+							$this->io->write(
+								sprintf(
+								'  - install userfile <info>%s</info>',
+								$target
+								)
+							);
+						}
+						copy($sourceReal, $targetReal);
+						$count++;
 					}
 				}
 			}
