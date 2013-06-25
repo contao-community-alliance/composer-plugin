@@ -486,6 +486,7 @@ EOF;
 
 			$extra = $package->getExtra();
 			$extra['contao']['userfiles'] = $userfiles;
+			$package->setExtra($extra);
 		}
 		else {
 			$extra = $package->getExtra();
