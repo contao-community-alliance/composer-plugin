@@ -479,12 +479,24 @@ EOF;
 		if ($package->getType() == 'legacy-contao-module') {
 			$installPath = $this->getInstallPath($package);
 
-			$this->createLegacySourcesSpec($installPath, $installPath . '/TL_ROOT', $installPath . '/TL_ROOT', $sources, $package);
+			$this->createLegacySourcesSpec(
+				$installPath,
+				$installPath . '/TL_ROOT',
+				$installPath . '/TL_ROOT',
+				$sources,
+				$package
+			);
 
 			$userfiles = array();
-			$this->createLegacySourcesSpec($installPath, $installPath . '/TL_FILES', $installPath . '/TL_FILES', $userfiles, $package);
+			$this->createLegacySourcesSpec(
+				$installPath,
+				$installPath . '/TL_FILES',
+				$installPath . '/TL_FILES',
+				$userfiles,
+				$package
+			);
 
-			$extra = $package->getExtra();
+			$extra                        = $package->getExtra();
 			$extra['contao']['userfiles'] = $userfiles;
 			$package->setExtra($extra);
 		}
@@ -516,8 +528,13 @@ EOF;
 		return $sources;
 	}
 
-	protected function createLegacySourcesSpec($installPath, $startPath, $currentPath, &$sources, PackageInterface $package)
-	{
+	protected function createLegacySourcesSpec(
+		$installPath,
+		$startPath,
+		$currentPath,
+		&$sources,
+		PackageInterface $package
+	) {
 		$sourcePath = str_replace($installPath . DIRECTORY_SEPARATOR, '', $currentPath);
 		$targetPath = str_replace($startPath . DIRECTORY_SEPARATOR, '', $currentPath);
 
