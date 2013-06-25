@@ -855,84 +855,78 @@ EOF;
 
 	public function updateUserfiles(PackageInterface $package)
 	{
-		if ($package->getType() == self::MODULE_TYPE) {
-			$count = 0;
+		$count = 0;
 
-			$extra = $package->getExtra();
-			if (array_key_exists('contao', $extra)) {
-				$contao = $extra['contao'];
+		$extra = $package->getExtra();
+		if (array_key_exists('contao', $extra)) {
+			$contao = $extra['contao'];
 
-				if (is_array($contao) && array_key_exists('userfiles', $contao)) {
-					$root       = static::getContaoRoot($this->composer->getPackage());
-					$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
+			if (is_array($contao) && array_key_exists('userfiles', $contao)) {
+				$root       = static::getContaoRoot($this->composer->getPackage());
+				$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
 
-					$userfiles   = (array) $contao['userfiles'];
-					$installPath = $this->getInstallPath($package);
+				$userfiles   = (array) $contao['userfiles'];
+				$installPath = $this->getInstallPath($package);
 
-					foreach ($userfiles as $source => $target) {
-						$target = $uploadPath . DIRECTORY_SEPARATOR . $target;
+				foreach ($userfiles as $source => $target) {
+					$target = $uploadPath . DIRECTORY_SEPARATOR . $target;
 
-						$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
-						$targetReal = $root . DIRECTORY_SEPARATOR . $target;
+					$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
+					$targetReal = $root . DIRECTORY_SEPARATOR . $target;
 
-						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
-						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
+					$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
+					$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
 
-						if (!file_exists($targetReal)) {
-							$this->filesystem->ensureDirectoryExists($targetReal);
-						}
+					if (!file_exists($targetReal)) {
+						$this->filesystem->ensureDirectoryExists($targetReal);
+					}
 
-						foreach ($ri as $file) {
-							$targetPath = $targetReal . DIRECTORY_SEPARATOR . $ri->getSubPathName();
-							if (!file_exists($targetPath)) {
-								if ($file->isDir()) {
-									$this->filesystem->ensureDirectoryExists($targetPath);
+					foreach ($ri as $file) {
+						$targetPath = $targetReal . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+						if (!file_exists($targetPath)) {
+							if ($file->isDir()) {
+								$this->filesystem->ensureDirectoryExists($targetPath);
+							}
+							else {
+								if ($this->io->isVerbose()) {
+									$this->io->write(
+										'  - install userfile <info>%s</info>',
+										$ri->getSubPathName()
+									);
 								}
-								else {
-									if ($this->io->isVerbose()) {
-										$this->io->write(
-											'  - install userfile <info>%s</info>',
-											$ri->getSubPathName()
-										);
-									}
-									copy($file->getPathname(), $targetPath);
-									$count ++;
-								}
+								copy($file->getPathname(), $targetPath);
+								$count++;
 							}
 						}
 					}
 				}
 			}
+		}
 
-			if ($count && $this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - installed <info>%d</info> userfiles',
-						$count
-					)
-				);
-			}
-
-			$this->io->write('');
+		if ($count && $this->io->isVerbose()) {
+			$this->io->write(
+				sprintf(
+					'  - installed <info>%d</info> userfiles',
+					$count
+				)
+			);
 		}
 	}
 
 	public function updateRunonce(PackageInterface $package)
 	{
-		if ($package->getType() == self::MODULE_TYPE) {
-			$extra = $package->getExtra();
-			if (array_key_exists('contao', $extra)) {
-				$contao = $extra['contao'];
+		$extra = $package->getExtra();
+		if (array_key_exists('contao', $extra)) {
+			$contao = $extra['contao'];
 
-				if (is_array($contao) && array_key_exists('runonce', $contao)) {
-					$root     = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
-					$runonces = (array) $contao['runonce'];
+			if (is_array($contao) && array_key_exists('runonce', $contao)) {
+				$root     = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+				$runonces = (array) $contao['runonce'];
 
-					$installPath = str_replace($root, '', $this->getInstallPath($package));
+				$installPath = str_replace($root, '', $this->getInstallPath($package));
 
-					foreach ($runonces as $file) {
-						static::$runonces[] = $installPath . DIRECTORY_SEPARATOR . $file;
-					}
+				foreach ($runonces as $file) {
+					static::$runonces[] = $installPath . DIRECTORY_SEPARATOR . $file;
 				}
 			}
 		}
