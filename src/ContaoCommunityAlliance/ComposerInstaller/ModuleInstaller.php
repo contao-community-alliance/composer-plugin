@@ -521,7 +521,7 @@ EOF;
 			$this->createLegacySourcesSpec(
 				$installPath,
 				$installPath . '/TL_ROOT',
-				$installPath . '/TL_ROOT',
+				$installPath . '/TL_ROOT/',
 				$sources,
 				$package
 			);
@@ -530,7 +530,7 @@ EOF;
 			$this->createLegacySourcesSpec(
 				$installPath,
 				$installPath . '/TL_FILES',
-				$installPath . '/TL_FILES',
+				$installPath . '/TL_FILES/',
 				$userfiles,
 				$package
 			);
@@ -662,23 +662,25 @@ EOF;
 			$copies = array();
 			foreach ($sources as $source => $target) {
 				if(is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
-					$files = new \RecursiveIteratorIterator(
+					$iterator = new \RecursiveIteratorIterator(
 						new \RecursiveDirectoryIterator(
 							$installPath . DIRECTORY_SEPARATOR . $source,
 							\FilesystemIterator::SKIP_DOTS
 						)
 					);
+					foreach($iterator as $sourceFile) {
+						$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
+							$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
+							$sourceFile->getRealPath()
+						);
+						$files[$targetPath] = $sourceFile;
+					}
 				} else {
-					$files = array(new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
+					$files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
 				}
 
 				/** @var \SplFileInfo $sourceFile */
-				foreach ($files as $sourceFile) {
-					$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
-						$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
-						$sourceFile->getRealPath()
-					);
-
+				foreach ($files as $targetPath => $sourceFile) {
 					if ($this->io->isVerbose()) {
 						$this->io->write(
 							sprintf(
