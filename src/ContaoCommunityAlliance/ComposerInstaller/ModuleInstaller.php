@@ -489,8 +489,9 @@ EOF;
 
 	public function installCode(PackageInterface $package)
 	{
+		$map = $this->mapSources($package);
 		parent::installCode($package);
-		$this->updateSources(array('copies' => array(), 'links' => array()), $package);
+		$this->updateSources($map, $package);
 		$this->updateUserfiles($package);
 		$this->updateRunonce($package);
 	}
@@ -762,9 +763,9 @@ EOF;
 
 				$links[] = $linkRel;
 
-				if (array_key_exists($linkRel, $map['links'])) {
+				if (is_link($linkReal)) {
 					// link target has changed
-					if ($map['links'][$linkRel] != $linkTarget) {
+					if (readlink($linkReal) != $linkTarget) {
 						$this->filesystem->remove($linkReal);
 					}
 					// link exists and have the correct target
