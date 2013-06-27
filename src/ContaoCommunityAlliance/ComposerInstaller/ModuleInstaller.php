@@ -661,19 +661,23 @@ EOF;
 			// update copies
 			$copies = array();
 			foreach ($sources as $source => $target) {
-				$iterator = new \RecursiveIteratorIterator(
-					new \RecursiveDirectoryIterator(
-						$installPath . DIRECTORY_SEPARATOR . $source,
-						\FilesystemIterator::SKIP_DOTS
-					)
-				);
+				if(is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
+					$files = new \RecursiveIteratorIterator(
+						new \RecursiveDirectoryIterator(
+							$installPath . DIRECTORY_SEPARATOR . $source,
+							\FilesystemIterator::SKIP_DOTS
+						)
+					);
+				} else {
+					$files = array(new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
+				}
 
 				/** @var \SplFileInfo $sourceFile */
-				foreach ($iterator as $sourceFile) {
+				foreach ($files as $sourceFile) {
 					$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
-							$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
-							$sourceFile->getRealPath()
-						);
+						$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
+						$sourceFile->getRealPath()
+					);
 
 					if ($this->io->isVerbose()) {
 						$this->io->write(
