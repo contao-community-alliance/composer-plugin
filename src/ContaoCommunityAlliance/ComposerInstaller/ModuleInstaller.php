@@ -521,7 +521,7 @@ EOF;
 			$this->createLegacySourcesSpec(
 				$installPath,
 				$installPath . '/TL_ROOT',
-				$installPath . '/TL_ROOT',
+				$installPath . '/TL_ROOT/',
 				$sources,
 				$package
 			);
@@ -530,7 +530,7 @@ EOF;
 			$this->createLegacySourcesSpec(
 				$installPath,
 				$installPath . '/TL_FILES',
-				$installPath . '/TL_FILES',
+				$installPath . '/TL_FILES/',
 				$userfiles,
 				$package
 			);
@@ -578,7 +578,7 @@ EOF;
 		$targetPath = self::unprefixPath($startPath . DIRECTORY_SEPARATOR, $currentPath);
 
 		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
-			static::$runonces[] = $currentPath;
+			static::$runonces[] = self::unprefixPath($this->getContaoRoot($package), $currentPath);
 		}
 		else if (is_file($currentPath) || preg_match('#^system/modules/[^/]+$#', self::getNativePath($targetPath, '/'))) {
 			$sources[$sourcePath] = $targetPath;
@@ -661,20 +661,26 @@ EOF;
 			// update copies
 			$copies = array();
 			foreach ($sources as $source => $target) {
-				$iterator = new \RecursiveIteratorIterator(
-					new \RecursiveDirectoryIterator(
-						$installPath . DIRECTORY_SEPARATOR . $source,
-						\FilesystemIterator::SKIP_DOTS
-					)
-				);
-
-				/** @var \SplFileInfo $sourceFile */
-				foreach ($iterator as $sourceFile) {
-					$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
+				if(is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
+					$iterator = new \RecursiveIteratorIterator(
+						new \RecursiveDirectoryIterator(
+							$installPath . DIRECTORY_SEPARATOR . $source,
+							\FilesystemIterator::SKIP_DOTS
+						)
+					);
+					foreach($iterator as $sourceFile) {
+						$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
 							$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
 							$sourceFile->getRealPath()
 						);
+						$files[$targetPath] = $sourceFile;
+					}
+				} else {
+					$files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
+				}
 
+				/** @var \SplFileInfo $sourceFile */
+				foreach ($files as $targetPath => $sourceFile) {
 					if ($this->io->isVerbose()) {
 						$this->io->write(
 							sprintf(
