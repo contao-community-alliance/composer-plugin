@@ -217,19 +217,20 @@ class ModuleInstaller extends LibraryInstaller
 		// remove outdated artifact repositories
 		if (!isset($configJson['extra']['contao']['artifactPath'])) {
 			$outdatedArtifactPath = 'packages';
-		} elseif ($artifactPath != $configJson['extra']['contao']['artifactPath']) {
+		}
+		elseif ($artifactPath != $configJson['extra']['contao']['artifactPath']) {
 			$outdatedArtifactPath = $configJson['extra']['contao']['artifactPath'];
 		}
 		if (isset($outdatedArtifactPath)) {
-			$configJson['repositories'] = array_filter(
+			$configJson['repositories']                    = array_filter(
 				$configJson['repositories'],
 				function ($repository) use ($outdatedArtifactPath) {
 					return $repository['type'] != 'artifact' || $repository['url'] != $outdatedArtifactPath;
 				}
 			);
 			$configJson['extra']['contao']['artifactPath'] = $artifactPath;
-			$jsonModified = true;
-			$messages[] = 'The artifact repository path was missing or outdated and has been set up to date! Please restart the last operation.';
+			$jsonModified                                  = true;
+			$messages[]                                    = 'The artifact repository path was missing or outdated and has been set up to date! Please restart the last operation.';
 		}
 
 		// add current artifact repositories, if it is missing
@@ -244,8 +245,8 @@ class ModuleInstaller extends LibraryInstaller
 				'type' => 'artifact',
 				'url'  => $artifactPath
 			);
-			$jsonModified = true;
-			$messages[] = 'The artifact repository was missing and has been added to repositories! Please restart the last operation.';
+			$jsonModified                 = true;
+			$messages[]                   = 'The artifact repository was missing and has been added to repositories! Please restart the last operation.';
 		}
 		if (!is_dir($artifactPath)) {
 			mkdir($artifactPath, 0777, true);
@@ -470,20 +471,22 @@ EOF;
 		file_put_contents($root . '/system/config/localconfig.php', $file);
 	}
 
-	static public function unprefixPath($prefix, $path) {
+	static public function unprefixPath($prefix, $path)
+	{
 		$len = strlen($prefix);
-		if(!$len || $len > strlen($path)) {
+		if (!$len || $len > strlen($path)) {
 			return $path;
 		}
 		$prefix = self::getNativePath($prefix);
-		$match = self::getNativePath(substr($path, 0, $len));
-		if($prefix == $match) {
+		$match  = self::getNativePath(substr($path, 0, $len));
+		if ($prefix == $match) {
 			return substr($path, $len);
 		}
 		return $path;
 	}
 
-	static public function getNativePath($path, $sep = DIRECTORY_SEPARATOR) {
+	static public function getNativePath($path, $sep = DIRECTORY_SEPARATOR)
+	{
 		return str_replace(array('/', '\\'), $sep, $path);
 	}
 
@@ -580,7 +583,11 @@ EOF;
 		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
 			static::$runonces['system/runonce.php'] = self::unprefixPath($this->getContaoRoot($package), $currentPath);
 		}
-		else if (is_file($currentPath) || preg_match('#^system/modules/[^/]+$#', self::getNativePath($targetPath, '/'))) {
+		else if (is_file($currentPath) || preg_match(
+				'#^system/modules/[^/]+$#',
+				self::getNativePath($targetPath, '/')
+			)
+		) {
 			$sources[$sourcePath] = $targetPath;
 		}
 		else if (is_dir($currentPath)) {
@@ -661,21 +668,22 @@ EOF;
 			// update copies
 			$copies = array();
 			foreach ($sources as $source => $target) {
-				if(is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
+				if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
 					$iterator = new \RecursiveIteratorIterator(
 						new \RecursiveDirectoryIterator(
 							$installPath . DIRECTORY_SEPARATOR . $source,
 							\FilesystemIterator::SKIP_DOTS
 						)
 					);
-					foreach($iterator as $sourceFile) {
-						$targetPath = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
-							$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
-							$sourceFile->getRealPath()
-						);
+					foreach ($iterator as $sourceFile) {
+						$targetPath         = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
+								$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
+								$sourceFile->getRealPath()
+							);
 						$files[$targetPath] = $sourceFile;
 					}
-				} else {
+				}
+				else {
 					$files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
 				}
 
@@ -934,8 +942,7 @@ EOF;
 					$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
 					$targetReal = $root . DIRECTORY_SEPARATOR . $target;
 
-					if (is_dir($sourceReal))
-					{
+					if (is_dir($sourceReal)) {
 
 						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
 						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
@@ -954,8 +961,8 @@ EOF;
 									if ($this->io->isVerbose()) {
 										$this->io->write(
 											sprintf(
-											'  - install userfile <info>%s</info>',
-											$ri->getSubPathName()
+												'  - install userfile <info>%s</info>',
+												$ri->getSubPathName()
 											)
 										);
 									}
@@ -964,7 +971,8 @@ EOF;
 								}
 							}
 						}
-					} else {
+					}
+					else {
 						if (file_exists($targetReal)) {
 							continue;
 						}
@@ -974,8 +982,8 @@ EOF;
 						if ($this->io->isVerbose()) {
 							$this->io->write(
 								sprintf(
-								'  - install userfile <info>%s</info>',
-								$target
+									'  - install userfile <info>%s</info>',
+									$target
 								)
 							);
 						}
