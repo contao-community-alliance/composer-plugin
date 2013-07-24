@@ -797,6 +797,11 @@ EOF;
 					);
 				}
 
+				$linkParent = dirname($linkReal);
+				if (!is_dir($linkParent)) {
+					mkdir($linkParent, 0777, true);
+				}
+
 				symlink($linkTarget, $linkReal);
 				$linkCount++;
 			}
