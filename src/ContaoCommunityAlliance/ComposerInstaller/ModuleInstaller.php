@@ -300,6 +300,38 @@ class ModuleInstaller extends LibraryInstaller
 		}
 
 
+		// add provides
+		switch (VERSION) {
+			case '2.11':
+				$swiftVersion = file_get_contents(TL_ROOT . '/plugins/swiftmailer/VERSION');
+				$swiftVersion = substr($swiftVersion, 6);
+				$swiftVersion = trim($swiftVersion);
+				break;
+			case '3.0':
+				$swiftVersion = file_get_contents(TL_ROOT . '/system/vendor/swiftmailer/VERSION');
+				$swiftVersion = substr($swiftVersion, 6);
+				$swiftVersion = trim($swiftVersion);
+				break;
+			case '3.1':
+				$swiftVersion = file_get_contents(TL_ROOT . '/system/modules/core/vendor/swiftmailer/VERSION');
+				$swiftVersion = substr($swiftVersion, 6);
+				$swiftVersion = trim($swiftVersion);
+				break;
+			default:
+				$swiftVersion = '0';
+		}
+		$provides     = (array) $package->getProvides();
+		if (!isset($configJson['provides']['swiftmailer/swiftmailer']) || $configJson['provides']['swiftmailer/swiftmailer'] != $swiftVersion) {
+			$configJson['provides']['swiftmailer/swiftmailer'] = $swiftVersion;
+
+			$jsonModified = true;
+			$messages[]   = sprintf(
+				'Provided swiftmailer version changed to <info>%s</info>!',
+				$swiftVersion
+			);
+		}
+
+
 		if ($jsonModified) {
 			$configFile->write($configJson);
 		}
