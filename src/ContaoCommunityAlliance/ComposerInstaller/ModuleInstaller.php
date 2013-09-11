@@ -321,8 +321,8 @@ class ModuleInstaller extends LibraryInstaller
 				$swiftVersion = '0';
 		}
 		$provides     = (array) $package->getProvides();
-		if (!isset($configJson['provides']['swiftmailer/swiftmailer']) || $configJson['provides']['swiftmailer/swiftmailer'] != $swiftVersion) {
-			$configJson['provides']['swiftmailer/swiftmailer'] = $swiftVersion;
+		if (!isset($configJson['provide']['swiftmailer/swiftmailer']) || $configJson['provide']['swiftmailer/swiftmailer'] != $swiftVersion) {
+			$configJson['provide']['swiftmailer/swiftmailer'] = $swiftVersion;
 
 			$jsonModified = true;
 			$messages[]   = sprintf(
