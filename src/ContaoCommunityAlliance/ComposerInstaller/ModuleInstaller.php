@@ -412,72 +412,73 @@ class ModuleInstaller extends LibraryInstaller
 		);
 
 		$localconfig = $root . '/system/config/localconfig.php';
-		$lines       = file($localconfig);
-		$remove      = false;
-		foreach ($lines as $index => $line) {
-			$tline = trim($line);
-			if ($tline == '### COMPOSER CLASSES START ###') {
-				$remove = true;
-				unset($lines[$index]);
+		if (file_exists($localconfig)) {
+			$lines       = file($localconfig);
+			$remove      = false;
+			foreach ($lines as $index => $line) {
+				$tline = trim($line);
+				if ($tline == '### COMPOSER CLASSES START ###') {
+					$remove = true;
+					unset($lines[$index]);
+				}
+				else if ($tline == '### COMPOSER CLASSES STOP ###') {
+					$remove = true;
+					unset($lines[$index]);
+				}
+				else if ($remove || $tline == '?>') {
+					unset($lines[$index]);
+				}
 			}
-			else if ($tline == '### COMPOSER CLASSES STOP ###') {
-				$remove = true;
-				unset($lines[$index]);
-			}
-			else if ($remove || $tline == '?>') {
-				unset($lines[$index]);
-			}
-		}
-		$file = implode('', $lines);
-		$file = rtrim($file);
+			$file = implode('', $lines);
+			$file = rtrim($file);
 
-		if (version_compare(VERSION, '3', '<')) {
-			$classmapGenerator   = new ClassMapGenerator();
-			$classmapClasses     = array();
-			$installationManager = $event
-				->getComposer()
-				->getInstallationManager();
-			$localRepository     = $event
-				->getComposer()
-				->getRepositoryManager()
-				->getLocalRepository();
-			/** @var PackageInterface $package */
-			foreach ($localRepository->getPackages() as $package) {
-				if ($package->getType() == self::MODULE_TYPE || $package->getType() == self::LEGACY_MODULE_TYPE) {
-					$installPath = $installationManager->getInstallPath($package);
-					$autoload    = $package->getAutoload();
-					if (array_key_exists('psr-0', $autoload)) {
-						foreach ($autoload['psr-0'] as $source) {
-							if (file_exists($installPath . DIRECTORY_SEPARATOR . $source)) {
-								$classmapClasses = array_merge(
-									$classmapClasses,
-									$classmapGenerator->createMap($installPath . DIRECTORY_SEPARATOR . $source)
-								);
+			if (version_compare(VERSION, '3', '<')) {
+				$classmapGenerator   = new ClassMapGenerator();
+				$classmapClasses     = array();
+				$installationManager = $event
+					->getComposer()
+					->getInstallationManager();
+				$localRepository     = $event
+					->getComposer()
+					->getRepositoryManager()
+					->getLocalRepository();
+				/** @var PackageInterface $package */
+				foreach ($localRepository->getPackages() as $package) {
+					if ($package->getType() == self::MODULE_TYPE || $package->getType() == self::LEGACY_MODULE_TYPE) {
+						$installPath = $installationManager->getInstallPath($package);
+						$autoload    = $package->getAutoload();
+						if (array_key_exists('psr-0', $autoload)) {
+							foreach ($autoload['psr-0'] as $source) {
+								if (file_exists($installPath . DIRECTORY_SEPARATOR . $source)) {
+									$classmapClasses = array_merge(
+										$classmapClasses,
+										$classmapGenerator->createMap($installPath . DIRECTORY_SEPARATOR . $source)
+									);
+								}
 							}
 						}
-					}
-					if (array_key_exists('classmap', $autoload)) {
-						foreach ($autoload['classmap'] as $source) {
-							if ($installPath . DIRECTORY_SEPARATOR . $source) {
-								$classmapClasses = array_merge(
-									$classmapClasses,
-									$classmapGenerator->createMap($installPath . DIRECTORY_SEPARATOR . $source)
-								);
+						if (array_key_exists('classmap', $autoload)) {
+							foreach ($autoload['classmap'] as $source) {
+								if ($installPath . DIRECTORY_SEPARATOR . $source) {
+									$classmapClasses = array_merge(
+										$classmapClasses,
+										$classmapGenerator->createMap($installPath . DIRECTORY_SEPARATOR . $source)
+									);
+								}
 							}
 						}
 					}
 				}
-			}
-			$classmapClasses = array_keys($classmapClasses);
-			$classmapClasses = array_map(
-				function ($className) {
-					return var_export($className, true);
-				},
-				$classmapClasses
-			);
-			$classmapClasses = implode(",\n\t\t", $classmapClasses);
+				$classmapClasses = array_keys($classmapClasses);
+				$classmapClasses = array_map(
+					function ($className) {
+						return var_export($className, true);
+					},
+					$classmapClasses
+				);
+				$classmapClasses = implode(",\n\t\t", $classmapClasses);
 
-			$file .= <<<EOF
+				$file .= <<<EOF
 
 
 ### COMPOSER CLASSES START ###
@@ -496,11 +497,12 @@ if (version_compare(VERSION, '3', '<') && class_exists('FileCache')) {
 
 
 EOF;
+			}
+			else {
+				$file .= "\n";
+			}
+			file_put_contents($root . '/system/config/localconfig.php', $file);
 		}
-		else {
-			$file .= "\n";
-		}
-		file_put_contents($root . '/system/config/localconfig.php', $file);
 	}
 
 	static public function unprefixPath($prefix, $path)
