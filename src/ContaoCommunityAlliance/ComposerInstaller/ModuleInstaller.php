@@ -814,7 +814,7 @@ EOF;
 				if (is_link($linkReal)) {
 					// link target has changed
 					if (readlink($linkReal) != $linkTarget) {
-						$this->filesystem->remove($linkReal);
+						unlink($linkReal);
 					}
 					// link exists and have the correct target
 					else {
