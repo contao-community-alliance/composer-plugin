@@ -214,39 +214,41 @@ class ModuleInstaller extends LibraryInstaller
 
 		$artifactPath = $root . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'packages';
 
-		// remove outdated artifact repositories
-		if (!isset($configJson['extra']['contao']['artifactPath'])) {
-			$outdatedArtifactPath = 'packages';
-		}
-		elseif ($artifactPath != $configJson['extra']['contao']['artifactPath']) {
-			$outdatedArtifactPath = $configJson['extra']['contao']['artifactPath'];
-		}
-		if (isset($outdatedArtifactPath)) {
-			$configJson['repositories']                    = array_filter(
-				$configJson['repositories'],
-				function ($repository) use ($outdatedArtifactPath) {
-					return $repository['type'] != 'artifact' || $repository['url'] != $outdatedArtifactPath;
-				}
-			);
-			$configJson['extra']['contao']['artifactPath'] = $artifactPath;
-			$jsonModified                                  = true;
-			$messages[]                                    = 'The artifact repository path was missing or outdated and has been set up to date! Please restart the last operation.';
-		}
-
-		// add current artifact repositories, if it is missing
-		foreach ($configJson['repositories'] as $repository) {
-			if ($repository['type'] == 'artifact' && $repository['url'] == $artifactPath) {
-				$hasArtifactRepository = true;
-				break;
+		if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+			// remove outdated artifact repositories
+			if (!isset($configJson['extra']['contao']['artifactPath'])) {
+				$outdatedArtifactPath = 'packages';
 			}
-		}
-		if (!isset($hasArtifactRepository)) {
-			$configJson['repositories'][] = array(
-				'type' => 'artifact',
-				'url'  => $artifactPath
-			);
-			$jsonModified                 = true;
-			$messages[]                   = 'The artifact repository was missing and has been added to repositories! Please restart the last operation.';
+			elseif ($artifactPath != $configJson['extra']['contao']['artifactPath']) {
+				$outdatedArtifactPath = $configJson['extra']['contao']['artifactPath'];
+			}
+			if (isset($outdatedArtifactPath)) {
+				$configJson['repositories']                    = array_filter(
+					$configJson['repositories'],
+					function ($repository) use ($outdatedArtifactPath) {
+						return $repository['type'] != 'artifact' || rtrim($repository['url'], '/') != $outdatedArtifactPath;
+					}
+				);
+				$configJson['extra']['contao']['artifactPath'] = $artifactPath;
+				$jsonModified                                  = true;
+				$messages[]                                    = 'The artifact repository path was missing or outdated and has been set up to date! Please restart the last operation.';
+			}
+
+			// add current artifact repositories, if it is missing
+			foreach ($configJson['repositories'] as $repository) {
+				if ($repository['type'] == 'artifact' && $repository['url'] == $artifactPath) {
+					$hasArtifactRepository = true;
+					break;
+				}
+			}
+			if (!isset($hasArtifactRepository)) {
+				$configJson['repositories'][] = array(
+					'type' => 'artifact',
+					'url'  => $artifactPath
+				);
+				$jsonModified                 = true;
+				$messages[]                   = 'The artifact repository was missing and has been added to repositories! Please restart the last operation.';
+			}
 		}
 		if (!is_dir($artifactPath)) {
 			mkdir($artifactPath, 0777, true);
