@@ -10,5 +10,8 @@
     },
     "require-dev": {
         "composer/composer": "1.0.*@dev"
+    },
+    "conflict": {
+        "contao-community-alliance/composer": "<0.7.3"
     }
 }
