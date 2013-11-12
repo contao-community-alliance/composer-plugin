@@ -315,6 +315,7 @@ class ModuleInstaller extends LibraryInstaller
 				$swiftVersion = trim($swiftVersion);
 				break;
 			case '3.1':
+			case '3.2':
 				$swiftVersion = file_get_contents(TL_ROOT . '/system/modules/core/vendor/swiftmailer/VERSION');
 				$swiftVersion = substr($swiftVersion, 6);
 				$swiftVersion = trim($swiftVersion);
