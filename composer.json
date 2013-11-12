@@ -8,8 +8,8 @@
     "extra": {
         "class": "ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller"
     },
-    "require-dev": {
-        "composer/composer": "1.0.*@dev"
+    "require": {
+        "contao/core": ">=2.11.13,<3.3"
     },
     "conflict": {
         "contao-community-alliance/composer": "<0.7.3"
