@@ -12,6 +12,7 @@
         "contao/core": ">=2.11.13,<3.3"
     },
     "conflict": {
+        "contao/core": "3.0.*",
         "contao-community-alliance/composer": "<0.7.10"
     }
 }
