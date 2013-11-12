@@ -340,7 +340,7 @@ class ModuleInstaller extends LibraryInstaller
 		if (count($messages)) {
 			$exception = null;
 			foreach (array_reverse($messages) as $message) {
-				$exception = new \RuntimeException($message, 0, $exception);
+				$exception = new ConfigUpdateException($message, 0, $exception);
 			}
 			throw $exception;
 		}
