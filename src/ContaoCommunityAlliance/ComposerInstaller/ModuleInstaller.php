@@ -597,10 +597,11 @@ class ModuleInstaller extends LibraryInstaller
 				foreach ($iterator as $targetFile) {
 					$pathname = self::unprefixPath($root . DIRECTORY_SEPARATOR, $targetFile->getRealPath());
 
-					$map['copies'][$source . DIRECTORY_SEPARATOR . self::unprefixPath(
+					$key = ($source ? $source . DIRECTORY_SEPARATOR : '') . self::unprefixPath(
 						$target . DIRECTORY_SEPARATOR,
 						$pathname
-					)] = $pathname;
+					);
+					$map['copies'][$key] = $pathname;
 				}
 			}
 			else if (is_file($root . DIRECTORY_SEPARATOR . $target)) {
@@ -649,10 +650,11 @@ class ModuleInstaller extends LibraryInstaller
 						)
 					);
 					foreach ($iterator as $sourceFile) {
-						$targetPath         = $target . DIRECTORY_SEPARATOR . self::unprefixPath(
-								$installPath . DIRECTORY_SEPARATOR . $source . DIRECTORY_SEPARATOR,
-								$sourceFile->getRealPath()
-							);
+						$unPrefixedPath     = self::unprefixPath(
+							$installPath . DIRECTORY_SEPARATOR . ($source ? $source . DIRECTORY_SEPARATOR : ''),
+							$sourceFile->getRealPath()
+						);
+						$targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
 						$files[$targetPath] = $sourceFile;
 					}
 				}
