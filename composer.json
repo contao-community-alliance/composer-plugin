@@ -9,7 +9,7 @@
         "class": "ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller"
     },
     "require": {
-        "contao/core": ">=2.11.13,<3.3"
+        "contao/core": ">=2.11,<3.3"
     },
     "conflict": {
         "contao/core": "3.0.*",
