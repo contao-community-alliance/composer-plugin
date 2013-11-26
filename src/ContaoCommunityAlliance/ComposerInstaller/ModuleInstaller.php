@@ -4,6 +4,8 @@ namespace ContaoCommunityAlliance\ComposerInstaller;
 
 use Composer\Autoload\ClassMapGenerator;
 use Composer\Composer;
+use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Util\Filesystem;
@@ -124,6 +126,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	static public function preUpdate(Event $event)
 	{
+		$io       = $event->getIO();
 		$composer = $event->getComposer();
 
 		/** @var \Composer\Package\RootPackage $package */
@@ -299,6 +302,11 @@ class ModuleInstaller extends LibraryInstaller
 				$package->getPrettyVersion(),
 				$version
 			);
+
+			// run all runonces after contao version changed
+			$self = new self($io, $composer);
+			$self->updateAllRunonces();
+			$self->createRunonces($io, $root);
 		}
 
 
@@ -323,7 +331,6 @@ class ModuleInstaller extends LibraryInstaller
 			default:
 				$swiftVersion = '0';
 		}
-		$provides     = (array) $package->getProvides();
 		if (!isset($configJson['provide']['swiftmailer/swiftmailer']) || $configJson['provide']['swiftmailer/swiftmailer'] != $swiftVersion) {
 			$configJson['provide']['swiftmailer/swiftmailer'] = $swiftVersion;
 
@@ -361,8 +368,14 @@ class ModuleInstaller extends LibraryInstaller
 				->getPackage()
 		);
 
+		static::createRunonces($io, $root);
+		static::cleanCache($io, $root);
+	}
+
+	static public function createRunonces(IOInterface $io, $root)
+	{
 		// create runonce
-		$runonces = & static::$runonces;
+		$runonces = array_unique(static::$runonces);
 		if (count($runonces)) {
 			$file = 'system/runonce.php';
 			$n    = 0;
@@ -394,7 +407,10 @@ class ModuleInstaller extends LibraryInstaller
 				$io->write("  - " . $runonce);
 			}
 		}
+	}
 
+	static public function cleanCache(IOInterface $io, $root)
+	{
 		// clean cache
 		$fs = new Filesystem();
 		foreach (array('config', 'dca', 'language', 'sql') as $dir) {
@@ -999,6 +1015,19 @@ class ModuleInstaller extends LibraryInstaller
 				foreach ($runonces as $file) {
 					static::$runonces[] = $installPath . DIRECTORY_SEPARATOR . $file;
 				}
+			}
+		}
+	}
+
+	public function updateAllRunonces()
+	{
+		$repositoryManager = $this->composer->getRepositoryManager();
+		$localRepository = $repositoryManager->getLocalRepository();
+		$packages = $localRepository->getPackages();
+
+		foreach ($packages as $package) {
+			if (!$package instanceof AliasPackage) {
+				$this->updateRunonce($package);
 			}
 		}
 	}
