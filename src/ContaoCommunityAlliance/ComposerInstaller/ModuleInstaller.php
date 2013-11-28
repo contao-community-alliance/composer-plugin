@@ -1,5 +1,18 @@
 <?php
 
+/**
+ * Contao Composer Installer
+ *
+ * Copyright (C) 2013 Contao Community Alliance
+ *
+ * @package contao-composer
+ * @author  Dominik Zogg <dominik.zogg@gmail.com>
+ * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author  Tristan Lins <tristan.lins@bit3.de>
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\ComposerInstaller;
 
 use Composer\Autoload\ClassMapGenerator;
@@ -17,12 +30,27 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Script\Event;
 
+/**
+ * Installer that install Contao extensions via shadow copies or symlinks
+ * into the Contao file hierarchy.
+ */
 class ModuleInstaller extends LibraryInstaller
 {
+	/**
+	 * Module type of contao packages.
+	 */
 	const MODULE_TYPE = 'contao-module';
 
+	/**
+	 * Module type of converted ER2 contao packages.
+	 */
 	const LEGACY_MODULE_TYPE = 'legacy-contao-module';
 
+	/**
+	 * List of runonce files that was found in the installed/updated packages.
+	 *
+	 * @var array
+	 */
 	static public $runonces = array();
 
 	static public function getContaoRoot(PackageInterface $package)
@@ -931,6 +959,9 @@ class ModuleInstaller extends LibraryInstaller
 		}
 	}
 
+	/**
+	 * @param PackageInterface $package
+	 */
 	public function updateUserfiles(PackageInterface $package)
 	{
 		$count = 0;
