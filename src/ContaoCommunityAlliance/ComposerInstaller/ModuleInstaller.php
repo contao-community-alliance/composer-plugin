@@ -704,6 +704,14 @@ class ModuleInstaller extends LibraryInstaller
 
 			$obsolteCopies = array_diff($map['copies'], $copies);
 			foreach ($obsolteCopies as $obsolteCopy) {
+				if ($this->io->isVerbose()) {
+					$this->io->write(
+						sprintf(
+							"  - rm obsolete <info>%s</info>",
+							$obsolteCopy
+						)
+					);
+				}
 				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsolteCopy);
 				$deleteCount++;
 			}
