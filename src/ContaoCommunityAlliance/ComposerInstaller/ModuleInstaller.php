@@ -586,7 +586,7 @@ class ModuleInstaller extends LibraryInstaller
 			$sources[$sourcePath] = $targetPath;
 		}
 		else if (is_dir($currentPath)) {
-			$files = new \FilesystemIterator($currentPath, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::CURRENT_AS_PATHNAME);
+			$files = new \FilesystemIterator($currentPath, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS | \FilesystemIterator::CURRENT_AS_PATHNAME);
 
 			foreach ($files as $file) {
 				$this->createLegacySourcesSpec($installPath, $startPath, $file, $sources, $package);
@@ -611,7 +611,7 @@ class ModuleInstaller extends LibraryInstaller
 				$iterator = new \RecursiveIteratorIterator(
 					new \RecursiveDirectoryIterator(
 						$root . DIRECTORY_SEPARATOR . $target,
-						\FilesystemIterator::SKIP_DOTS
+						\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
 					)
 				);
 
@@ -668,7 +668,7 @@ class ModuleInstaller extends LibraryInstaller
 					$iterator = new \RecursiveIteratorIterator(
 						new \RecursiveDirectoryIterator(
 							$installPath . DIRECTORY_SEPARATOR . $source,
-							\FilesystemIterator::SKIP_DOTS
+							\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
 						)
 					);
 					foreach ($iterator as $sourceFile) {
@@ -946,7 +946,7 @@ class ModuleInstaller extends LibraryInstaller
 
 					if (is_dir($sourceReal)) {
 
-						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS);
+						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS);
 						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
 
 						if (!file_exists($targetReal)) {
