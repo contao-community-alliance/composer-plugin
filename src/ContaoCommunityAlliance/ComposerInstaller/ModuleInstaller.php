@@ -59,17 +59,21 @@ class ModuleInstaller extends LibraryInstaller
 			$root = dirname(getcwd());
 
 			$extra = $package->getExtra();
-			if (array_key_exists('contao', $extra) && array_key_exists('root', $extra['contao'])) {
-				$root = getcwd() . DIRECTORY_SEPARATOR . $extra['contao']['root'];
+			$cwd = getcwd();
+
+			if (!empty($extra['contao']['root'])) {
+				$root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
 			}
 			// test, do we have the core within vendor/contao/core.
-			else if (is_dir(
-				getcwd(
-				) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'contao' . DIRECTORY_SEPARATOR . 'core'
-			)
-			) {
-				$root = getcwd(
-					) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'contao' . DIRECTORY_SEPARATOR . 'core';
+			else {
+				$vendorRoot = $cwd . DIRECTORY_SEPARATOR .
+					'vendor' . DIRECTORY_SEPARATOR .
+					'contao' . DIRECTORY_SEPARATOR .
+					'core';
+
+				if (is_dir($vendorRoot)) {
+					$root = $vendorRoot;
+				}
 			}
 
 			define('TL_ROOT', $root);
@@ -78,42 +82,43 @@ class ModuleInstaller extends LibraryInstaller
 			$root = TL_ROOT;
 		}
 
+		$systemDir = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
+		$configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
+
 		if (!defined('VERSION')) {
 			// Contao 3+
 			if (file_exists(
-				$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php'
+				$constantsFile = $configDir . 'constants.php'
 			)
 			) {
 				require_once($constantsFile);
 			}
 			// Contao 2+
 			else if (file_exists(
-				$constantsFile = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'constants.php'
+				$constantsFile = $systemDir . 'constants.php'
 			)
 			) {
 				require_once($constantsFile);
 			}
 			else {
-				throw new \Exception('Could not find constants.php in ' . $root);
+				throw new \RuntimeException('Could not find constants.php in ' . $root);
 			}
 		}
 
 		if (empty($GLOBALS['TL_CONFIG'])) {
 			if (version_compare(VERSION, '3', '>=')) {
 				// load default.php
-				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'default.php');
+				require_once($configDir . 'default.php');
 			}
 			else {
 				// load config.php
-				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+				require_once($configDir . 'config.php');
 			}
 
 			// load localconfig.php
-			if (file_exists(
-				$root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php'
-			)
-			) {
-				require_once($root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'localconfig.php');
+			$file = $configDir . 'localconfig.php';
+			if (file_exists($file)) {
+				require_once($file);
 			}
 		}
 
@@ -163,25 +168,22 @@ class ModuleInstaller extends LibraryInstaller
 		// load constants
 		$root = static::getContaoRoot($package);
 
-
 		$messages     = array();
 		$jsonModified = false;
 		$configFile   = new JsonFile('composer.json');
 		$configJson   = $configFile->read();
 
-
 		// remove old installer scripts
-		foreach (
-			array(
-				'pre-update-cmd'  => array(
-					'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateContaoPackage',
-					'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateComposerConfig'
-				),
-				'post-update-cmd' => array(
-					'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::createRunonce'
-				),
-			) as $key => $scripts
-		) {
+		$eventScripts = array(
+			'pre-update-cmd'  => array(
+				__CLASS__ . '::updateContaoPackage',
+				__CLASS__ . '::updateComposerConfig'
+			),
+			'post-update-cmd' => array(
+				__CLASS__ . '::createRunonce'
+			),
+		);
+		foreach ($eventScripts as $key => $scripts) {
 			foreach ($scripts as $script) {
 				if (array_key_exists($key, $configJson['scripts'])) {
 					if (is_array($configJson['scripts'][$key])) {
@@ -206,15 +208,13 @@ class ModuleInstaller extends LibraryInstaller
 			}
 		}
 
-
 		// add installer scripts
-		foreach (
-			array(
-				'pre-update-cmd'     => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::preUpdate',
-				'post-update-cmd'    => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postUpdate',
-				'post-autoload-dump' => 'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postAutoloadDump',
-			) as $key => $script
-		) {
+		$eventScripts = array(
+			'pre-update-cmd'     => __CLASS__ . '::preUpdate',
+			'post-update-cmd'    => __CLASS__ . '::postUpdate',
+			'post-autoload-dump' => __CLASS__ . '::postAutoloadDump',
+		);
+		foreach ($eventScripts as $key => $script) {
 			if (!array_key_exists($key, $configJson['scripts']) || empty($configJson['scripts'][$key])) {
 				$configJson['scripts'][$key] = $script;
 
@@ -237,7 +237,6 @@ class ModuleInstaller extends LibraryInstaller
 			}
 		}
 
-
 		// add custom repository
 		if (!array_key_exists('repositories', $configJson)) {
 			$configJson['repositories'] = array();
@@ -250,19 +249,22 @@ class ModuleInstaller extends LibraryInstaller
 			if (!isset($configJson['extra']['contao']['artifactPath'])) {
 				$outdatedArtifactPath = 'packages';
 			}
-			elseif ($artifactPath != $configJson['extra']['contao']['artifactPath']) {
+			else if ($artifactPath != $configJson['extra']['contao']['artifactPath']) {
 				$outdatedArtifactPath = $configJson['extra']['contao']['artifactPath'];
 			}
 			if (isset($outdatedArtifactPath)) {
 				$configJson['repositories']                    = array_filter(
 					$configJson['repositories'],
 					function ($repository) use ($outdatedArtifactPath) {
-						return $repository['type'] != 'artifact' || rtrim($repository['url'], '/') != $outdatedArtifactPath;
+						return $repository['type'] != 'artifact' ||
+							rtrim($repository['url'], '/') != $outdatedArtifactPath;
 					}
 				);
 				$configJson['extra']['contao']['artifactPath'] = $artifactPath;
-				$jsonModified                                  = true;
-				$messages[]                                    = 'The artifact repository path was missing or outdated and has been set up to date! Please restart the last operation.';
+
+				$jsonModified = true;
+				$messages[]   = 'The artifact repository path was missing or outdated ' .
+					'and has been set up to date! Please restart the last operation.';
 			}
 
 			// add current artifact repositories, if it is missing
@@ -277,8 +279,10 @@ class ModuleInstaller extends LibraryInstaller
 					'type' => 'artifact',
 					'url'  => $artifactPath
 				);
-				$jsonModified                 = true;
-				$messages[]                   = 'The artifact repository was missing and has been added to repositories! Please restart the last operation.';
+
+				$jsonModified = true;
+				$messages[]   = 'The artifact repository was missing and has been added to repositories! ' .
+					'Please restart the last operation.';
 			}
 		}
 		if (!is_dir($artifactPath)) {
@@ -307,21 +311,21 @@ class ModuleInstaller extends LibraryInstaller
 			$messages[]   = 'The contao repository is missing and has been readded to repositories!';
 		}
 
-
 		// add contao-community-alliance/composer dependency
 		if (!array_key_exists('contao-community-alliance/composer', $configJson['require'])) {
 			$configJson['require']['contao-community-alliance/composer'] = '*';
 
 			$jsonModified = true;
-			$messages[]   = 'The contao integration contao-community-alliance/composer is missing and has been readded to dependencies!';
+			$messages[]   = 'The contao integration contao-community-alliance/composer ' .
+				'is missing and has been readded to dependencies!';
 		}
 		else if ($configJson['require']['contao-community-alliance/composer'] == 'dev-master@dev') {
 			$configJson['require']['contao-community-alliance/composer'] = '*';
 
 			$jsonModified = true;
-			$messages[]   = 'The contao integration contao-community-alliance/composer was installed as development release, switched to stable releases!';
+			$messages[]   = 'The contao integration contao-community-alliance/composer ' .
+				'was installed as development release, switched to stable releases!';
 		}
-
 
 		// update contao version
 		$versionParser = new VersionParser();
@@ -343,29 +347,37 @@ class ModuleInstaller extends LibraryInstaller
 			$self->createRunonces($io, $root);
 		}
 
-
 		// add provides
 		switch (VERSION) {
 			case '2.11':
-				$swiftVersion = file_get_contents(TL_ROOT . '/plugins/swiftmailer/VERSION');
+				$swiftVersion = file_get_contents(
+					TL_ROOT . '/plugins/swiftmailer/VERSION'
+				);
 				$swiftVersion = substr($swiftVersion, 6);
 				$swiftVersion = trim($swiftVersion);
 				break;
 			case '3.0':
-				$swiftVersion = file_get_contents(TL_ROOT . '/system/vendor/swiftmailer/VERSION');
+				$swiftVersion = file_get_contents(
+					TL_ROOT . '/system/vendor/swiftmailer/VERSION'
+				);
 				$swiftVersion = substr($swiftVersion, 6);
 				$swiftVersion = trim($swiftVersion);
 				break;
 			case '3.1':
 			case '3.2':
-				$swiftVersion = file_get_contents(TL_ROOT . '/system/modules/core/vendor/swiftmailer/VERSION');
+				$swiftVersion = file_get_contents(
+					TL_ROOT . '/system/modules/core/vendor/swiftmailer/VERSION'
+				);
 				$swiftVersion = substr($swiftVersion, 6);
 				$swiftVersion = trim($swiftVersion);
 				break;
 			default:
 				$swiftVersion = '0';
 		}
-		if (!isset($configJson['provide']['swiftmailer/swiftmailer']) || $configJson['provide']['swiftmailer/swiftmailer'] != $swiftVersion) {
+		if (
+			!isset($configJson['provide']['swiftmailer/swiftmailer']) ||
+			$configJson['provide']['swiftmailer/swiftmailer'] != $swiftVersion
+		) {
 			$configJson['provide']['swiftmailer/swiftmailer'] = $swiftVersion;
 
 			$jsonModified = true;
@@ -374,7 +386,6 @@ class ModuleInstaller extends LibraryInstaller
 				$swiftVersion
 			);
 		}
-
 
 		if ($jsonModified) {
 			$configFile->write($configJson);
@@ -436,9 +447,16 @@ class ModuleInstaller extends LibraryInstaller
 			);
 			file_put_contents($root . '/system/runonce.php', $template);
 
-			$io->write("<info>Runonce created with " . count($runonces) . " updates</info>");
-			foreach ($runonces as $runonce) {
-				$io->write("  - " . $runonce);
+			$io->write(
+				sprintf(
+					'<info>Runonce created with %d updates</info>',
+					count($runonces)
+				)
+			);
+			if ($io->isVerbose()) {
+				foreach ($runonces as $runonce) {
+					$io->write('  - ' . $runonce);
+				}
 			}
 		}
 	}
@@ -450,7 +468,12 @@ class ModuleInstaller extends LibraryInstaller
 		foreach (array('config', 'dca', 'language', 'sql') as $dir) {
 			$cache = $root . '/system/cache/' . $dir;
 			if (is_dir($cache)) {
-				$io->write("<info>Clean contao internal " . $dir . " cache</info>");
+				$io->write(
+					sprintf(
+						'<info>Clean contao internal %s cache</info>',
+						$dir
+					)
+				);
 				$fs->removeDirectory($cache);
 			}
 		}
@@ -604,7 +627,10 @@ class ModuleInstaller extends LibraryInstaller
 		$targetPath = self::unprefixPath($startPath . DIRECTORY_SEPARATOR, $currentPath);
 
 		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
-			static::$runonces['system/runonce.php'] = self::unprefixPath($this->getContaoRoot($package), $currentPath);
+			static::$runonces['system/runonce.php'] = self::unprefixPath(
+				$this->getContaoRoot($package),
+				$currentPath
+			);
 		}
 		else if (is_file($currentPath) || preg_match(
 				'#^system/modules/[^/]+$#',
@@ -614,7 +640,12 @@ class ModuleInstaller extends LibraryInstaller
 			$sources[$sourcePath] = $targetPath;
 		}
 		else if (is_dir($currentPath)) {
-			$files = new \FilesystemIterator($currentPath, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS | \FilesystemIterator::CURRENT_AS_PATHNAME);
+			$files = new \FilesystemIterator(
+				$currentPath,
+				\FilesystemIterator::SKIP_DOTS |
+				\FilesystemIterator::UNIX_PATHS |
+				\FilesystemIterator::CURRENT_AS_PATHNAME
+			);
 
 			foreach ($files as $file) {
 				$this->createLegacySourcesSpec($installPath, $startPath, $file, $sources, $package);
@@ -662,7 +693,7 @@ class ModuleInstaller extends LibraryInstaller
 		return $map;
 	}
 
-	protected function updateSources($map, PackageInterface $package, PackageInterface $initial = null)
+	protected function updateSources($map, PackageInterface $package)
 	{
 		$root        = static::getContaoRoot($this->composer->getPackage());
 		$installPath = $this->getInstallPath($package);
@@ -679,7 +710,7 @@ class ModuleInstaller extends LibraryInstaller
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
-							"  - rm link <info>%s</info>",
+							'  - rm link <info>%s</info>',
 							$link
 						)
 					);
@@ -693,11 +724,13 @@ class ModuleInstaller extends LibraryInstaller
 			$copies = array();
 			foreach ($sources as $source => $target) {
 				if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
+					$files = array();
+					$iterator = new \RecursiveDirectoryIterator(
+						$installPath . DIRECTORY_SEPARATOR . $source,
+						\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+					);
 					$iterator = new \RecursiveIteratorIterator(
-						new \RecursiveDirectoryIterator(
-							$installPath . DIRECTORY_SEPARATOR . $source,
-							\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
-						)
+						$iterator
 					);
 					foreach ($iterator as $sourceFile) {
 						$unPrefixedPath     = self::unprefixPath(
@@ -717,7 +750,7 @@ class ModuleInstaller extends LibraryInstaller
 					if ($this->io->isVerbose()) {
 						$this->io->write(
 							sprintf(
-								"  - cp <info>%s</info>",
+								'  - cp <info>%s</info>',
 								$targetPath
 							)
 						);
@@ -730,17 +763,17 @@ class ModuleInstaller extends LibraryInstaller
 				}
 			}
 
-			$obsolteCopies = array_diff($map['copies'], $copies);
-			foreach ($obsolteCopies as $obsolteCopy) {
+			$obsoleteCopies = array_diff($map['copies'], $copies);
+			foreach ($obsoleteCopies as $obsoleteCopy) {
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
 							"  - rm obsolete <info>%s</info>",
-							$obsolteCopy
+							$obsoleteCopy
 						)
 					);
 				}
-				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsolteCopy);
+				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
 				$deleteCount++;
 			}
 		}
@@ -752,7 +785,7 @@ class ModuleInstaller extends LibraryInstaller
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
-							"  - rm copy <info>%s</info>",
+							'  - rm copy <info>%s</info>',
 							$target
 						)
 					);
@@ -824,7 +857,7 @@ class ModuleInstaller extends LibraryInstaller
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
-							"  - symlink <info>%s</info>",
+							'  - symlink <info>%s</info>',
 							$linkRel
 						)
 					);
@@ -841,17 +874,17 @@ class ModuleInstaller extends LibraryInstaller
 
 			// remove obsolete links
 			$obsoleteLinks = array_diff(array_keys($map['links']), $links);
-			foreach ($obsoleteLinks as $obsolteLink) {
+			foreach ($obsoleteLinks as $obsoleteLink) {
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
-							"  - rm symlink <info>%s</info>",
-							$obsolteLink
+							'  - rm symlink <info>%s</info>',
+							$obsoleteLink
 						)
 					);
 				}
 
-				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsolteLink);
+				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteLink);
 				$deleteCount++;
 			}
 		}
@@ -896,7 +929,7 @@ class ModuleInstaller extends LibraryInstaller
 			if ($this->io->isVerbose()) {
 				$this->io->write(
 					sprintf(
-						"  - rm symlink <info>%s</info>",
+						'  - rm symlink <info>%s</info>',
 						$link
 					)
 				);
@@ -911,7 +944,7 @@ class ModuleInstaller extends LibraryInstaller
 			if ($this->io->isVerbose()) {
 				$this->io->write(
 					sprintf(
-						"  - rm file <info>%s</info>",
+						'  - rm file <info>%s</info>',
 						$target
 					)
 				);
@@ -947,7 +980,7 @@ class ModuleInstaller extends LibraryInstaller
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
-							"  - rm dir <info>%s</info>",
+							'  - rm dir <info>%s</info>',
 							self::unprefixPath($root, $pathname)
 						)
 					);
@@ -985,15 +1018,21 @@ class ModuleInstaller extends LibraryInstaller
 
 					if (is_dir($sourceReal)) {
 
-						$it = new RecursiveDirectoryIterator($sourceReal, RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS);
-						$ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::SELF_FIRST);
+						$iterator = new RecursiveDirectoryIterator(
+							$sourceReal,
+							RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+						);
+						$iterator = new RecursiveIteratorIterator(
+							$iterator,
+							RecursiveIteratorIterator::SELF_FIRST
+						);
 
 						if (!file_exists($targetReal)) {
 							$this->filesystem->ensureDirectoryExists($targetReal);
 						}
 
-						foreach ($ri as $file) {
-							$targetPath = $targetReal . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+						foreach ($iterator as $file) {
+							$targetPath = $targetReal . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 							if (!file_exists($targetPath)) {
 								if ($file->isDir()) {
 									$this->filesystem->ensureDirectoryExists($targetPath);
@@ -1003,7 +1042,7 @@ class ModuleInstaller extends LibraryInstaller
 										$this->io->write(
 											sprintf(
 												'  - install userfile <info>%s</info>',
-												$ri->getSubPathName()
+												$iterator->getSubPathName()
 											)
 										);
 									}
