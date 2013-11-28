@@ -287,6 +287,12 @@ class ModuleInstaller extends LibraryInstaller
 			$jsonModified = true;
 			$messages[]   = 'The contao integration contao-community-alliance/composer is missing and has been readded to dependencies!';
 		}
+		else if ($configJson['require']['contao-community-alliance/composer'] == 'dev-master@dev') {
+			$configJson['require']['contao-community-alliance/composer'] = '*';
+
+			$jsonModified = true;
+			$messages[]   = 'The contao integration contao-community-alliance/composer was installed as development release, switched to stable releases!';
+		}
 
 
 		// update contao version
