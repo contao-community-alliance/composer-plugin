@@ -129,6 +129,11 @@ class ConfigManipulator
 			}
 		}
 
+		if (isset($configJson['scripts']) && empty($configJson['scripts'])) {
+			unset($configJson['scripts']);
+			$jsonModified = true;
+		}
+
 		return $jsonModified;
 	}
 
