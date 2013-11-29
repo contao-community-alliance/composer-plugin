@@ -61,13 +61,16 @@ class RunonceManager
 				);
 			}
 
-			$template = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'RunonceExecutorTemplate.php');
-			$template = str_replace(
-				'TEMPLATE_RUNONCE_ARRAY',
-				var_export($runonces, true),
-				$template
-			);
-			file_put_contents($root . '/system/runonce.php', $template);
+			$array = var_export($runonces, true);
+
+			$runonce = <<<EOF
+<?php
+
+\$executor = new \ContaoCommunityAlliance\ComposerInstaller\RunonceExecutor();
+\$executor->run($array);
+
+EOF;
+			file_put_contents($root . '/system/runonce.php', $runonce);
 
 			$io->write(
 				sprintf(
