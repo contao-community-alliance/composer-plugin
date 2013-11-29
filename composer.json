@@ -9,7 +9,10 @@
 		}
 	},
 	"extra": {
-		"class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin"
+		"class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
+		"branch-alias": {
+			"dev-develop": "2.0.x-dev"
+		}
 	},
 	"require": {
 		"contao/core": ">=2.11,<3.3",
