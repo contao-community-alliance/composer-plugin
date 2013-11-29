@@ -1,6 +1,6 @@
 {
 	"name": "contao-community-alliance/composer-installer",
-	"type": "composer-installer",
+	"type": "composer-plugin",
 	"license": "LGPLv3",
 	"autoload": {
 		"psr-0": {
@@ -8,10 +8,11 @@
 		}
 	},
 	"extra": {
-		"class": "ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller"
+		"class": "ContaoCommunityAlliance\\ComposerInstaller\\Plugin"
 	},
 	"require": {
-		"contao/core": ">=2.11,<3.3"
+		"contao/core": ">=2.11,<3.3",
+		"composer-plugin-api": "1.0.0"
 	},
 	"require-dev": {
 		"bit3/php-coding-standard": "*"
