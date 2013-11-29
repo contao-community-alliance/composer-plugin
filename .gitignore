@@ -2,7 +2,7 @@
 .DS_Store
 Thumbs.db
 
-# IDEs 
+# IDEs
 .buildpath
 .project
 .settings/
@@ -11,5 +11,6 @@ Thumbs.db
 nbproject/
 
 # Composer
-vendor/
+/vendor/
+/composer.phar
 
