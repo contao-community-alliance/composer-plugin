@@ -65,10 +65,7 @@ class RemoveObsoleteScriptsTest extends TestCase
 		self::assertTrue(ConfigManipulator::removeObsoleteScripts($configJson, $messages));
 		self::assertEquals(3, count($messages));
 
-		self::assertEquals(
-			array(
-				'scripts' => array()
-			),
+		self::assertEmpty(
 			$configJson
 		);
 	}
@@ -89,10 +86,7 @@ class RemoveObsoleteScriptsTest extends TestCase
 		self::assertTrue(ConfigManipulator::removeObsoleteScripts($configJson, $messages));
 		self::assertEquals(3, count($messages));
 
-		self::assertEquals(
-			array(
-				'scripts' => array()
-			),
+		self::assertEmpty(
 			$configJson
 		);
 	}
