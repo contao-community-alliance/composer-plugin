@@ -26,6 +26,8 @@ use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Script\Event;
+use Composer\Script\ScriptEvents;
 use Composer\Util\Filesystem;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 
@@ -77,7 +79,9 @@ class Plugin
 	{
 		return array(
 			PluginEvents::COMMAND           => 'handleCommand',
-			PluginEvents::PRE_FILE_DOWNLOAD => 'handlePreDownload'
+			ScriptEvents::POST_UPDATE_CMD    => 'handleScriptEvent',
+			ScriptEvents::POST_AUTOLOAD_DUMP => 'handleScriptEvent',
+			PluginEvents::PRE_FILE_DOWNLOAD  => 'handlePreDownload',
 		);
 	}
 
@@ -150,11 +154,23 @@ class Plugin
 	public function handleCommand(CommandEvent $event)
 	{
 		switch ($event->getCommandName()) {
-			case 'pre-update-cmd':
-
+			case 'update':
 				ConfigManipulator::run($this->io, $this->composer);
 				break;
-			case 'post-update-cmd':
+
+			default:
+		}
+	}
+
+	/**
+	 * Handle script events.
+	 *
+	 * @param CommandEvent $event
+	 */
+	public function handleScriptEvent(Event $event)
+	{
+		switch ($event->getName()) {
+			case ScriptEvents::POST_UPDATE_CMD:
 				$package = $this->composer->getPackage();
 				$root    = static::getContaoRoot($package);
 
@@ -162,7 +178,7 @@ class Plugin
 				$this->cleanCache($this->io, $root);
 				break;
 
-			case 'post-autoload-dump':
+			case ScriptEvents::POST_AUTOLOAD_DUMP:
 				$this->cleanLocalconfig();
 				break;
 
