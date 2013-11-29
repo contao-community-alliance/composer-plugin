@@ -1,9 +1,11 @@
-ComposerInstaller
-=================
+Contao Composer Plugin
+======================
+
+[![Build Status](https://travis-ci.org/contao-community-alliance/composer-plugin.png?branch=master)](https://travis-ci.org/contao-community-alliance/composer-plugin)
 
 contao composer installer
 
-Symlinks
+Sources
 --------
 
 Contao require a strict module structure.
@@ -24,7 +26,7 @@ Installing repository root as module `my-module`:
 ```json
 {
 	"extra": {
-		"symlinks": {
+		"sources": {
 			"": "system/modules/my-module"
 		}
 	}
@@ -35,7 +37,7 @@ Installing repository sub-path `src/system/modules/my-module` as module `my-modu
 ```json
 {
 	"extra": {
-		"symlinks": {
+		"sources": {
 			"src/system/modules/my-module": "system/modules/my-module"
 		}
 	}
