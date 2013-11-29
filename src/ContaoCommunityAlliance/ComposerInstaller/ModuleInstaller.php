@@ -768,7 +768,7 @@ class ModuleInstaller extends LibraryInstaller
 				if ($this->io->isVerbose()) {
 					$this->io->write(
 						sprintf(
-							"  - rm obsolete <info>%s</info>",
+							'  - rm obsolete <info>%s</info>',
 							$obsoleteCopy
 						)
 					);
