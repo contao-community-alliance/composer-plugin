@@ -53,78 +53,6 @@ class ModuleInstaller extends LibraryInstaller
 	 */
 	static public $runonces = array();
 
-	static public function getContaoRoot(PackageInterface $package)
-	{
-		if (!defined('TL_ROOT')) {
-			$root = dirname(getcwd());
-
-			$extra = $package->getExtra();
-			$cwd = getcwd();
-
-			if (!empty($extra['contao']['root'])) {
-				$root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
-			}
-			// test, do we have the core within vendor/contao/core.
-			else {
-				$vendorRoot = $cwd . DIRECTORY_SEPARATOR .
-					'vendor' . DIRECTORY_SEPARATOR .
-					'contao' . DIRECTORY_SEPARATOR .
-					'core';
-
-				if (is_dir($vendorRoot)) {
-					$root = $vendorRoot;
-				}
-			}
-
-			define('TL_ROOT', $root);
-		}
-		else {
-			$root = TL_ROOT;
-		}
-
-		$systemDir = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
-		$configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
-
-		if (!defined('VERSION')) {
-			// Contao 3+
-			if (file_exists(
-				$constantsFile = $configDir . 'constants.php'
-			)
-			) {
-				require_once($constantsFile);
-			}
-			// Contao 2+
-			else if (file_exists(
-				$constantsFile = $systemDir . 'constants.php'
-			)
-			) {
-				require_once($constantsFile);
-			}
-			else {
-				throw new \RuntimeException('Could not find constants.php in ' . $root);
-			}
-		}
-
-		if (empty($GLOBALS['TL_CONFIG'])) {
-			if (version_compare(VERSION, '3', '>=')) {
-				// load default.php
-				require_once($configDir . 'default.php');
-			}
-			else {
-				// load config.php
-				require_once($configDir . 'config.php');
-			}
-
-			// load localconfig.php
-			$file = $configDir . 'localconfig.php';
-			if (file_exists($file)) {
-				require_once($file);
-			}
-		}
-
-		return $root;
-	}
-
 	static public function getPreferredInstall(Composer $composer)
 	{
 		return $composer
@@ -166,7 +94,7 @@ class ModuleInstaller extends LibraryInstaller
 		$package = $composer->getPackage();
 
 		// load constants
-		$root = static::getContaoRoot($package);
+		$root = Plugin::getContaoRoot($package);
 
 		$messages     = array();
 		$jsonModified = false;
@@ -407,7 +335,7 @@ class ModuleInstaller extends LibraryInstaller
 	static public function postUpdate(Event $event)
 	{
 		$io   = $event->getIO();
-		$root = static::getContaoRoot(
+		$root = Plugin::getContaoRoot(
 			$event
 				->getComposer()
 				->getPackage()
@@ -481,7 +409,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	static public function postAutoloadDump(Event $event)
 	{
-		$root = static::getContaoRoot(
+		$root = Plugin::getContaoRoot(
 			$event
 				->getComposer()
 				->getPackage()
@@ -655,7 +583,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function mapSources(PackageInterface $package)
 	{
-		$root    = $this->getContaoRoot($this->composer->getPackage());
+		$root    = Plugin::getContaoRoot($this->composer->getPackage());
 		$sources = $this->getSourcesSpec($package);
 		$map     = array(
 			'copies' => array(),
@@ -695,7 +623,7 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function updateSources($map, PackageInterface $package)
 	{
-		$root        = static::getContaoRoot($this->composer->getPackage());
+		$root        = Plugin::getContaoRoot($this->composer->getPackage());
 		$installPath = $this->getInstallPath($package);
 		$sources     = $this->getSourcesSpec($package);
 
@@ -920,7 +848,7 @@ class ModuleInstaller extends LibraryInstaller
 	protected function removeSources(PackageInterface $package)
 	{
 		$map  = $this->mapSources($package);
-		$root = static::getContaoRoot($this->composer->getPackage());
+		$root = Plugin::getContaoRoot($this->composer->getPackage());
 
 		$count = 0;
 
@@ -968,7 +896,7 @@ class ModuleInstaller extends LibraryInstaller
 	public function removeEmptyDirectories($pathname)
 	{
 		if (is_dir($pathname)) {
-			$root = static::getContaoRoot($this->composer->getPackage());
+			$root = Plugin::getContaoRoot($this->composer->getPackage());
 
 			$contents = array_filter(
 				scandir($pathname),
@@ -1004,7 +932,7 @@ class ModuleInstaller extends LibraryInstaller
 			$contao = $extra['contao'];
 
 			if (is_array($contao) && array_key_exists('userfiles', $contao)) {
-				$root       = static::getContaoRoot($this->composer->getPackage());
+				$root       = Plugin::getContaoRoot($this->composer->getPackage());
 				$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
 
 				$userfiles   = (array) $contao['userfiles'];
