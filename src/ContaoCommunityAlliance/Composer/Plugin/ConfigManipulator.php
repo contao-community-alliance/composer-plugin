@@ -104,28 +104,8 @@ class ConfigManipulator
 		);
 		foreach ($eventScripts as $key => $scripts) {
 			foreach ($scripts as $script) {
-				if (isset($configJson['scripts'][$key])) {
-					if (is_array($configJson['scripts'][$key])) {
-						$index = array_search($script, $configJson['scripts'][$key]);
-						if ($index !== false) {
-							unset($configJson['scripts'][$key][$index]);
-							if (empty($configJson['scripts'][$key])) {
-								unset($configJson['scripts'][$key]);
-							}
-
-							$jsonModified = true;
-							$messages[]   = 'obsolete ' . $key . ' script ' . $script .
-								' was removed from root composer.json';
-						}
-					}
-					else if ($configJson['scripts'][$key] == $script) {
-						unset($configJson['scripts'][$key]);
-
-						$jsonModified = true;
-						$messages[]   = 'obsolete ' . $key . ' script ' . $script .
-							' was removed from root composer.json';
-					}
-				}
+				$jsonModified = static::removeObsoleteScript($key, $script, $configJson, $messages) ||
+					$jsonModified;
 			}
 		}
 
@@ -135,6 +115,39 @@ class ConfigManipulator
 		}
 
 		return $jsonModified;
+	}
+
+	/**
+	 * Remove obsolete event script.
+	 *
+	 * @return boolean
+	 */
+	static public function removeObsoleteScript($key, $script, &$configJson, &$messages)
+	{
+		if (isset($configJson['scripts'][$key])) {
+			if (is_array($configJson['scripts'][$key])) {
+				$index = array_search($script, $configJson['scripts'][$key]);
+				if ($index !== false) {
+					unset($configJson['scripts'][$key][$index]);
+					if (empty($configJson['scripts'][$key])) {
+						unset($configJson['scripts'][$key]);
+					}
+
+					$messages[]   = 'obsolete ' . $key . ' script ' . $script .
+						' was removed from root composer.json';
+					return true;
+				}
+			}
+			else if ($configJson['scripts'][$key] == $script) {
+				unset($configJson['scripts'][$key]);
+
+				$messages[]   = 'obsolete ' . $key . ' script ' . $script .
+					' was removed from root composer.json';
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
