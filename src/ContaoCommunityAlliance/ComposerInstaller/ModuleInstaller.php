@@ -114,7 +114,7 @@ class ModuleInstaller extends LibraryInstaller
 					unset($lines[$index]);
 				}
 				else if ($tline == '### COMPOSER CLASSES STOP ###') {
-					$remove   = false;
+					$remove = false;
 					unset($lines[$index]);
 				}
 				else if ($remove || $tline == '?>') {
@@ -299,10 +299,10 @@ class ModuleInstaller extends LibraryInstaller
 				foreach ($iterator as $targetFile) {
 					$pathname = self::unprefixPath($root . DIRECTORY_SEPARATOR, $targetFile->getRealPath());
 
-					$key = ($source ? $source . DIRECTORY_SEPARATOR : '') . self::unprefixPath(
-						$target . DIRECTORY_SEPARATOR,
-						$pathname
-					);
+					$key                 = ($source ? $source . DIRECTORY_SEPARATOR : '') . self::unprefixPath(
+							$target . DIRECTORY_SEPARATOR,
+							$pathname
+						);
 					$map['copies'][$key] = $pathname;
 				}
 			}
@@ -345,7 +345,7 @@ class ModuleInstaller extends LibraryInstaller
 			$copies = array();
 			foreach ($sources as $source => $target) {
 				if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
-					$files = array();
+					$files    = array();
 					$iterator = new \RecursiveDirectoryIterator(
 						$installPath . DIRECTORY_SEPARATOR . $source,
 						\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS

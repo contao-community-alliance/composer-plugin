@@ -96,11 +96,14 @@ class Plugin
 	 */
 	public function addLocalArtifactsRepository()
 	{
-		$contaoRoot = static::getContaoRoot($this->composer->getPackage());
-		$artifactRepositoryPath = $contaoRoot . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'packages';
+		$contaoRoot             = static::getContaoRoot($this->composer->getPackage());
+		$artifactRepositoryPath = $contaoRoot . DIRECTORY_SEPARATOR .
+			'composer' . DIRECTORY_SEPARATOR .
+			'packages';
 		if (is_dir($artifactRepositoryPath)) {
 			$artifactRepository = new ArtifactRepository(array('url' => $artifactRepositoryPath), $this->io);
-			$this->composer->getRepositoryManager()->addRepository($artifactRepository);
+			$this->composer->getRepositoryManager()
+				->addRepository($artifactRepository);
 		}
 	}
 
@@ -119,7 +122,8 @@ class Plugin
 			$this->composer->getConfig(),
 			$this->composer->getEventDispatcher()
 		);
-		$this->composer->getRepositoryManager()->addRepository($legacyPackagistRepository);
+		$this->composer->getRepositoryManager()
+			->addRepository($legacyPackagistRepository);
 	}
 
 	/**
@@ -129,22 +133,24 @@ class Plugin
 	 */
 	public function handleCommand(CommandEvent $event)
 	{
-		switch ($event->getCommandName())
-		{
+		switch ($event->getCommandName()) {
 			case 'pre-update-cmd':
 
 				ConfigManipulator::run($this->io, $this->composer);
 				break;
 			case 'post-update-cmd':
 				$package = $this->composer->getPackage();
-				$root = Plugin::getContaoRoot($package);
+				$root    = static::getContaoRoot($package);
 
 				$this->createRunonce($this->io, $root);
 				$this->cleanCache($this->io, $root);
 				break;
+
 			case 'post-autoload-dump':
 				ModuleInstaller::postAutoloadDump($event);
 				break;
+
+			default:
 		}
 	}
 
@@ -206,7 +212,7 @@ class Plugin
 			$root = dirname(getcwd());
 
 			$extra = $package->getExtra();
-			$cwd = getcwd();
+			$cwd   = getcwd();
 
 			if (!empty($extra['contao']['root'])) {
 				$root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];

@@ -44,7 +44,11 @@ class ConfigManipulator
 		$jsonModified |= static::removeObsoleteConfigEntries($configJson, $messages);
 		$jsonModified |= static::removeObsoleteRepositories($configJson, $messages);
 		$jsonModified |= static::removeObsoleteRequires($configJson, $messages);
-		$jsonModified |= $contaoVersionUpdated = static::updateContaoVersion($configJson, $messages, $composer);
+		$jsonModified |= $contaoVersionUpdated = static::updateContaoVersion(
+			$configJson,
+			$messages,
+			$composer
+		);
 		$jsonModified |= static::updateProvides($configJson, $messages);
 
 		if ($contaoVersionUpdated) {
@@ -76,12 +80,12 @@ class ConfigManipulator
 
 		// remove old installer scripts
 		$eventScripts = array(
-			'pre-update-cmd'  => array(
+			'pre-update-cmd'     => array(
 				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateContaoPackage',
 				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateComposerConfig',
 				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::preUpdate',
 			),
-			'post-update-cmd' => array(
+			'post-update-cmd'    => array(
 				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::createRunonce',
 				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postUpdate',
 			),
@@ -101,14 +105,16 @@ class ConfigManipulator
 							}
 
 							$jsonModified = true;
-							$messages[]   = 'obsolete ' . $key . ' script ' . $script . ' was removed from root composer.json';
+							$messages[]   = 'obsolete ' . $key . ' script ' . $script .
+								' was removed from root composer.json';
 						}
 					}
 					else if ($configJson['scripts'][$key] == $script) {
 						unset($configJson['scripts'][$key]);
 
 						$jsonModified = true;
-						$messages[]   = 'obsolete ' . $key . ' script ' . $script . ' was removed from root composer.json';
+						$messages[]   = 'obsolete ' . $key . ' script ' . $script .
+							' was removed from root composer.json';
 					}
 				}
 			}
@@ -130,7 +136,8 @@ class ConfigManipulator
 			unset($configJson['extra']['contao']['artifactPath']);
 
 			$jsonModified = true;
-			$messages[] = 'obsolete config entry { extra: { contao: { artifactPath: ... } } } was removed from root composer.json';
+			$messages[]   = 'obsolete config entry { extra: { contao: { artifactPath: ... } } } ' .
+				'was removed from root composer.json';
 		}
 
 		return $jsonModified;
@@ -151,7 +158,10 @@ class ConfigManipulator
 
 		// filter the artifact and legacy packagist repositories
 		foreach ($configJson['repositories'] as $index => $repository) {
-			if ($repository['type'] == 'artifact' && preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))) {
+			if (
+				$repository['type'] == 'artifact' &&
+				preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
+			) {
 				unset($configJson['repositories'][$index]);
 
 				$jsonModified = true;
@@ -184,17 +194,17 @@ class ConfigManipulator
 	 *
 	 * @return boolean
 	 */
-	static public function removeObsoleteRequires(&$configJson ,&$messages)
+	static public function removeObsoleteRequires(&$configJson, &$messages)
 	{
 		$jsonModified = false;
-
 
 		// remove contao-community-alliance/composer dependency
 		if (isset($configJson['require']['contao-community-alliance/composer'])) {
 			unset($configJson['require']['contao-community-alliance/composer']);
 
 			$jsonModified = true;
-			$messages[]   = 'obsolete require contao-community-alliance/composer was removed from root composer.json';
+			$messages[]   = 'obsolete require contao-community-alliance/composer ' .
+				'was removed from root composer.json';
 		}
 
 		return $jsonModified;
@@ -213,7 +223,7 @@ class ConfigManipulator
 		$jsonModified = false;
 
 		// update contao version
-		$package = $composer->getPackage();
+		$package       = $composer->getPackage();
 		$versionParser = new VersionParser();
 		$version       = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
 		$prettyVersion = $versionParser->normalize($version);

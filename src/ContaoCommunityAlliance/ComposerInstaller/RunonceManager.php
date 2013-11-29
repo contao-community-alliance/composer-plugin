@@ -123,9 +123,9 @@ EOF;
 	static public function addAllRunonces(Composer $composer)
 	{
 		$installationManager = $composer->getInstallationManager();
-		$repositoryManager = $composer->getRepositoryManager();
-		$localRepository = $repositoryManager->getLocalRepository();
-		$packages = $localRepository->getPackages();
+		$repositoryManager   = $composer->getRepositoryManager();
+		$localRepository     = $repositoryManager->getLocalRepository();
+		$packages            = $localRepository->getPackages();
 
 		/** @var PackageInterface $package */
 		foreach ($packages as $package) {
