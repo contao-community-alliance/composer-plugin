@@ -1,10 +1,8 @@
 <?xml version="1.0"?>
 <project name="Example" default="test">
-	<!--
 	<target name="phpunit">
-		<exec dir="${basedir}" executable="vendor/bin/phpunit" failonerror="true"/>
+		<exec dir="${basedir}" executable="vendor/bin/phpunit" failonerror="true" />
 	</target>
-	-->
 
 	<target name="phpcs">
 		<exec dir="${basedir}" executable="vendor/bin/phpcs" failonerror="true">
@@ -18,5 +16,5 @@
 		</exec>
 	</target>
 
-	<target name="test" depends="phpcs,phpmd"/>
+	<target name="test" depends="phpunit,phpcs,phpmd"/>
 </project>
