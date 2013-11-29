@@ -46,13 +46,6 @@ class ModuleInstaller extends LibraryInstaller
 	 */
 	const LEGACY_MODULE_TYPE = 'legacy-contao-module';
 
-	/**
-	 * List of runonce files that was found in the installed/updated packages.
-	 *
-	 * @var array
-	 */
-	static public $runonces = array();
-
 	static public function getPreferredInstall(Composer $composer)
 	{
 		return $composer
@@ -271,8 +264,8 @@ class ModuleInstaller extends LibraryInstaller
 
 			// run all runonces after contao version changed
 			$self = new self($io, $composer);
-			$self->updateAllRunonces();
-			$self->createRunonces($io, $root);
+			RunonceManager::addAllRunonces($composer);
+			RunonceManager::createRunonce($io, $root);
 		}
 
 		// add provides
@@ -341,52 +334,8 @@ class ModuleInstaller extends LibraryInstaller
 				->getPackage()
 		);
 
-		static::createRunonces($io, $root);
+		RunonceManager::createRunonce($io, $root);
 		static::cleanCache($io, $root);
-	}
-
-	static public function createRunonces(IOInterface $io, $root)
-	{
-		// create runonce
-		$runonces = array_unique(static::$runonces);
-		if (count($runonces)) {
-			$file = 'system/runonce.php';
-			$n    = 0;
-			while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
-				$n++;
-				$file = 'system/runonce_' . $n . '.php';
-			}
-			if ($n > 0) {
-				rename(
-					$root . '/system/runonce.php',
-					$root . DIRECTORY_SEPARATOR . $file
-				);
-				array_unshift(
-					$runonces,
-					$file
-				);
-			}
-
-			$template = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'RunonceExecutorTemplate.php');
-			$template = str_replace(
-				'TEMPLATE_RUNONCE_ARRAY',
-				var_export($runonces, true),
-				$template
-			);
-			file_put_contents($root . '/system/runonce.php', $template);
-
-			$io->write(
-				sprintf(
-					'<info>Runonce created with %d updates</info>',
-					count($runonces)
-				)
-			);
-			if ($io->isVerbose()) {
-				foreach ($runonces as $runonce) {
-					$io->write('  - ' . $runonce);
-				}
-			}
-		}
 	}
 
 	static public function cleanCache(IOInterface $io, $root)
@@ -470,7 +419,10 @@ class ModuleInstaller extends LibraryInstaller
 		parent::installCode($package);
 		$this->updateSources($map, $package);
 		$this->updateUserfiles($package);
-		$this->updateRunonce($package);
+
+		$root        = Plugin::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+		$installPath = self::unprefixPath($root, $this->getInstallPath($package));
+		RunonceManager::addRunonces($package, $installPath);
 	}
 
 	public function updateCode(PackageInterface $initial, PackageInterface $target)
@@ -479,7 +431,10 @@ class ModuleInstaller extends LibraryInstaller
 		parent::updateCode($initial, $target);
 		$this->updateSources($map, $target, $initial);
 		$this->updateUserfiles($target);
-		$this->updateRunonce($target);
+
+		$root        = Plugin::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+		$installPath = self::unprefixPath($root, $this->getInstallPath($target));
+		RunonceManager::addRunonces($target, $installPath);
 	}
 
 	public function removeCode(PackageInterface $package)
@@ -555,10 +510,11 @@ class ModuleInstaller extends LibraryInstaller
 		$targetPath = self::unprefixPath($startPath . DIRECTORY_SEPARATOR, $currentPath);
 
 		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
-			static::$runonces['system/runonce.php'] = self::unprefixPath(
-				$this->getContaoRoot($package),
+			$path = self::unprefixPath(
+				Plugin::getContaoRoot($package),
 				$currentPath
 			);
+			RunonceManager::addRunonce($path);
 		}
 		else if (is_file($currentPath) || preg_match(
 				'#^system/modules/[^/]+$#',
@@ -1009,38 +965,6 @@ class ModuleInstaller extends LibraryInstaller
 					$count
 				)
 			);
-		}
-	}
-
-	public function updateRunonce(PackageInterface $package)
-	{
-		$extra = $package->getExtra();
-		if (array_key_exists('contao', $extra)) {
-			$contao = $extra['contao'];
-
-			if (is_array($contao) && array_key_exists('runonce', $contao)) {
-				$root     = static::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
-				$runonces = (array) $contao['runonce'];
-
-				$installPath = self::unprefixPath($root, $this->getInstallPath($package));
-
-				foreach ($runonces as $file) {
-					static::$runonces[] = $installPath . DIRECTORY_SEPARATOR . $file;
-				}
-			}
-		}
-	}
-
-	public function updateAllRunonces()
-	{
-		$repositoryManager = $this->composer->getRepositoryManager();
-		$localRepository = $repositoryManager->getLocalRepository();
-		$packages = $localRepository->getPackages();
-
-		foreach ($packages as $package) {
-			if (!$package instanceof AliasPackage) {
-				$this->updateRunonce($package);
-			}
 		}
 	}
 
