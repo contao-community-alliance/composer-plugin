@@ -25,7 +25,7 @@
 	},
 	"minimum-stability": "dev",
 	"replace": {
-		"contao-community-alliance/composer-installer": "self.version"
+		"contao-community-alliance/composer-installer": "1.*"
 	},
 	"conflict": {
 		"contao/core": "3.0.*",
