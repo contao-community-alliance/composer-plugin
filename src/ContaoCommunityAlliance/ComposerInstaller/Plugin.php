@@ -22,6 +22,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
+use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Util\Filesystem;
@@ -67,7 +68,8 @@ class Plugin
 	public static function getSubscribedEvents()
 	{
 		return array(
-			PluginEvents::COMMAND => 'handleCommand',
+			PluginEvents::COMMAND           => 'handleCommand',
+			PluginEvents::PRE_FILE_DOWNLOAD => 'handlePreDownload'
 		);
 	}
 
@@ -179,6 +181,14 @@ class Plugin
 				$fs->removeDirectory($cache);
 			}
 		}
+	}
+
+	/**
+	 * @draft
+	 */
+	public function handlePreDownload(PreFileDownloadEvent $event)
+	{
+		// TODO: handle the pre download event.
 	}
 
 	/**
