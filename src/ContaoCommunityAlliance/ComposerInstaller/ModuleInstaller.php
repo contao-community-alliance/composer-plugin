@@ -59,67 +59,38 @@ class ModuleInstaller extends LibraryInstaller
 	}
 
 	/**
-	 * @deprecated
-	 *
-	 * @param Event $event
+	 * @deprecated This is the old script hook and will get removed soon.
 	 */
 	static public function updateContaoPackage(Event $event)
 	{
-		static::preUpdate($event);
 	}
 
 	/**
-	 * @deprecated
-	 *
-	 * @param Event $event
+	 * @deprecated This is the old script hook and will get removed soon.
 	 */
 	static public function updateComposerConfig(Event $event)
 	{
-		static::preUpdate($event);
 	}
 
+	/**
+	 * @deprecated This is the old script hook and will get removed soon.
+	 */
 	static public function preUpdate(Event $event)
 	{
-		$io       = $event->getIO();
-		$composer = $event->getComposer();
-
-		ConfigManipulator::run($io, $composer);
 	}
 
+	/**
+	 * @deprecated This is the old script hook and will get removed soon.
+	 */
 	static public function createRunonce(Event $event)
 	{
-		static::postUpdate($event);
 	}
 
+	/**
+	 * @deprecated This is the old script hook and will get removed soon.
+	 */
 	static public function postUpdate(Event $event)
 	{
-		$io   = $event->getIO();
-		$root = Plugin::getContaoRoot(
-			$event
-				->getComposer()
-				->getPackage()
-		);
-
-		RunonceManager::createRunonce($io, $root);
-		static::cleanCache($io, $root);
-	}
-
-	static public function cleanCache(IOInterface $io, $root)
-	{
-		// clean cache
-		$fs = new Filesystem();
-		foreach (array('config', 'dca', 'language', 'sql') as $dir) {
-			$cache = $root . '/system/cache/' . $dir;
-			if (is_dir($cache)) {
-				$io->write(
-					sprintf(
-						'<info>Clean contao internal %s cache</info>',
-						$dir
-					)
-				);
-				$fs->removeDirectory($cache);
-			}
-		}
 	}
 
 	static public function postAutoloadDump(Event $event)

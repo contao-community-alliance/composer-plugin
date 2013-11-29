@@ -16,18 +16,22 @@
 namespace ContaoCommunityAlliance\ComposerInstaller;
 
 use Composer\Composer;
+use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
+use Composer\Util\Filesystem;
 
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
  * into the Contao file hierarchy.
  */
 class Plugin
-	implements PluginInterface
+	implements PluginInterface, EventSubscriberInterface
 {
 	/**
 	 * @var Composer
@@ -55,6 +59,16 @@ class Plugin
 		$this->injectRequires();
 		$this->addLocalArtifactsRepository();
 		$this->addLegacyPackagesRepository();
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public static function getSubscribedEvents()
+	{
+		return array(
+			PluginEvents::COMMAND => 'handleCommand',
+		);
 	}
 
 	/**
@@ -104,6 +118,67 @@ class Plugin
 			$this->composer->getEventDispatcher()
 		);
 		$this->composer->getRepositoryManager()->addRepository($legacyPackagistRepository);
+	}
+
+	/**
+	 * Handle command events.
+	 *
+	 * @param CommandEvent $event
+	 */
+	public function handleCommand(CommandEvent $event)
+	{
+		switch ($event->getCommandName())
+		{
+			case 'pre-update-cmd':
+
+				ConfigManipulator::run($this->io, $this->composer);
+				break;
+			case 'post-update-cmd':
+				$package = $this->composer->getPackage();
+				$root = Plugin::getContaoRoot($package);
+
+				$this->createRunonce($this->io, $root);
+				$this->cleanCache($this->io, $root);
+				break;
+			case 'post-autoload-dump':
+				ModuleInstaller::postAutoloadDump($event);
+				break;
+		}
+	}
+
+	/**
+	 * Create the global runonce.php after updates has been installed.
+	 *
+	 * @param IOInterface $io
+	 * @param string      $root The contao installation root.
+	 */
+	public function createRunonce(IOInterface $io, $root)
+	{
+		RunonceManager::createRunonce($io, $root);
+	}
+
+	/**
+	 * Clean the internal cache of Contao after updates has been installed.
+	 *
+	 * @param IOInterface $io
+	 * @param string      $root The contao installation root.
+	 */
+	public function cleanCache(IOInterface $io, $root)
+	{
+		// clean cache
+		$fs = new Filesystem();
+		foreach (array('config', 'dca', 'language', 'sql') as $dir) {
+			$cache = $root . '/system/cache/' . $dir;
+			if (is_dir($cache)) {
+				$io->write(
+					sprintf(
+						'<info>Clean contao internal %s cache</info>',
+						$dir
+					)
+				);
+				$fs->removeDirectory($cache);
+			}
+		}
 	}
 
 	/**
