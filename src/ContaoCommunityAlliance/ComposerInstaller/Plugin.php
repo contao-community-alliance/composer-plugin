@@ -54,7 +54,13 @@ class Plugin
 
 		$installationManager = $composer->getInstallationManager();
 
-		$installer = new ModuleInstaller($inputOutput, $composer);
+		$config = $composer->getConfig();
+		if ($config->get('preferred-install') == 'dist') {
+			$installer = new CopyInstaller($inputOutput, $composer);
+		}
+		else {
+			$installer = new SymlinkInstaller($inputOutput, $composer);
+		}
 		$installationManager->addInstaller($installer);
 
 		$this->injectRequires();
