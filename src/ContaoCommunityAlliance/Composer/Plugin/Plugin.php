@@ -18,6 +18,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\Link;
 use Composer\Package\RootPackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -26,6 +27,7 @@ use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Util\Filesystem;
+use Composer\Package\LinkConstraint\EmptyConstraint;
 
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
@@ -88,7 +90,15 @@ class Plugin
 		$requires = $package->getRequires();
 
 		if (!isset($requires['contao-community-alliance/composer'])) {
-			$requires['contao-community-alliance/composer'] = '*';
+			$constraint = new EmptyConstraint();
+			$constraint->setPrettyString('*');
+			$requires['contao-community-alliance/composer'] = new Link(
+				'contao/core',
+				'contao-community-alliance/composer',
+				$constraint,
+				'requires',
+				'*'
+			);
 			$package->setRequires($requires);
 		}
 	}
