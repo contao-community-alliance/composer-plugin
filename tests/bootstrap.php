@@ -27,7 +27,7 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 	exit(1);
 }
 
-$loader->add('ContaoCommunityAlliance\ComposerInstaller', __DIR__);
+$loader->add('ContaoCommunityAlliance\Composer\Plugin', __DIR__);
 
 require __DIR__.'/ContaoCommunityAlliance/ComposerInstaller/Test/TestCase.php';
 

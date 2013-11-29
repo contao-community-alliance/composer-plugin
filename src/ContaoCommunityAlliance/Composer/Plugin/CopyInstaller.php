@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Autoload\ClassMapGenerator;
 use Composer\Composer;

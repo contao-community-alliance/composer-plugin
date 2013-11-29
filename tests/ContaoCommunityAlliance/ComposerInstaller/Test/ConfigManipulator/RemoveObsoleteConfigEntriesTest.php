@@ -13,10 +13,10 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller\Test\ConfigManipulator;
+namespace ContaoCommunityAlliance\Composer\Plugin\Test\ConfigManipulator;
 
-use ContaoCommunityAlliance\ComposerInstaller\Test\TestCase;
-use ContaoCommunityAlliance\ComposerInstaller\ConfigManipulator;
+use ContaoCommunityAlliance\Composer\Plugin\Test\TestCase;
+use ContaoCommunityAlliance\Composer\Plugin\ConfigManipulator;
 
 class RemoveObsoleteConfigEntriesTest extends TestCase
 {

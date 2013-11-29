@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
@@ -25,6 +25,15 @@ use Composer\Package\Version\VersionParser;
  */
 class ConfigManipulator
 {
+	/**
+	 * Run all configuration updates.
+	 *
+	 * @param IOInterface $inputOutput
+	 * @param Composer    $composer
+	 *
+	 * @throws ConfigUpdateException
+	 * @throws null
+	 */
 	static public function run(IOInterface $inputOutput, Composer $composer)
 	{
 		/** @var \Composer\Package\RootPackage $package */

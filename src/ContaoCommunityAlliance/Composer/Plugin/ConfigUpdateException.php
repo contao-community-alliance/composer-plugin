@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin;
 
 /**
  * Exception when the configuration was updated through the pre-update scripts.

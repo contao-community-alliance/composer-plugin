@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Autoload\ClassMapGenerator;
 use Composer\Composer;
@@ -55,41 +55,6 @@ abstract class AbstractInstaller extends LibraryInstaller
 	static public function isDistInstallPreferred(Composer $composer)
 	{
 		return static::getPreferredInstall($composer) == 'dist';
-	}
-
-	/**
-	 * @deprecated This is the old script hook and will get removed soon.
-	 */
-	static public function updateContaoPackage()
-	{
-	}
-
-	/**
-	 * @deprecated This is the old script hook and will get removed soon.
-	 */
-	static public function updateComposerConfig()
-	{
-	}
-
-	/**
-	 * @deprecated This is the old script hook and will get removed soon.
-	 */
-	static public function preUpdate()
-	{
-	}
-
-	/**
-	 * @deprecated This is the old script hook and will get removed soon.
-	 */
-	static public function createRunonce()
-	{
-	}
-
-	/**
-	 * @deprecated This is the old script hook and will get removed soon.
-	 */
-	static public function postUpdate()
-	{
 	}
 
 	static public function postAutoloadDump(Event $event)

@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller\Test;
+namespace ContaoCommunityAlliance\Composer\Plugin\Test;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {

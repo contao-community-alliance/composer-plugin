@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\ComposerInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
@@ -66,7 +66,7 @@ class RunonceManager
 			$runonce = <<<EOF
 <?php
 
-\$executor = new \ContaoCommunityAlliance\ComposerInstaller\RunonceExecutor();
+\$executor = new \ContaoCommunityAlliance\Composer\Plugin\RunonceExecutor();
 \$executor->run($array);
 
 EOF;
