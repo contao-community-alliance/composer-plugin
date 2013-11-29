@@ -19,6 +19,8 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Plugin\PluginInterface;
+use Composer\Repository\ArtifactRepository;
+use Composer\Repository\ComposerRepository;
 
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
@@ -28,14 +30,80 @@ class Plugin
 	implements PluginInterface
 {
 	/**
+	 * @var Composer
+	 */
+	protected $composer;
+
+	/**
+	 * @var IOInterface
+	 */
+	protected $io;
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function activate(Composer $composer, IOInterface $io)
 	{
+		$this->composer = $composer;
+		$this->io       = $io;
+
 		$installationManager = $composer->getInstallationManager();
 
 		$installer = new ModuleInstaller($io, $composer);
 		$installationManager->addInstaller($installer);
+
+		$this->injectRequires();
+		$this->addLocalArtifactsRepository();
+		$this->addLegacyPackagesRepository();
+	}
+
+	/**
+	 * Inject the requirements into the root package.
+	 */
+	public function injectRequires()
+	{
+		$package  = $this->composer->getPackage();
+		$requires = $package->getRequires();
+
+		if (!isset($requires['contao-community-alliance/composer'])) {
+			$requires['contao-community-alliance/composer'] = '*';
+			$package->setRequires($requires);
+		}
+	}
+
+	/**
+	 * Add the local artifacts repository to the composer installation.
+	 *
+	 * @param Composer $composer The composer instance.
+	 *
+	 * @return void
+	 */
+	public function addLocalArtifactsRepository()
+	{
+		$contaoRoot = static::getContaoRoot($this->composer->getPackage());
+		$artifactRepositoryPath = $contaoRoot . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'packages';
+		if (is_dir($artifactRepositoryPath)) {
+			$artifactRepository = new ArtifactRepository(array('url' => $artifactRepositoryPath), $this->io);
+			$this->composer->getRepositoryManager()->addRepository($artifactRepository);
+		}
+	}
+
+	/**
+	 * Add the legacy Contao packages repository to the composer installation.
+	 *
+	 * @param Composer $composer The composer instance.
+	 *
+	 * @return void
+	 */
+	public function addLegacyPackagesRepository()
+	{
+		$legacyPackagistRepository = new ComposerRepository(
+			array('url' => 'http://legacy-packages-via.contao-community-alliance.org/'),
+			$this->io,
+			$this->composer->getConfig(),
+			$this->composer->getEventDispatcher()
+		);
+		$this->composer->getRepositoryManager()->addRepository($legacyPackagistRepository);
 	}
 
 	/**
