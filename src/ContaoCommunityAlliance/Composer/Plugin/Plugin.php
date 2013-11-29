@@ -153,7 +153,7 @@ class Plugin
 				break;
 
 			case 'post-autoload-dump':
-				ModuleInstaller::postAutoloadDump($event);
+				$this->cleanLocalconfig();
 				break;
 
 			default:
@@ -191,6 +191,40 @@ class Plugin
 					)
 				);
 				$filesystem->removeDirectory($cache);
+			}
+		}
+	}
+
+	public function cleanLocalconfig()
+	{
+		$root = Plugin::getContaoRoot($this->composer->getPackage());
+
+		$localconfig = $root . '/system/config/localconfig.php';
+		if (file_exists($localconfig)) {
+			$lines    = file($localconfig);
+			$remove   = false;
+			$modified = false;
+			foreach ($lines as $index => $line) {
+				$tline = trim($line);
+				if ($tline == '### COMPOSER CLASSES START ###') {
+					$modified = true;
+					$remove   = true;
+					unset($lines[$index]);
+				}
+				else if ($tline == '### COMPOSER CLASSES STOP ###') {
+					$remove = false;
+					unset($lines[$index]);
+				}
+				else if ($remove || $tline == '?>') {
+					unset($lines[$index]);
+				}
+			}
+
+			if ($modified) {
+				$file = implode('', $lines);
+				$file = rtrim($file);
+
+				file_put_contents($root . '/system/config/localconfig.php', $file);
 			}
 		}
 	}

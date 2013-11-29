@@ -45,56 +45,6 @@ abstract class AbstractInstaller extends LibraryInstaller
 	 */
 	const LEGACY_MODULE_TYPE = 'legacy-contao-module';
 
-	static public function getPreferredInstall(Composer $composer)
-	{
-		return $composer
-			->getConfig()
-			->get('preferred-install');
-	}
-
-	static public function isDistInstallPreferred(Composer $composer)
-	{
-		return static::getPreferredInstall($composer) == 'dist';
-	}
-
-	static public function postAutoloadDump(Event $event)
-	{
-		$root = Plugin::getContaoRoot(
-			$event
-				->getComposer()
-				->getPackage()
-		);
-
-		$localconfig = $root . '/system/config/localconfig.php';
-		if (file_exists($localconfig)) {
-			$lines    = file($localconfig);
-			$remove   = false;
-			$modified = false;
-			foreach ($lines as $index => $line) {
-				$tline = trim($line);
-				if ($tline == '### COMPOSER CLASSES START ###') {
-					$modified = true;
-					$remove   = true;
-					unset($lines[$index]);
-				}
-				else if ($tline == '### COMPOSER CLASSES STOP ###') {
-					$remove = false;
-					unset($lines[$index]);
-				}
-				else if ($remove || $tline == '?>') {
-					unset($lines[$index]);
-				}
-			}
-
-			if ($modified) {
-				$file = implode('', $lines);
-				$file = rtrim($file);
-
-				file_put_contents($root . '/system/config/localconfig.php', $file);
-			}
-		}
-	}
-
 	static public function unprefixPath($prefix, $path)
 	{
 		$len = strlen($prefix);
