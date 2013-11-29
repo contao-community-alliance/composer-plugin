@@ -223,7 +223,7 @@ class Plugin
 
 	public function cleanLocalconfig()
 	{
-		$root = Plugin::getContaoRoot($this->composer->getPackage());
+		$root = static::getContaoRoot($this->composer->getPackage());
 
 		$localconfig = $root . '/system/config/localconfig.php';
 		if (file_exists($localconfig)) {
