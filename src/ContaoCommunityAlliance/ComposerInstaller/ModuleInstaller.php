@@ -61,35 +61,35 @@ class ModuleInstaller extends LibraryInstaller
 	/**
 	 * @deprecated This is the old script hook and will get removed soon.
 	 */
-	static public function updateContaoPackage(Event $event)
+	static public function updateContaoPackage()
 	{
 	}
 
 	/**
 	 * @deprecated This is the old script hook and will get removed soon.
 	 */
-	static public function updateComposerConfig(Event $event)
+	static public function updateComposerConfig()
 	{
 	}
 
 	/**
 	 * @deprecated This is the old script hook and will get removed soon.
 	 */
-	static public function preUpdate(Event $event)
+	static public function preUpdate()
 	{
 	}
 
 	/**
 	 * @deprecated This is the old script hook and will get removed soon.
 	 */
-	static public function createRunonce(Event $event)
+	static public function createRunonce()
 	{
 	}
 
 	/**
 	 * @deprecated This is the old script hook and will get removed soon.
 	 */
-	static public function postUpdate(Event $event)
+	static public function postUpdate()
 	{
 	}
 
@@ -316,199 +316,152 @@ class ModuleInstaller extends LibraryInstaller
 
 	protected function updateSources($map, PackageInterface $package)
 	{
+		// use copies
+		if (static::isDistInstallPreferred($this->composer)) {
+			$this->updateCopies($map, $package);
+		}
+
+		// use symlinks
+		else {
+			$this->updateSymlinks($map, $package);
+		}
+	}
+
+	protected function updateCopies($map, PackageInterface $package)
+	{
+		$deleteCount = 0;
+		$copyCount   = 0;
+
+		$root        = Plugin::getContaoRoot($this->composer->getPackage());
+		$installPath = $this->getInstallPath($package);
+		$sources     = $this->getSourcesSpec($package);
+
+		// remove symlinks
+		$this->removeAllSymlinks($map, $root, $deleteCount);
+
+		// update copies
+		$copies = $this->updateAllCopies($sources, $root, $installPath, $copyCount);
+
+		// remove obsolete copies
+		$this->removeObsoleteCopies($map, $copies, $root, $deleteCount);
+
+		if ($deleteCount && !$this->io->isVerbose()) {
+			$this->io->write(
+				sprintf(
+					'  - removed <info>%d</info> files',
+					$deleteCount
+				)
+			);
+		}
+
+		if ($copyCount && !$this->io->isVerbose()) {
+			$this->io->write(
+				sprintf(
+					'  - installed <info>%d</info> files',
+					$copyCount
+				)
+			);
+		}
+	}
+
+	protected function removeAllSymlinks($map, $root, &$deleteCount)
+	{
+		foreach ($map['links'] as $link => $target) {
+			if ($this->io->isVerbose()) {
+				$this->io->write(
+					sprintf(
+						'  - rm link <info>%s</info>',
+						$link
+					)
+				);
+			}
+
+			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $link);
+			$deleteCount++;
+		}
+	}
+
+	protected function updateAllCopies($sources, $root, $installPath, &$copyCount)
+	{
+		$copies = array();
+		foreach ($sources as $source => $target) {
+			if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
+				$files    = array();
+				$iterator = new \RecursiveDirectoryIterator(
+					$installPath . DIRECTORY_SEPARATOR . $source,
+					\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+				);
+				$iterator = new \RecursiveIteratorIterator(
+					$iterator
+				);
+				foreach ($iterator as $sourceFile) {
+					$unPrefixedPath     = self::unprefixPath(
+						$installPath . DIRECTORY_SEPARATOR . ($source ? $source . DIRECTORY_SEPARATOR : ''),
+						$sourceFile->getRealPath()
+					);
+					$targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
+					$files[$targetPath] = $sourceFile;
+				}
+			}
+			else {
+				$files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
+			}
+
+			/** @var \SplFileInfo $sourceFile */
+			foreach ($files as $targetPath => $sourceFile) {
+				if ($this->io->isVerbose()) {
+					$this->io->write(
+						sprintf(
+							'  - cp <info>%s</info>',
+							$targetPath
+						)
+					);
+				}
+
+				$this->filesystem->ensureDirectoryExists(dirname($root . DIRECTORY_SEPARATOR . $targetPath));
+				copy($sourceFile->getRealPath(), $root . DIRECTORY_SEPARATOR . $targetPath);
+				$copyCount++;
+				$copies[] = $targetPath;
+			}
+		}
+
+		return $copies;
+	}
+
+	protected function removeObsoleteCopies($map, $copies, $root, &$deleteCount)
+	{
+		$obsoleteCopies = array_diff($map['copies'], $copies);
+		foreach ($obsoleteCopies as $obsoleteCopy) {
+			if ($this->io->isVerbose()) {
+				$this->io->write(
+					sprintf(
+						'  - rm obsolete <info>%s</info>',
+						$obsoleteCopy
+					)
+				);
+			}
+			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
+			$deleteCount++;
+		}
+	}
+
+	protected function updateSymlinks($map, PackageInterface $package)
+	{
 		$root        = Plugin::getContaoRoot($this->composer->getPackage());
 		$installPath = $this->getInstallPath($package);
 		$sources     = $this->getSourcesSpec($package);
 
 		$deleteCount = 0;
 		$linkCount   = 0;
-		$copyCount   = 0;
 
-		// use copies
-		if (static::isDistInstallPreferred($this->composer)) {
-			// remove symlinks
-			foreach ($map['links'] as $link => $target) {
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - rm link <info>%s</info>',
-							$link
-						)
-					);
-				}
+		// remove copies
+		$this->removeAllCopies($map, $root, $deleteCount);
 
-				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $link);
-				$deleteCount++;
-			}
+		// update symlinks
+		$links = $this->updateAllSymlinks($sources, $root, $installPath, $linkCount);
 
-			// update copies
-			$copies = array();
-			foreach ($sources as $source => $target) {
-				if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
-					$files    = array();
-					$iterator = new \RecursiveDirectoryIterator(
-						$installPath . DIRECTORY_SEPARATOR . $source,
-						\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
-					);
-					$iterator = new \RecursiveIteratorIterator(
-						$iterator
-					);
-					foreach ($iterator as $sourceFile) {
-						$unPrefixedPath     = self::unprefixPath(
-							$installPath . DIRECTORY_SEPARATOR . ($source ? $source . DIRECTORY_SEPARATOR : ''),
-							$sourceFile->getRealPath()
-						);
-						$targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
-						$files[$targetPath] = $sourceFile;
-					}
-				}
-				else {
-					$files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
-				}
-
-				/** @var \SplFileInfo $sourceFile */
-				foreach ($files as $targetPath => $sourceFile) {
-					if ($this->io->isVerbose()) {
-						$this->io->write(
-							sprintf(
-								'  - cp <info>%s</info>',
-								$targetPath
-							)
-						);
-					}
-
-					$this->filesystem->ensureDirectoryExists(dirname($root . DIRECTORY_SEPARATOR . $targetPath));
-					copy($sourceFile->getRealPath(), $root . DIRECTORY_SEPARATOR . $targetPath);
-					$copyCount++;
-					$copies[] = $targetPath;
-				}
-			}
-
-			$obsoleteCopies = array_diff($map['copies'], $copies);
-			foreach ($obsoleteCopies as $obsoleteCopy) {
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - rm obsolete <info>%s</info>',
-							$obsoleteCopy
-						)
-					);
-				}
-				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
-				$deleteCount++;
-			}
-		}
-
-		// use symlinks
-		else {
-			// remove copies
-			foreach ($map['copies'] as $target) {
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - rm copy <info>%s</info>',
-							$target
-						)
-					);
-				}
-
-				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $target);
-				$deleteCount++;
-				$this->removeEmptyDirectories(dirname($root . DIRECTORY_SEPARATOR . $target));
-			}
-
-			// update symlinks
-			$links = array();
-			foreach ($sources as $target => $link) {
-				$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-				$linkReal   = $root . DIRECTORY_SEPARATOR . $link;
-				$linkRel    = self::unprefixPath($root . DIRECTORY_SEPARATOR, $linkReal);
-
-				if (file_exists($linkReal)) {
-					if (!is_link($linkReal)) {
-						throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
-					}
-				}
-
-				$targetParts = array_values(
-					array_filter(
-						explode(DIRECTORY_SEPARATOR, $targetReal)
-					)
-				);
-				$linkParts   = array_values(
-					array_filter(
-						explode(DIRECTORY_SEPARATOR, $linkReal)
-					)
-				);
-
-				// calculate a relative link target
-				$linkTargetParts = array();
-
-				while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
-					array_shift($targetParts);
-					array_shift($linkParts);
-				}
-
-				$n = count($linkParts);
-				// start on $i=1 -> skip the link name itself
-				for ($i = 1; $i < $n; $i++) {
-					$linkTargetParts[] = '..';
-				}
-
-				$linkTargetParts = array_merge(
-					$linkTargetParts,
-					$targetParts
-				);
-
-				$linkTarget = implode(DIRECTORY_SEPARATOR, $linkTargetParts);
-
-				$links[] = $linkRel;
-
-				if (is_link($linkReal)) {
-					// link target has changed
-					if (readlink($linkReal) != $linkTarget) {
-						unlink($linkReal);
-					}
-					// link exists and have the correct target
-					else {
-						continue;
-					}
-				}
-
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - symlink <info>%s</info>',
-							$linkRel
-						)
-					);
-				}
-
-				$linkParent = dirname($linkReal);
-				if (!is_dir($linkParent)) {
-					mkdir($linkParent, 0777, true);
-				}
-
-				symlink($linkTarget, $linkReal);
-				$linkCount++;
-			}
-
-			// remove obsolete links
-			$obsoleteLinks = array_diff(array_keys($map['links']), $links);
-			foreach ($obsoleteLinks as $obsoleteLink) {
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - rm symlink <info>%s</info>',
-							$obsoleteLink
-						)
-					);
-				}
-
-				$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteLink);
-				$deleteCount++;
-			}
-		}
+		// remove obsolete links
+		$this->removeObsoleteSymlinks($map, $links, $root, $deleteCount);
 
 		if ($deleteCount && !$this->io->isVerbose()) {
 			$this->io->write(
@@ -527,14 +480,120 @@ class ModuleInstaller extends LibraryInstaller
 				)
 			);
 		}
+	}
 
-		if ($copyCount && !$this->io->isVerbose()) {
-			$this->io->write(
-				sprintf(
-					'  - installed <info>%d</info> files',
-					$copyCount
+	protected function removeAllCopies($map, $root, &$deleteCount)
+	{
+		foreach ($map['copies'] as $target) {
+			if ($this->io->isVerbose()) {
+				$this->io->write(
+					sprintf(
+						'  - rm copy <info>%s</info>',
+						$target
+					)
+				);
+			}
+
+			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $target);
+			$deleteCount++;
+			$this->removeEmptyDirectories(dirname($root . DIRECTORY_SEPARATOR . $target));
+		}
+	}
+
+	protected function updateAllSymlinks($sources, $root, $installPath, &$linkCount)
+	{
+		$links = array();
+		foreach ($sources as $target => $link) {
+			$targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
+			$linkReal   = $root . DIRECTORY_SEPARATOR . $link;
+			$linkRel    = self::unprefixPath($root . DIRECTORY_SEPARATOR, $linkReal);
+
+			if (file_exists($linkReal)) {
+				if (!is_link($linkReal)) {
+					throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
+				}
+			}
+
+			$targetParts = array_values(
+				array_filter(
+					explode(DIRECTORY_SEPARATOR, $targetReal)
 				)
 			);
+			$linkParts   = array_values(
+				array_filter(
+					explode(DIRECTORY_SEPARATOR, $linkReal)
+				)
+			);
+
+			// calculate a relative link target
+			$linkTargetParts = array();
+
+			while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
+				array_shift($targetParts);
+				array_shift($linkParts);
+			}
+
+			$n = count($linkParts);
+			// start on $i=1 -> skip the link name itself
+			for ($i = 1; $i < $n; $i++) {
+				$linkTargetParts[] = '..';
+			}
+
+			$linkTargetParts = array_merge(
+				$linkTargetParts,
+				$targetParts
+			);
+
+			$linkTarget = implode(DIRECTORY_SEPARATOR, $linkTargetParts);
+
+			$links[] = $linkRel;
+
+			if (is_link($linkReal)) {
+				// link target has changed
+				if (readlink($linkReal) != $linkTarget) {
+					unlink($linkReal);
+				}
+				// link exists and have the correct target
+				else {
+					continue;
+				}
+			}
+
+			if ($this->io->isVerbose()) {
+				$this->io->write(
+					sprintf(
+						'  - symlink <info>%s</info>',
+						$linkRel
+					)
+				);
+			}
+
+			$linkParent = dirname($linkReal);
+			if (!is_dir($linkParent)) {
+				mkdir($linkParent, 0777, true);
+			}
+
+			symlink($linkTarget, $linkReal);
+			$linkCount++;
+		}
+		return $links;
+	}
+
+	protected function removeObsoleteSymlinks($map, $links, $root, &$deleteCount)
+	{
+		$obsoleteLinks = array_diff(array_keys($map['links']), $links);
+		foreach ($obsoleteLinks as $obsoleteLink) {
+			if ($this->io->isVerbose()) {
+				$this->io->write(
+					sprintf(
+						'  - rm symlink <info>%s</info>',
+						$obsoleteLink
+					)
+				);
+			}
+
+			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteLink);
+			$deleteCount++;
 		}
 	}
 
@@ -626,7 +685,7 @@ class ModuleInstaller extends LibraryInstaller
 
 			if (is_array($contao) && array_key_exists('userfiles', $contao)) {
 				$root       = Plugin::getContaoRoot($this->composer->getPackage());
-				$uploadPath = $GLOBALS['TL_CONFIG']['uploadPath'];
+				$uploadPath = $this->getUploadPath();
 
 				$userfiles   = (array) $contao['userfiles'];
 				$installPath = $this->getInstallPath($package);
@@ -703,6 +762,17 @@ class ModuleInstaller extends LibraryInstaller
 				)
 			);
 		}
+	}
+
+	/**
+	 * @return string
+	 *
+	 * @SuppressWarnings(PHPMD.Superglobals)
+	 * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+	 */
+	protected function getUploadPath()
+	{
+		return $GLOBALS['TL_CONFIG']['uploadPath'];
 	}
 
 	/**

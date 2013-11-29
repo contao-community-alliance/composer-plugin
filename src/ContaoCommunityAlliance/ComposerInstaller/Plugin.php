@@ -42,19 +42,19 @@ class Plugin
 	/**
 	 * @var IOInterface
 	 */
-	protected $io;
+	protected $inputOutput;
 
 	/**
 	 * {@inheritdoc}
 	 */
-	public function activate(Composer $composer, IOInterface $io)
+	public function activate(Composer $composer, IOInterface $inputOutput)
 	{
 		$this->composer = $composer;
-		$this->io       = $io;
+		$this->io       = $inputOutput;
 
 		$installationManager = $composer->getInstallationManager();
 
-		$installer = new ModuleInstaller($io, $composer);
+		$installer = new ModuleInstaller($inputOutput, $composer);
 		$installationManager->addInstaller($installer);
 
 		$this->injectRequires();
@@ -157,42 +157,44 @@ class Plugin
 	/**
 	 * Create the global runonce.php after updates has been installed.
 	 *
-	 * @param IOInterface $io
+	 * @param IOInterface $inputOutput
 	 * @param string      $root The contao installation root.
 	 */
-	public function createRunonce(IOInterface $io, $root)
+	public function createRunonce(IOInterface $inputOutput, $root)
 	{
-		RunonceManager::createRunonce($io, $root);
+		RunonceManager::createRunonce($inputOutput, $root);
 	}
 
 	/**
 	 * Clean the internal cache of Contao after updates has been installed.
 	 *
-	 * @param IOInterface $io
+	 * @param IOInterface $inputOutput
 	 * @param string      $root The contao installation root.
 	 */
-	public function cleanCache(IOInterface $io, $root)
+	public function cleanCache(IOInterface $inputOutput, $root)
 	{
 		// clean cache
-		$fs = new Filesystem();
+		$filesystem = new Filesystem();
 		foreach (array('config', 'dca', 'language', 'sql') as $dir) {
 			$cache = $root . '/system/cache/' . $dir;
 			if (is_dir($cache)) {
-				$io->write(
+				$inputOutput->write(
 					sprintf(
 						'<info>Clean contao internal %s cache</info>',
 						$dir
 					)
 				);
-				$fs->removeDirectory($cache);
+				$filesystem->removeDirectory($cache);
 			}
 		}
 	}
 
 	/**
 	 * @draft
+	 *
+	 * @param PreFileDownloadEvent $event
 	 */
-	public function handlePreDownload(PreFileDownloadEvent $event)
+	public function handlePreDownload()
 	{
 		// TODO: handle the pre download event.
 	}
@@ -238,6 +240,14 @@ class Plugin
 		$systemDir = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
 		$configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
 
+		static::detectVersion($systemDir, $configDir, $root);
+		static::loadConfig($configDir);
+
+		return $root;
+	}
+
+	static protected function detectVersion($systemDir, $configDir, $root)
+	{
 		if (!defined('VERSION')) {
 			// Contao 3+
 			if (file_exists(
@@ -257,7 +267,16 @@ class Plugin
 				throw new \RuntimeException('Could not find constants.php in ' . $root);
 			}
 		}
+	}
 
+	/**
+	 * @param $configDir
+	 *
+	 * @SuppressWarnings(PHPMD.Superglobals)
+	 * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+	 */
+	static protected function loadConfig($configDir)
+	{
 		if (empty($GLOBALS['TL_CONFIG'])) {
 			if (version_compare(VERSION, '3', '>=')) {
 				// load default.php
@@ -274,7 +293,5 @@ class Plugin
 				require_once($file);
 			}
 		}
-
-		return $root;
 	}
 }

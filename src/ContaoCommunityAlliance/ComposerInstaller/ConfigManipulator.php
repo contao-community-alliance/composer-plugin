@@ -25,7 +25,7 @@ use Composer\Package\Version\VersionParser;
  */
 class ConfigManipulator
 {
-	static public function run(IOInterface $io, Composer $composer)
+	static public function run(IOInterface $inputOutput, Composer $composer)
 	{
 		/** @var \Composer\Package\RootPackage $package */
 		$package = $composer->getPackage();
@@ -54,7 +54,7 @@ class ConfigManipulator
 		if ($contaoVersionUpdated) {
 			// run all runonces after contao version changed
 			RunonceManager::addAllRunonces($composer);
-			RunonceManager::createRunonce($io, $root);
+			RunonceManager::createRunonce($inputOutput, $root);
 		}
 
 		if ($jsonModified) {

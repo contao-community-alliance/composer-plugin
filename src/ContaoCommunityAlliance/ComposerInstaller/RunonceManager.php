@@ -36,21 +36,21 @@ class RunonceManager
 	/**
 	 * Create the global runonce file TL_ROOT/system/runonce.php file if required.
 	 *
-	 * @param IOInterface $io   The composer io stream.
+	 * @param IOInterface $inputOutput   The composer io stream.
 	 * @param string      $root The Contao installation root path.
 	 */
-	static public function createRunonce(IOInterface $io, $root)
+	static public function createRunonce(IOInterface $inputOutput, $root)
 	{
 		// create runonce
 		$runonces = array_unique(static::$runonces);
 		if (count($runonces)) {
-			$file = 'system/runonce.php';
-			$n    = 0;
+			$file  = 'system/runonce.php';
+			$index = 0;
 			while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
-				$n++;
-				$file = 'system/runonce_' . $n . '.php';
+				$index++;
+				$file = 'system/runonce_' . $index . '.php';
 			}
-			if ($n > 0) {
+			if ($index > 0) {
 				rename(
 					$root . '/system/runonce.php',
 					$root . DIRECTORY_SEPARATOR . $file
@@ -72,15 +72,15 @@ class RunonceManager
 EOF;
 			file_put_contents($root . '/system/runonce.php', $runonce);
 
-			$io->write(
+			$inputOutput->write(
 				sprintf(
 					'<info>Runonce created with %d updates</info>',
 					count($runonces)
 				)
 			);
-			if ($io->isVerbose()) {
+			if ($inputOutput->isVerbose()) {
 				foreach ($runonces as $runonce) {
-					$io->write('  - ' . $runonce);
+					$inputOutput->write('  - ' . $runonce);
 				}
 			}
 		}
