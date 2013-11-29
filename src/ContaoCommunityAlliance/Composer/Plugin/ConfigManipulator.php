@@ -43,28 +43,12 @@ class ConfigManipulator
 		$root = Plugin::getContaoRoot($package);
 
 		$messages     = array();
-		$jsonModified = false;
 		$configFile   = new JsonFile('composer.json');
 		$configJson   = $configFile->read();
 
 		// NOTE: we do not need our hard-coded scripts anymore, since we have a plugin
 
-		$jsonModified |= static::removeObsoleteScripts($configJson, $messages);
-		$jsonModified |= static::removeObsoleteConfigEntries($configJson, $messages);
-		$jsonModified |= static::removeObsoleteRepositories($configJson, $messages);
-		$jsonModified |= static::removeObsoleteRequires($configJson, $messages);
-		$jsonModified |= $contaoVersionUpdated = static::updateContaoVersion(
-			$configJson,
-			$messages,
-			$composer
-		);
-		$jsonModified |= static::updateProvides($configJson, $messages);
-
-		if ($contaoVersionUpdated) {
-			// run all runonces after contao version changed
-			RunonceManager::addAllRunonces($composer);
-			RunonceManager::createRunonce($inputOutput, $root);
-		}
+		$jsonModified = static::runUpdates($inputOutput, $composer, $root, $configJson, $messages);
 
 		if ($jsonModified) {
 			$configFile->write($configJson);
@@ -76,6 +60,35 @@ class ConfigManipulator
 			}
 			throw $exception;
 		}
+	}
+
+	static public function runUpdates(
+		IOInterface $inputOutput,
+		Composer $composer,
+		$root,
+		&$configJson,
+		&$messages
+	) {
+		$jsonModified = false;
+
+		$jsonModified = static::removeObsoleteScripts($configJson, $messages) || $jsonModified;
+		$jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
+		$jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
+		$jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
+		$jsonModified = $contaoVersionUpdated = static::updateContaoVersion(
+			$configJson,
+			$messages,
+			$composer
+		) || $jsonModified;
+		$jsonModified = static::updateProvides($configJson, $messages) || $jsonModified;
+
+		if ($contaoVersionUpdated) {
+			// run all runonces after contao version changed
+			RunonceManager::addAllRunonces($composer);
+			RunonceManager::createRunonce($inputOutput, $root);
+		}
+
+		return $jsonModified;
 	}
 
 	/**
