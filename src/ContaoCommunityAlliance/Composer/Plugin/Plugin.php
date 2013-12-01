@@ -83,7 +83,7 @@ class Plugin
 	public static function getSubscribedEvents()
 	{
 		return array(
-			PluginEvents::COMMAND           => 'handleCommand',
+			PluginEvents::COMMAND            => 'handleCommand',
 			ScriptEvents::POST_UPDATE_CMD    => 'handleScriptEvent',
 			ScriptEvents::POST_AUTOLOAD_DUMP => 'handleScriptEvent',
 			PluginEvents::PRE_FILE_DOWNLOAD  => 'handlePreDownload',
