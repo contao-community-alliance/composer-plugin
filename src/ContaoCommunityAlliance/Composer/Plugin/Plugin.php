@@ -158,22 +158,29 @@ class Plugin
 	}
 
 	/**
-	 * Inject the requirements into the root package.
+	 * Inject the contao/core as permanent requirement into the root package.
 	 */
 	public function injectRequires()
 	{
 		$package  = $this->composer->getPackage();
 		$requires = $package->getRequires();
 
-		if (!isset($requires['contao-community-alliance/composer'])) {
-			$constraint = new EmptyConstraint();
-			$constraint->setPrettyString('*');
-			$requires['contao-community-alliance/composer'] = new Link(
+		if (!isset($requires['contao/core'])) {
+			// load here to make sure the VERSION constant exists
+			static::getContaoRoot($this->composer->getPackage());
+
+			$versionParser = new VersionParser();
+			$prettyVersion = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
+			$version = $versionParser->normalize($prettyVersion);
+
+			$constraint = new VersionConstraint('==', $version);
+			$constraint->setPrettyString($prettyVersion);
+			$requires['contao/core'] = new Link(
 				'contao/core',
-				'contao-community-alliance/composer',
+				'contao/core',
 				$constraint,
 				'requires',
-				'*'
+				$prettyVersion
 			);
 			$package->setRequires($requires);
 		}
