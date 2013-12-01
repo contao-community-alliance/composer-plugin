@@ -18,18 +18,22 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Filesystem;
 use Composer\Package\LinkConstraint\EmptyConstraint;
+use Composer\Package\LinkConstraint\VersionConstraint;
 
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
@@ -67,6 +71,7 @@ class Plugin
 		}
 		$installationManager->addInstaller($installer);
 
+		$this->injectContaoCore();
 		$this->injectRequires();
 		$this->addLocalArtifactsRepository();
 		$this->addLegacyPackagesRepository();
@@ -83,6 +88,73 @@ class Plugin
 			ScriptEvents::POST_AUTOLOAD_DUMP => 'handleScriptEvent',
 			PluginEvents::PRE_FILE_DOWNLOAD  => 'handlePreDownload',
 		);
+	}
+
+	/**
+	 * Inject the currently installed contao/core as metapackage.
+	 */
+	public function injectContaoCore()
+	{
+		$root = static::getContaoRoot($this->composer->getPackage());
+
+		$versionParser = new VersionParser();
+		$prettyVersion = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
+		$version       = $versionParser->normalize($prettyVersion);
+
+		$contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
+		$contaoCore->setType('metapackage');
+
+		// detect provided swiftmailer version
+		switch (VERSION) {
+			case '2.11':
+				$file = $root . '/plugins/swiftmailer/VERSION';
+				break;
+			case '3.0':
+				$file = $root . '/system/vendor/swiftmailer/VERSION';
+				break;
+			case '3.1':
+			case '3.2':
+				$file = $root . '/system/modules/core/vendor/swiftmailer/VERSION';
+				break;
+			default:
+				$file = false;
+		}
+
+		if ($file && is_file($file)) {
+			$prettySwiftVersion = file_get_contents($file);
+			$prettySwiftVersion = substr($prettySwiftVersion, 6);
+			$prettySwiftVersion = trim($prettySwiftVersion);
+
+			$swiftVersion = $versionParser->normalize($prettySwiftVersion);
+
+			$swiftConstraint = new VersionConstraint('==', $swiftVersion);
+			$swiftConstraint->setPrettyString($swiftVersion);
+
+			$swiftLink = new Link(
+				'contao/core',
+				'swiftmailer/swiftmailer',
+				$swiftConstraint,
+				'provides',
+				$swiftVersion
+			);
+
+			$contaoCore->setProvides(array('swiftmailer/swiftmailer' => $swiftLink));
+		}
+
+		$clientConstraint = new EmptyConstraint();
+		$clientConstraint->setPrettyString('*');
+		$clientLink = new Link(
+			'contao/core',
+			'contao-community-alliance/composer',
+			$clientConstraint,
+			'requires',
+			'*'
+		);
+		$contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+		$repositoryManager = $this->composer->getRepositoryManager();
+		$localRepository = $repositoryManager->getLocalRepository();
+		$localRepository->addPackage($contaoCore);
 	}
 
 	/**
