@@ -34,21 +34,15 @@ class ConfigManipulator
 	 * @throws ConfigUpdateException
 	 * @throws null
 	 */
-	static public function run(IOInterface $inputOutput, Composer $composer)
+	static public function run()
 	{
-		/** @var \Composer\Package\RootPackage $package */
-		$package = $composer->getPackage();
-
-		// load constants
-		$root = Plugin::getContaoRoot($package);
-
 		$messages     = array();
 		$configFile   = new JsonFile('composer.json');
 		$configJson   = $configFile->read();
 
 		// NOTE: we do not need our hard-coded scripts anymore, since we have a plugin
 
-		$jsonModified = static::runUpdates($inputOutput, $composer, $root, $configJson, $messages);
+		$jsonModified = static::runUpdates($configJson, $messages);
 
 		if ($jsonModified) {
 			$configFile->write($configJson);
@@ -63,9 +57,6 @@ class ConfigManipulator
 	}
 
 	static public function runUpdates(
-		IOInterface $inputOutput,
-		Composer $composer,
-		$root,
 		&$configJson,
 		&$messages
 	) {
@@ -75,18 +66,16 @@ class ConfigManipulator
 		$jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
-		$jsonModified = $contaoVersionUpdated = static::updateContaoVersion(
-			$configJson,
-			$messages,
-			$composer
-		) || $jsonModified;
-		$jsonModified = static::updateProvides($configJson, $messages) || $jsonModified;
+		$jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
 
+		// TODO we need a new contao version change check!!!
+		/*
 		if ($contaoVersionUpdated) {
 			// run all runonces after contao version changed
 			RunonceManager::addAllRunonces($composer);
 			RunonceManager::createRunonce($inputOutput, $root);
 		}
+		*/
 
 		return $jsonModified;
 	}
@@ -251,81 +240,37 @@ class ConfigManipulator
 	}
 
 	/**
-	 * Update the Contao Version in the root composer.json, if it has changed.
+	 * Remove the Contao Version and additional information from the root composer.json.
 	 *
 	 * @return boolean
 	 */
-	static public function updateContaoVersion(
-		&$configJson,
-		&$messages,
-		Composer $composer
-	) {
-		$jsonModified = false;
-
-		// update contao version
-		$package       = $composer->getPackage();
-		$versionParser = new VersionParser();
-		$version       = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
-		$prettyVersion = $versionParser->normalize($version);
-		if ($package->getVersion() !== $prettyVersion) {
-			$configJson['version'] = $version;
-
-			$jsonModified = true;
-			$messages[]   = sprintf(
-				'Contao version changed from <info>%s</info> to <info>%s</info>!',
-				$package->getPrettyVersion(),
-				$version
-			);
-		}
-
-		return $jsonModified;
-	}
-
-	/**
-	 * Update the provides in the root composer.json, if they have changed.
-	 *
-	 * @return boolean
-	 */
-	static public function updateProvides(&$configJson, &$messages)
+	static public function removeObsoleteContaoVersion(&$configJson, &$messages)
 	{
 		$jsonModified = false;
-		$file         = false;
 
-		// add provides
-		switch (VERSION) {
-			case '2.11':
-				$file = TL_ROOT . '/plugins/swiftmailer/VERSION';
-				break;
-			case '3.0':
-				$file = TL_ROOT . '/system/vendor/swiftmailer/VERSION';
-				break;
-			case '3.1':
-			case '3.2':
-				$file = TL_ROOT . '/system/modules/core/vendor/swiftmailer/VERSION';
-				break;
-			default:
-				$swiftVersion = '0';
-		}
-
-		if ($file && is_file($file)) {
-			$swiftVersion = file_get_contents($file);
-			$swiftVersion = substr($swiftVersion, 6);
-			$swiftVersion = trim($swiftVersion);
-		}
-		else {
-			$swiftVersion = '0';
-		}
 		if (
-			!isset($configJson['provide']['swiftmailer/swiftmailer']) ||
-			$configJson['provide']['swiftmailer/swiftmailer'] != $swiftVersion
+			isset($configJson['name']) &&
+			isset($configJson['type']) &&
+			$configJson['name'] == 'contao/core' &&
+			$configJson['type'] == 'metapackage'
 		) {
-			$configJson['provide']['swiftmailer/swiftmailer'] = $swiftVersion;
+			foreach (array('name', 'description', 'type', 'license', 'version') as $key) {
+				if (isset($configJson[$key])) {
+					unset($configJson[$key]);
+				}
+			}
+
+			if (isset($configJson['provide']['swiftmailer/swiftmailer'])) {
+				unset($configJson['provide']['swiftmailer/swiftmailer']);
+
+				if (empty($configJson['provide'])) {
+					unset($configJson['provide']);
+				}
+			}
 
 			$jsonModified = true;
-			$messages[]   = sprintf(
-				'Provided swiftmailer version changed to <info>%s</info>!',
-				$swiftVersion
-			);
+			$messages[]   = 'obsolete contao version and meta information ' .
+				'was removed from root composer.json!';
 		}
 
 		return $jsonModified;

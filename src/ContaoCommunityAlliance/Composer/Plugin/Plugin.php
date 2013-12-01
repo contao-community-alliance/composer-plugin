@@ -234,7 +234,7 @@ class Plugin
 	{
 		switch ($event->getCommandName()) {
 			case 'update':
-				ConfigManipulator::run($this->io, $this->composer);
+				ConfigManipulator::run();
 				break;
 
 			default:
