@@ -103,6 +103,8 @@ class Plugin
 
 		$contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
 		$contaoCore->setType('metapackage');
+		$contaoCore->setDistType('zip');
+		$contaoCore->setInstallationSource('dist');
 
 		// detect provided swiftmailer version
 		switch (VERSION) {
