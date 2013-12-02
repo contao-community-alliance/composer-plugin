@@ -104,6 +104,9 @@ class Plugin
 		$contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
 		$contaoCore->setType('metapackage');
 		$contaoCore->setDistType('zip');
+		$contaoCore->setDistUrl('https://github.com/contao/core/archive/' . VERSION . '.' . BUILD . '.zip');
+		$contaoCore->setDistReference(VERSION . '.' . BUILD);
+		$contaoCore->setDistSha1Checksum(VERSION . '.' . BUILD);
 		$contaoCore->setInstallationSource('dist');
 
 		// detect provided swiftmailer version
