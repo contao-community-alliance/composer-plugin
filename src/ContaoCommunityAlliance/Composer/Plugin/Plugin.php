@@ -20,6 +20,7 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
@@ -95,11 +96,32 @@ class Plugin
 	 */
 	public function injectContaoCore()
 	{
-		$root = static::getContaoRoot($this->composer->getPackage());
+		$repositoryManager = $this->composer->getRepositoryManager();
+		$localRepository = $repositoryManager->getLocalRepository();
 
 		$versionParser = new VersionParser();
 		$prettyVersion = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
 		$version       = $versionParser->normalize($prettyVersion);
+
+		/** @var PackageInterface $localPackage */
+		foreach ($localRepository->getPackages() as $localPackage) {
+			if ($localPackage->getName() == 'contao/core') {
+				if ($localPackage->getType() != 'metapackage') {
+					// stop if the contao package is required somehow
+					// and must not be injected
+					return;
+				}
+				else if ($localPackage->getVersion() == $version) {
+					// stop if the virtual contao package is already injected
+					return;
+				}
+				else {
+					$localRepository->removePackage($localPackage);
+				}
+			}
+		}
+
+		$root = static::getContaoRoot($this->composer->getPackage());
 
 		$contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
 		$contaoCore->setType('metapackage');
@@ -157,8 +179,6 @@ class Plugin
 		);
 		$contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
 
-		$repositoryManager = $this->composer->getRepositoryManager();
-		$localRepository = $repositoryManager->getLocalRepository();
 		$localRepository->addPackage($contaoCore);
 	}
 
