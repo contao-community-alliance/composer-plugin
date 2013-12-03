@@ -2,6 +2,7 @@ Contao Composer Plugin
 ======================
 
 [![Build Status](https://travis-ci.org/contao-community-alliance/composer-plugin.png?branch=master)](https://travis-ci.org/contao-community-alliance/composer-plugin)
+[![Build Status](https://travis-ci.org/contao-community-alliance/composer-plugin.png?branch=develop)](https://travis-ci.org/contao-community-alliance/composer-plugin)
 
 contao composer installer
 
