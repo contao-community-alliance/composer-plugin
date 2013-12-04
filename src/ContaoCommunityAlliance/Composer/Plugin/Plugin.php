@@ -123,12 +123,13 @@ class Plugin
 
 		$root = static::getContaoRoot($this->composer->getPackage());
 
-		$contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
+		$contaoVersion = VERSION . '.' . BUILD;
+		$contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
 		$contaoCore->setType('metapackage');
 		$contaoCore->setDistType('zip');
-		$contaoCore->setDistUrl('https://github.com/contao/core/archive/' . VERSION . '.' . BUILD . '.zip');
-		$contaoCore->setDistReference(VERSION . '.' . BUILD);
-		$contaoCore->setDistSha1Checksum(VERSION . '.' . BUILD);
+		$contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
+		$contaoCore->setDistReference($contaoVersion);
+		$contaoCore->setDistSha1Checksum($contaoVersion);
 		$contaoCore->setInstallationSource('dist');
 
 		// detect provided swiftmailer version
