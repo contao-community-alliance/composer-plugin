@@ -27,7 +27,6 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\Repository\ArrayRepository;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Script\Event;
