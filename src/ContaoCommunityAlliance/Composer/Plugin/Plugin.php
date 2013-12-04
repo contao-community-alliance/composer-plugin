@@ -151,8 +151,9 @@ class Plugin
 	 */
 	public function injectContaoCore()
 	{
+		$root              = static::getContaoRoot($this->composer->getPackage());
 		$repositoryManager = $this->composer->getRepositoryManager();
-		$localRepository = $repositoryManager->getLocalRepository();
+		$localRepository   = $repositoryManager->getLocalRepository();
 
 		$versionParser = new VersionParser();
 		$prettyVersion = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
@@ -175,8 +176,6 @@ class Plugin
 				}
 			}
 		}
-
-		$root = static::getContaoRoot($this->composer->getPackage());
 
 		$contaoVersion = VERSION . '.' . BUILD;
 		$contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
