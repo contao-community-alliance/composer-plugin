@@ -228,7 +228,13 @@ class ConfigManipulator
 		$jsonModified = false;
 
 		// remove contao-community-alliance/composer dependency
-		if (isset($configJson['require']['contao-community-alliance/composer'])) {
+		if (
+			isset($configJson['require']['contao-community-alliance/composer']) &&
+			(
+				$configJson['require']['contao-community-alliance/composer'] == 'dev-master@dev' ||
+				$configJson['require']['contao-community-alliance/composer'] == '*'
+			)
+		) {
 			unset($configJson['require']['contao-community-alliance/composer']);
 
 			$jsonModified = true;
