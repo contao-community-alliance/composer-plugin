@@ -15,20 +15,10 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
-use Composer\Autoload\ClassMapGenerator;
-use Composer\Composer;
-use Composer\IO\IOInterface;
-use Composer\Package\AliasPackage;
-use Composer\Package\CompletePackageInterface;
-use Composer\Package\RootPackageInterface;
-use Composer\Util\Filesystem;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
-use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Script\Event;
 
 /**
  * Basic installer that install Contao extensions.
