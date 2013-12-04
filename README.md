@@ -27,8 +27,10 @@ Installing repository root as module `my-module`:
 ```json
 {
 	"extra": {
-		"sources": {
-			"": "system/modules/my-module"
+		"contao": {
+			"sources": {
+				"": "system/modules/my-module"
+			}
 		}
 	}
 }
@@ -38,8 +40,10 @@ Installing repository sub-path `src/system/modules/my-module` as module `my-modu
 ```json
 {
 	"extra": {
-		"sources": {
-			"src/system/modules/my-module": "system/modules/my-module"
+		"contao": {
+			"sources": {
+				"src/system/modules/my-module": "system/modules/my-module"
+			}
 		}
 	}
 }
@@ -59,8 +63,10 @@ The installer will **never** overwrite a user file.
 ```json
 {
 	"extra": {
-		"userfiles": {
-			"src/system/modules/my-module/files/images": "my-module/images"
+		"contao": {
+			"userfiles": {
+				"src/system/modules/my-module/files/images": "my-module/images"
+			}
 		}
 	}
 }
@@ -77,11 +83,13 @@ There is no need to name them `runonce.php`, feel free to use any other name.
 ```json
 {
 	"extra": {
-		"runonce": [
-			"src/system/modules/my-module/runonce/init_update.php",
-			"src/system/modules/my-module/runonce/do_db_update.php",
-			"src/system/modules/my-module/runonce/refresh_entities.php"
-		]
+		"contao": {
+			"runonce": [
+				"src/system/modules/my-module/runonce/init_update.php",
+				"src/system/modules/my-module/runonce/do_db_update.php",
+				"src/system/modules/my-module/runonce/refresh_entities.php"
+			]
+		}
 	}
 }
 ```
