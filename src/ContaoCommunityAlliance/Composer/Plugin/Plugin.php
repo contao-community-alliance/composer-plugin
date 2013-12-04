@@ -64,10 +64,10 @@ class Plugin
 
 		$config = $composer->getConfig();
 		if ($config->get('preferred-install') == 'dist') {
-			$installer = new CopyInstaller($inputOutput, $composer);
+			$installer = new CopyInstaller($inputOutput, $composer, $this);
 		}
 		else {
-			$installer = new SymlinkInstaller($inputOutput, $composer);
+			$installer = new SymlinkInstaller($inputOutput, $composer, $this);
 		}
 		$installationManager->addInstaller($installer);
 

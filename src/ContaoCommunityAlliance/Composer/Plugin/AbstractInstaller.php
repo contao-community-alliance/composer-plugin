@@ -15,6 +15,8 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
+use Composer\Composer;
+use Composer\IO\IOInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
@@ -35,6 +37,23 @@ abstract class AbstractInstaller extends LibraryInstaller
 	 */
 	const LEGACY_MODULE_TYPE = 'legacy-contao-module';
 
+	/**
+	 * @var Plugin
+	 */
+	protected $plugin;
+
+	/**
+	 * @param IOInterface $inputOutput
+	 *
+	 * @param Composer    $composer
+	 *
+	 * @param Plugin      $plugin
+	 */
+	public function __construct(IOInterface $inputOutput, Composer $composer, Plugin $plugin)
+	{
+		parent::__construct($inputOutput, $composer);
+		$this->plugin = $plugin;
+	}
 	static public function unprefixPath($prefix, $path)
 	{
 		$len = strlen($prefix);
@@ -61,7 +80,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 		$this->updateSources($map, $package);
 		$this->updateUserfiles($package);
 
-		$root        = Plugin::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+		$root        = $this->plugin->getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 		$installPath = self::unprefixPath($root, $this->getInstallPath($package));
 		RunonceManager::addRunonces($package, $installPath);
 	}
@@ -73,7 +92,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 		$this->updateSources($map, $target, $initial);
 		$this->updateUserfiles($target);
 
-		$root        = Plugin::getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+		$root        = $this->plugin->getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 		$installPath = self::unprefixPath($root, $this->getInstallPath($target));
 		RunonceManager::addRunonces($target, $installPath);
 	}
@@ -152,7 +171,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
 			$path = self::unprefixPath(
-				Plugin::getContaoRoot($package),
+				$this->plugin->getContaoRoot($package),
 				$currentPath
 			);
 			RunonceManager::addRunonce($path);
@@ -180,7 +199,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 	protected function mapSources(PackageInterface $package)
 	{
-		$root    = Plugin::getContaoRoot($this->composer->getPackage());
+		$root    = $this->plugin->getContaoRoot($this->composer->getPackage());
 		$sources = $this->getSourcesSpec($package);
 		$map     = array(
 			'copies' => array(),
@@ -223,7 +242,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 	protected function removeSources(PackageInterface $package)
 	{
 		$map  = $this->mapSources($package);
-		$root = Plugin::getContaoRoot($this->composer->getPackage());
+		$root = $this->plugin->getContaoRoot($this->composer->getPackage());
 
 		$count = 0;
 
@@ -271,7 +290,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 	public function removeEmptyDirectories($pathname)
 	{
 		if (is_dir($pathname)) {
-			$root = Plugin::getContaoRoot($this->composer->getPackage());
+			$root = $this->plugin->getContaoRoot($this->composer->getPackage());
 
 			$contents = array_filter(
 				scandir($pathname),
@@ -307,7 +326,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 			$contao = $extra['contao'];
 
 			if (is_array($contao) && array_key_exists('userfiles', $contao)) {
-				$root       = Plugin::getContaoRoot($this->composer->getPackage());
+				$root       = $this->plugin->getContaoRoot($this->composer->getPackage());
 				$uploadPath = $this->getUploadPath();
 
 				$userfiles   = (array) $contao['userfiles'];
