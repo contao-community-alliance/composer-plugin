@@ -57,8 +57,8 @@ class Plugin
 	 */
 	public function activate(Composer $composer, IOInterface $inputOutput)
 	{
-		$this->composer = $composer;
-		$this->io       = $inputOutput;
+		$this->composer    = $composer;
+		$this->inputOutput = $inputOutput;
 
 		$installationManager = $composer->getInstallationManager();
 
@@ -242,7 +242,10 @@ class Plugin
 			'composer' . DIRECTORY_SEPARATOR .
 			'packages';
 		if (is_dir($artifactRepositoryPath)) {
-			$artifactRepository = new ArtifactRepository(array('url' => $artifactRepositoryPath), $this->io);
+			$artifactRepository = new ArtifactRepository(
+				array('url' => $artifactRepositoryPath),
+				$this->inputOutput
+			);
 			$this->composer->getRepositoryManager()
 				->addRepository($artifactRepository);
 		}
@@ -259,7 +262,7 @@ class Plugin
 	{
 		$legacyPackagistRepository = new ComposerRepository(
 			array('url' => 'http://legacy-packages-via.contao-community-alliance.org/'),
-			$this->io,
+			$this->inputOutput,
 			$this->composer->getConfig(),
 			$this->composer->getEventDispatcher()
 		);
@@ -295,8 +298,8 @@ class Plugin
 				$package = $this->composer->getPackage();
 				$root    = static::getContaoRoot($package);
 
-				$this->createRunonce($this->io, $root);
-				$this->cleanCache($this->io, $root);
+				$this->createRunonce($this->inputOutput, $root);
+				$this->cleanCache($this->inputOutput, $root);
 				break;
 
 			case ScriptEvents::POST_AUTOLOAD_DUMP:
