@@ -70,4 +70,31 @@ class RemoveObsoleteRequiresTest extends TestCase
 			$configJson
 		);
 	}
+
+	public function testDoNotRemoveContaoCommunityAllianceComposer()
+	{
+		$configJson = array(
+			'require' => array
+			(
+				'some/package' => '*',
+				'contao-community-alliance/composer' => 'dev-branchname'
+			)
+		);
+
+		$messages = array();
+
+		self::assertFalse(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
+		self::assertEquals(0, count($messages));
+
+		self::assertEquals(
+			array(
+				'require' => array
+				(
+					'some/package' => '*',
+				'contao-community-alliance/composer' => 'dev-branchname'
+				)
+			),
+			$configJson
+		);
+	}
 }
