@@ -96,6 +96,8 @@ class Plugin
 	 * @param string          $contaoRoot
 	 *
 	 * @param CompletePackage $package
+	 *
+	 * @return void
 	 */
 	protected function injectSwiftMailer($contaoRoot, CompletePackage $package)
 	{
@@ -144,6 +146,8 @@ class Plugin
 
 	/**
 	 * Inject the currently installed contao/core as metapackage.
+	 *
+	 * @return void
 	 */
 	public function injectContaoCore()
 	{
@@ -201,6 +205,8 @@ class Plugin
 
 	/**
 	 * Inject the contao/core as permanent requirement into the root package.
+	 *
+	 * @return void
 	 */
 	public function injectRequires()
 	{
@@ -231,8 +237,6 @@ class Plugin
 	/**
 	 * Add the local artifacts repository to the composer installation.
 	 *
-	 * @param Composer $composer The composer instance.
-	 *
 	 * @return void
 	 */
 	public function addLocalArtifactsRepository()
@@ -254,8 +258,6 @@ class Plugin
 	/**
 	 * Add the legacy Contao packages repository to the composer installation.
 	 *
-	 * @param Composer $composer The composer instance.
-	 *
 	 * @return void
 	 */
 	public function addLegacyPackagesRepository()
@@ -274,6 +276,8 @@ class Plugin
 	 * Handle command events.
 	 *
 	 * @param CommandEvent $event
+	 *
+	 * @return void
 	 */
 	public function handleCommand(CommandEvent $event)
 	{
@@ -289,7 +293,9 @@ class Plugin
 	/**
 	 * Handle script events.
 	 *
-	 * @param CommandEvent $event
+	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function handleScriptEvent(Event $event)
 	{
@@ -314,6 +320,7 @@ class Plugin
 	 * Create the global runonce.php after updates has been installed.
 	 *
 	 * @param IOInterface $inputOutput
+	 *
 	 * @param string      $root The contao installation root.
 	 */
 	public function createRunonce(IOInterface $inputOutput, $root)
@@ -325,6 +332,7 @@ class Plugin
 	 * Clean the internal cache of Contao after updates has been installed.
 	 *
 	 * @param IOInterface $inputOutput
+	 *
 	 * @param string      $root The contao installation root.
 	 */
 	public function cleanCache(IOInterface $inputOutput, $root)
@@ -436,6 +444,17 @@ class Plugin
 		return $root;
 	}
 
+	/**
+	 * Detect the installed Contao version.
+	 *
+	 * @param $systemDir
+	 *
+	 * @param $configDir
+	 *
+	 * @param $root
+	 *
+	 * @throws \RuntimeException
+	 */
 	static protected function detectVersion($systemDir, $configDir, $root)
 	{
 		if (!defined('VERSION')) {
@@ -460,6 +479,8 @@ class Plugin
 	}
 
 	/**
+	 * Load the configuration.
+	 *
 	 * @param $configDir
 	 *
 	 * @SuppressWarnings(PHPMD.Superglobals)
