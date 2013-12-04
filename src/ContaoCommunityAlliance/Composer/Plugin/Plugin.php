@@ -92,6 +92,58 @@ class Plugin
 	}
 
 	/**
+	 * Inject the swiftMailer version into the Contao package.
+	 *
+	 * @param string          $contaoRoot
+	 *
+	 * @param CompletePackage $package
+	 */
+	protected function injectSwiftMailer($contaoRoot, CompletePackage $package)
+	{
+		$provides      = $package->getProvides();
+		$versionParser = new VersionParser();
+
+		// detect provided Swift Mailer version
+		switch (VERSION) {
+			case '2.11':
+				$file = $contaoRoot . '/plugins/swiftmailer/VERSION';
+				break;
+			case '3.0':
+				$file = $contaoRoot . '/system/vendor/swiftmailer/VERSION';
+				break;
+			case '3.1':
+			case '3.2':
+				$file = $contaoRoot . '/system/modules/core/vendor/swiftmailer/VERSION';
+				break;
+			default:
+				$file = false;
+		}
+
+		if ($file && is_file($file)) {
+			$prettySwiftVersion = file_get_contents($file);
+			$prettySwiftVersion = substr($prettySwiftVersion, 6);
+			$prettySwiftVersion = trim($prettySwiftVersion);
+
+			$swiftVersion = $versionParser->normalize($prettySwiftVersion);
+
+			$swiftConstraint = new VersionConstraint('==', $swiftVersion);
+			$swiftConstraint->setPrettyString($swiftVersion);
+
+			$swiftLink = new Link(
+				'contao/core',
+				'swiftmailer/swiftmailer',
+				$swiftConstraint,
+				'provides',
+				$swiftVersion
+			);
+
+			$provides[] = array('swiftmailer/swiftmailer' => $swiftLink);
+		}
+
+		$package->setProvides($provides);
+	}
+
+	/**
 	 * Inject the currently installed contao/core as metapackage.
 	 */
 	public function injectContaoCore()
@@ -132,42 +184,7 @@ class Plugin
 		$contaoCore->setDistSha1Checksum($contaoVersion);
 		$contaoCore->setInstallationSource('dist');
 
-		// detect provided swiftmailer version
-		switch (VERSION) {
-			case '2.11':
-				$file = $root . '/plugins/swiftmailer/VERSION';
-				break;
-			case '3.0':
-				$file = $root . '/system/vendor/swiftmailer/VERSION';
-				break;
-			case '3.1':
-			case '3.2':
-				$file = $root . '/system/modules/core/vendor/swiftmailer/VERSION';
-				break;
-			default:
-				$file = false;
-		}
-
-		if ($file && is_file($file)) {
-			$prettySwiftVersion = file_get_contents($file);
-			$prettySwiftVersion = substr($prettySwiftVersion, 6);
-			$prettySwiftVersion = trim($prettySwiftVersion);
-
-			$swiftVersion = $versionParser->normalize($prettySwiftVersion);
-
-			$swiftConstraint = new VersionConstraint('==', $swiftVersion);
-			$swiftConstraint->setPrettyString($swiftVersion);
-
-			$swiftLink = new Link(
-				'contao/core',
-				'swiftmailer/swiftmailer',
-				$swiftConstraint,
-				'provides',
-				$swiftVersion
-			);
-
-			$contaoCore->setProvides(array('swiftmailer/swiftmailer' => $swiftLink));
-		}
+		$this->injectSwiftMailer($root, $contaoCore);
 
 		$clientConstraint = new EmptyConstraint();
 		$clientConstraint->setPrettyString('*');
