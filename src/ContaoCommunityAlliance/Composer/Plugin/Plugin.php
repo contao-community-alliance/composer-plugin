@@ -138,7 +138,7 @@ class Plugin
 				$swiftVersion
 			);
 
-			$provides[] = array('swiftmailer/swiftmailer' => $swiftLink);
+			$provides['swiftmailer/swiftmailer'] = $swiftLink;
 		}
 
 		$package->setProvides($provides);
