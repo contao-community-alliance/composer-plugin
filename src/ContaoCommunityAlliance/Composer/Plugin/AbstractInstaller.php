@@ -49,7 +49,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 	 *
 	 * @param Plugin      $plugin
 	 */
-	public function __construct(IOInterface $inputOutput, Composer $composer, Plugin $plugin)
+	public function __construct(IOInterface $inputOutput, Composer $composer, $plugin)
 	{
 		parent::__construct($inputOutput, $composer);
 		$this->plugin = $plugin;
