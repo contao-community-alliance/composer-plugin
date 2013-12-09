@@ -34,7 +34,7 @@ class RunonceExecutor extends \System
 	{
 		foreach ($runonces as $runonce) {
 			try {
-				require_once(TL_ROOT . DIRECTORY_SEPARATOR . $runonce);
+				require_once($runonce);
 			}
 			catch (\Exception $e) {
 				// first trigger an error to write this into the log file
