@@ -18,7 +18,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin\Test\ConfigManipulator;
 use ContaoCommunityAlliance\Composer\Plugin\Test\TestCase;
 use ContaoCommunityAlliance\Composer\Plugin\ConfigManipulator;
 
-class RemoveContaoVersionTest extends TestCase
+class RemoveObsoleteProvideTest extends TestCase
 {
 	public function testNothingToDo()
 	{
@@ -31,7 +31,7 @@ class RemoveContaoVersionTest extends TestCase
 
 		$messages = array();
 
-		self::assertFalse(ConfigManipulator::removeObsoleteContaoVersion($configJson, $messages));
+		self::assertFalse(ConfigManipulator::removeObsoleteProvides($configJson, $messages));
 		self::assertEmpty($messages);
 
 		self::assertEquals(
@@ -45,55 +45,42 @@ class RemoveContaoVersionTest extends TestCase
 		);
 	}
 
-	public function testRemoveVersion()
+	public function testRemoveSwiftMailer()
 	{
 		$configJson = array(
 			'name'        => 'contao/core',
-			'description' => 'contao core',
-			'license'     => 'LGPL-3.0',
-			'type'        => 'metapackage',
-			'version'     => '0.0.0.0',
+			'provide'     => array('swiftmailer/swiftmailer' => '0.0.0.0')
 		);
 
 		$messages = array();
 
-		self::assertTrue(ConfigManipulator::removeObsoleteContaoVersion($configJson, $messages));
-		self::assertEquals(3, count($messages));
+		self::assertTrue(ConfigManipulator::removeObsoleteProvides($configJson, $messages));
+		self::assertEquals(1, count($messages));
 
 		self::assertEquals(
 			array(
-				'name'        => 'local/website',
-				'description' => 'contao core',
-				'license'     => 'LGPL-3.0',
-				'type'        => 'project',
-				'version'     => '0.0.0.0',
+				'name'        => 'contao/core',
 			),
 			$configJson
 		);
 	}
 
-	public function testNotRemoveVersion()
+	public function testNotRemoveSwiftMailerFromCustomProject()
 	{
 		$configJson = array(
-			'name'        => 'contao/core',
-			'description' => 'contao core',
-			'license'     => 'LGPL-3.0',
-			'type'        => 'project',
-			'version'     => '0.0.0.0',
+			'name'        => 'local/website',
+			'provide'     => array('swiftmailer/swiftmailer' => '0.0.0.0')
 		);
 
 		$messages = array();
 
-		self::assertFalse(ConfigManipulator::removeObsoleteContaoVersion($configJson, $messages));
+		self::assertFalse(ConfigManipulator::removeObsoleteProvides($configJson, $messages));
 		self::assertEmpty($messages);
 
 		self::assertEquals(
 			array(
-				'name'        => 'contao/core',
-				'description' => 'contao core',
-				'license'     => 'LGPL-3.0',
-				'type'        => 'project',
-				'version'     => '0.0.0.0',
+				'name'        => 'local/website',
+				'provide'     => array('swiftmailer/swiftmailer' => '0.0.0.0')
 			),
 			$configJson
 		);

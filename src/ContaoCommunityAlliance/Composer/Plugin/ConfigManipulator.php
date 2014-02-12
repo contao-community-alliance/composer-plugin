@@ -67,6 +67,7 @@ class ConfigManipulator
 		$jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
+		$jsonModified = static::removeObsoleteProvides($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
 		$jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
 
@@ -271,14 +272,6 @@ class ConfigManipulator
 			$configJson['type'] = 'project';
 			$messages[]         = 'type has been changed to "project" in root composer.json!';
 
-			if (isset($configJson['provide']['swiftmailer/swiftmailer'])) {
-				unset($configJson['provide']['swiftmailer/swiftmailer']);
-
-				if (empty($configJson['provide'])) {
-					unset($configJson['provide']);
-				}
-			}
-
 			$jsonModified = true;
 			$messages[]   = 'obsolete contao version and meta information ' .
 				'was removed from root composer.json!';
@@ -322,6 +315,36 @@ class ConfigManipulator
 			$configJson['version'] = '';
 			$messages[] = 'version has been initialized to "" in root composer.json!';
 			$jsonModified = true;
+		}
+
+		return $jsonModified;
+	}
+
+	/**
+	 * Remove obsolete provide entries from the root composer.json.
+	 *
+	 * @param array $configJson The json config.
+	 *
+	 * @param array $messages   The message log.
+	 *
+	 * @return boolean
+	 */
+	static public function removeObsoleteProvides(&$configJson, &$messages)
+	{
+		$jsonModified = false;
+
+		if (($configJson['name'] === 'contao/core') &&
+			isset($configJson['provide']['swiftmailer/swiftmailer'])) {
+			unset($configJson['provide']['swiftmailer/swiftmailer']);
+
+			$messages[] = '"swiftmailer/swiftmailer" has been removed from provide section ' .
+				'in root composer.json!';
+
+			$jsonModified = true;
+
+			if (empty($configJson['provide'])) {
+				unset($configJson['provide']);
+			}
 		}
 
 		return $jsonModified;
