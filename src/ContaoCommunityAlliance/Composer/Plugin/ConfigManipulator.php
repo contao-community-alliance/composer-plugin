@@ -249,6 +249,40 @@ class ConfigManipulator
 	}
 
 	/**
+	 * Remove obsolete provide entries from the root composer.json.
+	 *
+	 * @param array $configJson The json config.
+	 *
+	 * @param array $messages   The message log.
+	 *
+	 * @return boolean
+	 */
+	static public function removeObsoleteProvides(&$configJson, &$messages)
+	{
+		$jsonModified = false;
+
+		if (
+			isset($configJson['name']) &&
+			isset($configJson['type']) &&
+			($configJson['name'] == 'contao/core') &&
+			($configJson['type'] == 'metapackage') &&
+			isset($configJson['provide']['swiftmailer/swiftmailer'])) {
+			unset($configJson['provide']['swiftmailer/swiftmailer']);
+
+			$messages[] = '"swiftmailer/swiftmailer" has been removed from provide section ' .
+				'in root composer.json!';
+
+			$jsonModified = true;
+
+			if (empty($configJson['provide'])) {
+				unset($configJson['provide']);
+			}
+		}
+
+		return $jsonModified;
+	}
+
+	/**
 	 * Remove the Contao Version and additional information from the root composer.json.
 	 *
 	 * @param array $configJson The json config.
@@ -315,36 +349,6 @@ class ConfigManipulator
 			$configJson['license'] = 'proprietary';
 			$messages[] = 'license has been initialized to "proprietary" in root composer.json!';
 			$jsonModified = true;
-		}
-
-		return $jsonModified;
-	}
-
-	/**
-	 * Remove obsolete provide entries from the root composer.json.
-	 *
-	 * @param array $configJson The json config.
-	 *
-	 * @param array $messages   The message log.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteProvides(&$configJson, &$messages)
-	{
-		$jsonModified = false;
-
-		if (($configJson['name'] === 'contao/core') &&
-			isset($configJson['provide']['swiftmailer/swiftmailer'])) {
-			unset($configJson['provide']['swiftmailer/swiftmailer']);
-
-			$messages[] = '"swiftmailer/swiftmailer" has been removed from provide section ' .
-				'in root composer.json!';
-
-			$jsonModified = true;
-
-			if (empty($configJson['provide'])) {
-				unset($configJson['provide']);
-			}
 		}
 
 		return $jsonModified;
