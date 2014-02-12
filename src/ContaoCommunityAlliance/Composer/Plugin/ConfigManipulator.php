@@ -68,6 +68,7 @@ class ConfigManipulator
 		$jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
 		$jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
+		$jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
 
 		// TODO we need a new contao version change check!!!
 		/*
@@ -249,6 +250,10 @@ class ConfigManipulator
 	/**
 	 * Remove the Contao Version and additional information from the root composer.json.
 	 *
+	 * @param array $configJson The json config.
+	 *
+	 * @param array $messages   The message log.
+	 *
 	 * @return boolean
 	 */
 	static public function removeObsoleteContaoVersion(&$configJson, &$messages)
@@ -258,14 +263,13 @@ class ConfigManipulator
 		if (
 			isset($configJson['name']) &&
 			isset($configJson['type']) &&
-			$configJson['name'] == 'contao/core' &&
-			$configJson['type'] == 'metapackage'
+			($configJson['name'] == 'contao/core') &&
+			($configJson['type'] == 'metapackage')
 		) {
-			foreach (array('name', 'description', 'type', 'license', 'version') as $key) {
-				if (isset($configJson[$key])) {
-					unset($configJson[$key]);
-				}
-			}
+			$configJson['name'] = 'local/website';
+			$messages[]         = 'name has been changed to "local/website" in root composer.json!';
+			$configJson['type'] = 'project';
+			$messages[]         = 'type has been changed to "project" in root composer.json!';
 
 			if (isset($configJson['provide']['swiftmailer/swiftmailer'])) {
 				unset($configJson['provide']['swiftmailer/swiftmailer']);
@@ -278,6 +282,46 @@ class ConfigManipulator
 			$jsonModified = true;
 			$messages[]   = 'obsolete contao version and meta information ' .
 				'was removed from root composer.json!';
+		}
+
+		return $jsonModified;
+	}
+
+	/**
+	 * Remove the Contao Version and additional information from the root composer.json.
+	 *
+	 * @param array $configJson The json config.
+	 *
+	 * @param array $messages   The message log.
+	 *
+	 * @return boolean
+	 */
+	static public function restoreNeededConfigKeys(&$configJson, &$messages)
+	{
+		$jsonModified = false;
+
+		if (!isset($configJson['name'])) {
+			$configJson['name'] = 'local/website';
+			$messages[] = 'name has been initialized to "local/website" in root composer.json!';
+			$jsonModified = true;
+		}
+
+		if (!isset($configJson['type'])) {
+			$configJson['type'] = 'project';
+			$messages[] = 'type has been initialized to "project" in root composer.json!';
+			$jsonModified = true;
+		}
+
+		if (!isset($configJson['license'])) {
+			$configJson['license'] = 'proprietary';
+			$messages[] = 'license has been initialized to "license" in root composer.json!';
+			$jsonModified = true;
+		}
+
+		if (!isset($configJson['version'])) {
+			$configJson['version'] = '';
+			$messages[] = 'version has been initialized to "" in root composer.json!';
+			$jsonModified = true;
 		}
 
 		return $jsonModified;

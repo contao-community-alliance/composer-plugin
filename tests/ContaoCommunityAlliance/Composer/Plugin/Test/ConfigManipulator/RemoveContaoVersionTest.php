@@ -15,7 +15,6 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin\Test\ConfigManipulator;
 
-use Composer\Composer;
 use ContaoCommunityAlliance\Composer\Plugin\Test\TestCase;
 use ContaoCommunityAlliance\Composer\Plugin\ConfigManipulator;
 
@@ -23,7 +22,12 @@ class RemoveContaoVersionTest extends TestCase
 {
 	public function testNothingToDo()
 	{
-		$configJson = array();
+		$configJson = array(
+			'name'        => 'some_vendor/custom_project',
+			'type'        => 'project',
+			'license'     => 'LGPL-3.0',
+			'version'     => '0.0.0.0',
+		);
 
 		$messages = array();
 
@@ -31,7 +35,12 @@ class RemoveContaoVersionTest extends TestCase
 		self::assertEmpty($messages);
 
 		self::assertEquals(
-			array(),
+			array(
+				'name'        => 'some_vendor/custom_project',
+				'type'        => 'project',
+				'license'     => 'LGPL-3.0',
+				'version'     => '0.0.0.0',
+			),
 			$configJson
 		);
 	}
@@ -50,10 +59,16 @@ class RemoveContaoVersionTest extends TestCase
 		$messages = array();
 
 		self::assertTrue(ConfigManipulator::removeObsoleteContaoVersion($configJson, $messages));
-		self::assertEquals(1, count($messages));
+		self::assertEquals(3, count($messages));
 
 		self::assertEquals(
-			array(),
+			array(
+				'name'        => 'local/website',
+				'description' => 'contao core',
+				'license'     => 'LGPL-3.0',
+				'type'        => 'project',
+				'version'     => '0.0.0.0',
+			),
 			$configJson
 		);
 	}
@@ -64,6 +79,7 @@ class RemoveContaoVersionTest extends TestCase
 			'name'        => 'contao/core',
 			'description' => 'contao core',
 			'license'     => 'LGPL-3.0',
+			'type'        => 'project',
 			'version'     => '0.0.0.0',
 			'provide'     => array('swiftmailer/swiftmailer' => '0.0.0.0')
 		);
@@ -78,6 +94,7 @@ class RemoveContaoVersionTest extends TestCase
 				'name'        => 'contao/core',
 				'description' => 'contao core',
 				'license'     => 'LGPL-3.0',
+				'type'        => 'project',
 				'version'     => '0.0.0.0',
 				'provide'     => array('swiftmailer/swiftmailer' => '0.0.0.0')
 			),
