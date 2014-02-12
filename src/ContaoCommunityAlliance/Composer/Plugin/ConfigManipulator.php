@@ -313,7 +313,7 @@ class ConfigManipulator
 
 		if (!isset($configJson['license'])) {
 			$configJson['license'] = 'proprietary';
-			$messages[] = 'license has been initialized to "license" in root composer.json!';
+			$messages[] = 'license has been initialized to "proprietary" in root composer.json!';
 			$jsonModified = true;
 		}
 
