@@ -299,6 +299,12 @@ class ConfigManipulator
 			$jsonModified = true;
 		}
 
+		if (!isset($configJson['description'])) {
+			$configJson['description'] = 'A local website project';
+			$messages[] = 'description has been initialized to "A local website project" in root composer.json!';
+			$jsonModified = true;
+		}
+
 		if (!isset($configJson['type'])) {
 			$configJson['type'] = 'project';
 			$messages[] = 'type has been initialized to "project" in root composer.json!';
