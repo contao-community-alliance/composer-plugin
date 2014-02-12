@@ -317,12 +317,6 @@ class ConfigManipulator
 			$jsonModified = true;
 		}
 
-		if (!isset($configJson['version'])) {
-			$configJson['version'] = '';
-			$messages[] = 'version has been initialized to "" in root composer.json!';
-			$jsonModified = true;
-		}
-
 		return $jsonModified;
 	}
 
