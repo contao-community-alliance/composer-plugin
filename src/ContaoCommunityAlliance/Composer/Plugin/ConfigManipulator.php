@@ -45,6 +45,7 @@ class ConfigManipulator
 		$jsonModified = static::runUpdates($configJson, $messages);
 
 		if ($jsonModified) {
+			copy('composer.json', 'composer.json~');
 			$configFile->write($configJson);
 		}
 		if (count($messages)) {
