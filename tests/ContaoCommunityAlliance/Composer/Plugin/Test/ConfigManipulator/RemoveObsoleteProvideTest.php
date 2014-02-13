@@ -49,6 +49,7 @@ class RemoveObsoleteProvideTest extends TestCase
 	{
 		$configJson = array(
 			'name'        => 'contao/core',
+			'type'        => 'metapackage',
 			'provide'     => array('swiftmailer/swiftmailer' => '0.0.0.0')
 		);
 
@@ -60,6 +61,7 @@ class RemoveObsoleteProvideTest extends TestCase
 		self::assertEquals(
 			array(
 				'name'        => 'contao/core',
+				'type'        => 'metapackage',
 			),
 			$configJson
 		);

@@ -23,9 +23,9 @@ class RestoreNeededConfigKeysTest extends TestCase
 	public function testSetName()
 	{
 		$configJson = array(
-			'license' => 'proprietary',
-			'type'    => 'project',
-			'version' => '',
+			'license'     => 'proprietary',
+			'type'        => 'project',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -34,10 +34,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'proprietary',
-				'type'    => 'project',
-				'version' => '',
+				'name'        => 'local/website',
+				'license'     => 'proprietary',
+				'type'        => 'project',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
@@ -47,10 +47,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 	public function testDoNotOverrideName()
 	{
 		$configJson = array(
-			'name'    => 'some_vendor/custom_project',
-			'license' => 'proprietary',
-			'type'    => 'project',
-			'version' => '',
+			'name'        => 'some_vendor/custom_project',
+			'license'     => 'proprietary',
+			'type'        => 'project',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -60,9 +60,9 @@ class RestoreNeededConfigKeysTest extends TestCase
 		self::assertEquals(
 			array(
 				'name'        => 'some_vendor/custom_project',
-				'license' => 'proprietary',
-				'type'    => 'project',
-				'version' => '',
+				'license'     => 'proprietary',
+				'type'        => 'project',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
@@ -72,9 +72,9 @@ class RestoreNeededConfigKeysTest extends TestCase
 	public function testSetType()
 	{
 		$configJson = array(
-			'name'    => 'local/website',
-			'license' => 'proprietary',
-			'version' => '',
+			'name'        => 'local/website',
+			'license'     => 'proprietary',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -83,10 +83,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'proprietary',
-				'type'    => 'project',
-				'version' => '',
+				'name'        => 'local/website',
+				'license'     => 'proprietary',
+				'type'        => 'project',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
@@ -96,10 +96,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 	public function testDoNotOverrideType()
 	{
 		$configJson = array(
-			'name'    => 'local/website',
-			'license' => 'proprietary',
-			'type'    => 'custom-type',
-			'version' => '',
+			'name'        => 'local/website',
+			'license'     => 'proprietary',
+			'type'        => 'custom-type',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -108,10 +108,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'proprietary',
-				'type'    => 'custom-type',
-				'version' => '',
+				'name'        => 'local/website',
+				'license'     => 'proprietary',
+				'type'        => 'custom-type',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
@@ -121,9 +121,9 @@ class RestoreNeededConfigKeysTest extends TestCase
 	public function testSetLicense()
 	{
 		$configJson = array(
-			'name'    => 'local/website',
-			'type'    => 'project',
-			'version' => '',
+			'name'        => 'local/website',
+			'type'        => 'project',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -132,10 +132,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'proprietary',
-				'type'    => 'project',
-				'version' => '',
+				'name'        => 'local/website',
+				'license'     => 'proprietary',
+				'type'        => 'project',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
@@ -145,10 +145,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 	public function testDoNotOverrideLicense()
 	{
 		$configJson = array(
-			'name'    => 'local/website',
-			'license' => 'LGPL-3.0',
-			'type'    => 'project',
-			'version' => '',
+			'name'        => 'local/website',
+			'license'     => 'LGPL-3.0',
+			'type'        => 'project',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -157,22 +157,22 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'LGPL-3.0',
-				'type'    => 'project',
-				'version' => '',
+				'name'        => 'local/website',
+				'license'     => 'LGPL-3.0',
+				'type'        => 'project',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
 		self::assertEmpty($messages);
 	}
 
-	public function testSetVersion()
+	public function testSetDescription()
 	{
 		$configJson = array(
-			'name'    => 'local/website',
-			'license' => 'proprietary',
-			'type'    => 'project',
+			'name'        => 'local/website',
+			'type'        => 'project',
+			'license'     => 'proprietary',
 		);
 
 		$messages = array();
@@ -181,23 +181,23 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'proprietary',
-				'type'    => 'project',
-				'version' => '',
+				'name'        => 'local/website',
+				'license'     => 'proprietary',
+				'type'        => 'project',
+				'description' => 'A local website project',
 			),
 			$configJson
 		);
 		self::assertEquals(1, count($messages));
 	}
 
-	public function testDoNotOverrideVersion()
+	public function testDoNotOverrideDescription()
 	{
 		$configJson = array(
-			'name'    => 'local/website',
-			'license' => 'proprietary',
-			'type'    => 'project',
-			'version' => '1.0.0.0',
+			'name'        => 'local/website',
+			'license'     => 'LGPL-3.0',
+			'type'        => 'project',
+			'description' => 'My Website',
 		);
 
 		$messages = array();
@@ -206,10 +206,10 @@ class RestoreNeededConfigKeysTest extends TestCase
 
 		self::assertEquals(
 			array(
-				'name'    => 'local/website',
-				'license' => 'proprietary',
-				'type'    => 'project',
-				'version' => '1.0.0.0',
+				'name'        => 'local/website',
+				'license'     => 'LGPL-3.0',
+				'type'        => 'project',
+				'description' => 'My Website',
 			),
 			$configJson
 		);
