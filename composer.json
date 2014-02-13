@@ -3,17 +3,8 @@
 	"description": "Composer plugin that provide contao integration and installer.",
 	"type": "composer-plugin",
 	"license": "LGPL-3.0+",
-	"autoload": {
-		"psr-0": {
-			"ContaoCommunityAlliance\\Composer\\Plugin": "src/"
-		}
-	},
-	"extra": {
-		"class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
-		"branch-alias": {
-			"dev-develop": "2.0.x-dev"
-		}
-	},
+	"minimum-stability": "dev",
+	"prefer-stable": true,
 	"require": {
 		"contao/core": ">=2.11,<3.3",
 		"composer-plugin-api": "1.0.0"
@@ -24,12 +15,22 @@
 		"composer/composer": "dev-master",
 		"phpunit/phpunit": ">=3.7.10,<4-dev"
 	},
-	"minimum-stability": "dev",
 	"replace": {
 		"contao-community-alliance/composer-installer": "1.7.1"
 	},
 	"conflict": {
 		"contao/core": "3.0.*",
 		"contao-community-alliance/composer": "<0.9-dev"
+	},
+	"autoload": {
+		"psr-0": {
+			"ContaoCommunityAlliance\\Composer\\Plugin": "src/"
+		}
+	},
+	"extra": {
+		"class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
+		"branch-alias": {
+			"dev-develop": "2.0.x-dev"
+		}
 	}
 }
