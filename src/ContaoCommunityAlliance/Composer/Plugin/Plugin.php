@@ -144,6 +144,29 @@ class Plugin
 		$package->setProvides($provides);
 	}
 
+	protected function prepareContaoVersion($version, $build)
+	{
+		// Regular stable build
+		if (is_numeric($build))
+		{
+			return $version . '.' . $build;
+		}
+
+		// Standard pre-release
+		if (preg_match('{^(alpha|beta|RC)?(\d+)?$}i', $build))
+		{
+			return $version . '.' . $build;
+		}
+
+		// Must be a custom patched release with - suffix.
+		if (preg_match('{^(\d+)[-]}i', $build, $matches))
+		{
+			return $version . '.' . $matches[1];
+		}
+
+		throw new \RuntimeException('Invalid version: ' . $version . '.' . $build);
+	}
+
 	/**
 	 * Inject the currently installed contao/core as metapackage.
 	 *
@@ -156,7 +179,7 @@ class Plugin
 		$localRepository   = $repositoryManager->getLocalRepository();
 
 		$versionParser = new VersionParser();
-		$prettyVersion = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
+		$prettyVersion = $this->prepareContaoVersion(VERSION, BUILD);
 		$version       = $versionParser->normalize($prettyVersion);
 
 		/** @var PackageInterface $localPackage */
