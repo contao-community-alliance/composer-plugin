@@ -21,6 +21,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
 use Composer\Package\PackageInterface;
+use SplFileInfo;
 
 /**
  * Basic installer that install Contao extensions.
@@ -411,7 +412,9 @@ abstract class AbstractInstaller extends LibraryInstaller
 				$this->filesystem->ensureDirectoryExists($targetReal);
 			}
 
+			/** @var RecursiveDirectoryIterator $iterator */
 			foreach ($iterator as $file) {
+				/** @var SplFileInfo $file*/
 				$targetPath = $targetReal . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 				if (!file_exists($targetPath)) {
 					if ($file->isDir()) {
