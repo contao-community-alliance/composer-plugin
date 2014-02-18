@@ -237,7 +237,7 @@ class Plugin
 			static::getContaoRoot($this->composer->getPackage());
 
 			$versionParser = new VersionParser();
-			$prettyVersion = VERSION . (is_numeric(BUILD) ? '.' . BUILD : '-' . BUILD);
+			$prettyVersion = $this->prepareContaoVersion(VERSION, BUILD);
 			$version = $versionParser->normalize($prettyVersion);
 
 			$constraint = new VersionConstraint('==', $version);
