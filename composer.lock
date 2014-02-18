@@ -7,16 +7,16 @@
     "packages": [
         {
             "name": "contao/core",
-            "version": "3.2.5",
+            "version": "3.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/composerized-contao-core.git",
-                "reference": "4f2791f8bc9003808f650168f96ff154d1445216"
+                "reference": "de6742b9b594fa4df97dea53164ab180876fc17e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/composerized-contao-core/zipball/4f2791f8bc9003808f650168f96ff154d1445216",
-                "reference": "4f2791f8bc9003808f650168f96ff154d1445216",
+                "url": "https://api.github.com/repos/contao-community-alliance/composerized-contao-core/zipball/de6742b9b594fa4df97dea53164ab180876fc17e",
+                "reference": "de6742b9b594fa4df97dea53164ab180876fc17e",
                 "shasum": ""
             },
             "require": {
@@ -46,7 +46,7 @@
                 "contao",
                 "core"
             ],
-            "time": "2014-02-04 01:00:39"
+            "time": "2014-02-18 01:00:45"
         }
     ],
     "packages-dev": [
@@ -97,12 +97,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "9896abeb380f65a146e988f51b46cdb8e1b88e01"
+                "reference": "5d4900e79d5ea08118782345fb97e23e6ab1e4f0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/9896abeb380f65a146e988f51b46cdb8e1b88e01",
-                "reference": "9896abeb380f65a146e988f51b46cdb8e1b88e01",
+                "url": "https://api.github.com/repos/composer/composer/zipball/5d4900e79d5ea08118782345fb97e23e6ab1e4f0",
+                "reference": "5d4900e79d5ea08118782345fb97e23e6ab1e4f0",
                 "shasum": ""
             },
             "require": {
@@ -158,7 +158,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2014-02-13 15:23:53"
+            "time": "2014-02-18 12:28:46"
         },
         {
             "name": "justinrainbow/json-schema",
