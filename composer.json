@@ -6,7 +6,6 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"require": {
-		"contao/core": ">=2.11,<3.3",
 		"composer-plugin-api": "1.0.0"
 	},
 	"require-dev": {
