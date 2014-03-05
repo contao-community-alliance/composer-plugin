@@ -49,7 +49,7 @@ class GetContaoRootTest extends TestCase
 	protected function tearDown()
 	{
 		chdir($this->curDir);
-		$this->fs->removeDirectory($this->testRoot);
+		$this->fs->removeDirectory(dirname($this->testRoot));
 	}
 
 	/**
