@@ -97,7 +97,7 @@ abstract class InstallCodeBase extends TestCase
 
 		$this->plugin = $this->getMock('\ContaoCommunityAlliance\Composer\Plugin\Plugin');
 		$this->plugin
-			->staticExpects($this->any())
+			->expects($this->any())
 			->method('getContaoRoot')
 			->will($this->returnValue($this->rootDir));
 
