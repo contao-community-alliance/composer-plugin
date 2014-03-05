@@ -477,8 +477,8 @@ class Plugin
 		$systemDir = $this->contaoRoot . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
 		$configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
 
-		static::loadConfig($configDir);
 		$this->detectVersion($systemDir, $configDir, $this->contaoRoot);
+		$this->loadConfig($configDir);
 
 		return $this->contaoRoot;
 	}
@@ -557,7 +557,7 @@ class Plugin
 	 * @SuppressWarnings(PHPMD.Superglobals)
 	 * @SuppressWarnings(PHPMD.CamelCaseVariableName)
 	 */
-	static protected function loadConfig($configDir)
+	protected function loadConfig($configDir)
 	{
 		if (empty($GLOBALS['TL_CONFIG'])) {
 			if (version_compare($this->getContaoVersion(), '3', '>=')) {
