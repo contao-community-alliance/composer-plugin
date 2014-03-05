@@ -61,6 +61,15 @@ class Plugin
 	protected $contaoRoot;
 
 	/**
+	 * @var string
+	 */
+	protected $contaoVersion;
+
+	/**
+	 * @var string
+	 */
+	protected $contaoBuild;
+
 	 * {@inheritdoc}
 	 */
 	public function activate(Composer $composer, IOInterface $inputOutput)
@@ -113,7 +122,7 @@ class Plugin
 		$versionParser = new VersionParser();
 
 		// detect provided Swift Mailer version
-		switch (VERSION) {
+		switch ($this->getContaoVersion()) {
 			case '2.11':
 				$file = $contaoRoot . '/plugins/swiftmailer/VERSION';
 				break;
@@ -184,7 +193,7 @@ class Plugin
 		$localRepository   = $repositoryManager->getLocalRepository();
 
 		$versionParser = new VersionParser();
-		$prettyVersion = $this->prepareContaoVersion(VERSION, BUILD);
+		$prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
 		$version       = $versionParser->normalize($prettyVersion);
 
 		/** @var PackageInterface $localPackage */
@@ -205,7 +214,7 @@ class Plugin
 			}
 		}
 
-		$contaoVersion = VERSION . '.' . BUILD;
+		$contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
 		$contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
 		$contaoCore->setType('metapackage');
 		$contaoCore->setDistType('zip');
@@ -241,11 +250,11 @@ class Plugin
 		$requires = $package->getRequires();
 
 		if (!isset($requires['contao/core'])) {
-			// load here to make sure the VERSION constant exists
+			// load here to make sure the version information is present.
 			$this->getContaoRoot($this->composer->getPackage());
 
 			$versionParser = new VersionParser();
-			$prettyVersion = $this->prepareContaoVersion(VERSION, BUILD);
+			$prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
 			$version = $versionParser->normalize($prettyVersion);
 
 			$constraint = new VersionConstraint('==', $version);
@@ -487,25 +496,57 @@ class Plugin
 	 */
 	protected function detectVersion($systemDir, $configDir, $root)
 	{
-		if (!defined('VERSION')) {
-			// Contao 3+
-			if (file_exists(
-				$constantsFile = $configDir . 'constants.php'
-			)
-			) {
-				require_once($constantsFile);
-			}
-			// Contao 2+
-			else if (file_exists(
-				$constantsFile = $systemDir . 'constants.php'
-			)
-			) {
-				require_once($constantsFile);
-			}
-			else {
-				throw new RuntimeException('Could not find constants.php in ' . $root);
+		if (isset($this->contaoVersion) && isset($this->contaoBuild)) {
+			return;
+		}
+
+		foreach (array(
+			$configDir . 'constants.php',
+			$systemDir . 'constants.php'
+		) as $checkConstants) {
+			if (file_exists($checkConstants)) {
+				$constantsFile = $checkConstants;
+				break;
 			}
 		}
+
+		if (!isset($constantsFile)) {
+			throw new RuntimeException('Could not find constants.php in ' . $root);
+		}
+
+		$contents = file_get_contents($constantsFile);
+
+		if (preg_match('#define\(\'VERSION\', \'([^\']+)\'\);#', $contents, $match)) {
+			$this->contaoVersion = $match[1];
+		}
+
+		if (preg_match('#define\(\'BUILD\', \'([^\']+)\'\);#', $contents, $match)) {
+			$this->contaoBuild = $match[1];
+		}
+	}
+
+	public function getContaoVersion()
+	{
+		if (!isset($this->contaoVersion)) {
+			throw new RuntimeException(
+				'Contao version is not set. Has getContaoRoot() been called before?'
+			);
+		}
+
+		return $this->contaoVersion;
+	}
+
+	public function getContaoBuild()
+	{
+		if (!isset($this->contaoBuild)) {
+			throw new RuntimeException(
+				'Contao build is not set. Has getContaoRoot() been called before?'
+			);
+		}
+
+		return $this->contaoBuild;
+	}
+
 	}
 
 	/**
@@ -519,7 +560,7 @@ class Plugin
 	static protected function loadConfig($configDir)
 	{
 		if (empty($GLOBALS['TL_CONFIG'])) {
-			if (version_compare(VERSION, '3', '>=')) {
+			if (version_compare($this->getContaoVersion(), '3', '>=')) {
 				// load default.php
 				require_once($configDir . 'default.php');
 			}
