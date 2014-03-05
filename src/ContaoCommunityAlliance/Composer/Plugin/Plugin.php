@@ -94,9 +94,12 @@ class Plugin
 		}
 		$installationManager->addInstaller($installer);
 
-		$this->injectContaoCore();
-		$this->injectRequires();
-		$this->addLocalArtifactsRepository();
+		// We must not inject core etc. when the root package itself is being installed via this plugin.
+		if (!$installer->supports($composer->getPackage()->getType())) {
+			$this->injectContaoCore();
+			$this->injectRequires();
+			$this->addLocalArtifactsRepository();
+		}
 		$this->addLegacyPackagesRepository();
 	}
 
