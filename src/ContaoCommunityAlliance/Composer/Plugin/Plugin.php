@@ -468,8 +468,8 @@ class Plugin
 		$systemDir = $this->contaoRoot . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
 		$configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
 
-		static::detectVersion($systemDir, $configDir, $this->contaoRoot);
 		static::loadConfig($configDir);
+		$this->detectVersion($systemDir, $configDir, $this->contaoRoot);
 
 		return $this->contaoRoot;
 	}
@@ -485,7 +485,7 @@ class Plugin
 	 *
 	 * @throws RuntimeException
 	 */
-	static protected function detectVersion($systemDir, $configDir, $root)
+	protected function detectVersion($systemDir, $configDir, $root)
 	{
 		if (!defined('VERSION')) {
 			// Contao 3+
