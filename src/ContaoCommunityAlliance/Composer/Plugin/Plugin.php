@@ -70,6 +70,12 @@ class Plugin
 	 */
 	protected $contaoBuild;
 
+	/**
+	 * @var string
+	 */
+	protected $contaoUploadPath;
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function activate(Composer $composer, IOInterface $inputOutput)
@@ -547,6 +553,103 @@ class Plugin
 		return $this->contaoBuild;
 	}
 
+	public function getContaoUploadPath()
+	{
+		if (!isset($this->contaoUploadPath)) {
+			throw new RuntimeException(
+				'Contao upload path is not set. Has getContaoRoot() been called before?'
+			);
+		}
+
+		return $this->contaoUploadPath;
+	}
+
+	/**
+	 * Retrieve a config value from the given config file.
+	 *
+	 * This is a very rudimentary parser for the Contao config files.
+	 * It does only support on line assignments and primitive types but this is enough for this
+	 * plugin to retrieve the data it needs to retrieve.
+	 *
+	 * @param $configFile
+	 *
+	 * @param $key
+	 *
+	 * @return mixed
+	 */
+	protected function extractKeyFromConfigFile($configFile, $key)
+	{
+		if (!file_exists($configFile)) {
+			return null;
+		}
+
+		$value  = null;
+		$lines  = file($configFile);
+		$search = '$GLOBALS[\'TL_CONFIG\'][\'' . $key . '\']';
+		$length = strlen($search);
+		foreach ($lines as $line) {
+			$tline = trim($line);
+			if (strncmp($search, $tline, $length) === 0) {
+				$parts = explode('=', $tline, 2);
+				$tline = trim($parts[1]);
+
+				if ($tline === 'true;') {
+					$value = true;
+				}
+				else if ($tline === 'false;') {
+					$value = false;
+				}
+				else if ($tline === 'null;') {
+					$value = null;
+				}
+				else if ($tline === 'array();') {
+					$value = array();
+				}
+				else if ($tline[0] === '\'') {
+					$value = substr($tline, 1, -2);
+				}
+				else {
+					$value = substr($tline, 0, -1);
+				}
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Retrieve a config value from the given config path
+	 *
+	 * @param string $configPath
+	 *
+	 * @param $key
+	 *
+	 * @return mixed
+	 */
+	protected function extractKeyFromConfigPath($configPath, $key)
+	{
+		// load default config
+		if (version_compare($this->getContaoVersion(), '3', '>=')) {
+			$value = $this->extractKeyFromConfigFile(
+				$configPath . 'default.php',
+				$key
+			);
+		}
+		else {
+			$value = $this->extractKeyFromConfigFile(
+				$configPath . 'config.php',
+				$key
+			);
+		}
+
+		if ($override = $this->extractKeyFromConfigFile(
+			$configPath . 'localconfig.php',
+			$key
+		)) {
+			$value = $override;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -559,21 +662,8 @@ class Plugin
 	 */
 	protected function loadConfig($configDir)
 	{
-		if (empty($GLOBALS['TL_CONFIG'])) {
-			if (version_compare($this->getContaoVersion(), '3', '>=')) {
-				// load default.php
-				require_once($configDir . 'default.php');
-			}
-			else {
-				// load config.php
-				require_once($configDir . 'config.php');
-			}
-
-			// load localconfig.php
-			$file = $configDir . 'localconfig.php';
-			if (file_exists($file)) {
-				require_once($file);
-			}
+		if (!isset($this->contaoUploadPath)) {
+			$this->contaoUploadPath = $this->extractKeyFromConfigPath($configDir, 'uploadPath');
 		}
 	}
 }

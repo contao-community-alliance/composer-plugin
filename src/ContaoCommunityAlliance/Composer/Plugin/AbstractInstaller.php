@@ -55,6 +55,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 		parent::__construct($inputOutput, $composer);
 		$this->plugin = $plugin;
 	}
+
 	static public function unprefixPath($prefix, $path)
 	{
 		$len = strlen($prefix);
@@ -459,13 +460,10 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 	/**
 	 * @return string
-	 *
-	 * @SuppressWarnings(PHPMD.Superglobals)
-	 * @SuppressWarnings(PHPMD.CamelCaseVariableName)
 	 */
 	protected function getUploadPath()
 	{
-		return $GLOBALS['TL_CONFIG']['uploadPath'];
+		return $this->plugin->getContaoUploadPath();
 	}
 
 	/**
