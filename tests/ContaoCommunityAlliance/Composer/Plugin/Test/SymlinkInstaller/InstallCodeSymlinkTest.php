@@ -13,10 +13,11 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin\Test\CopyInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin\Test\SymlinkInstaller;
 
 use Composer\Config;
 use ContaoCommunityAlliance\Composer\Plugin\AbstractInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Test\InstallCodeBase;
 
 class InstallCodeSymlinkTest
 	extends InstallCodeBase
