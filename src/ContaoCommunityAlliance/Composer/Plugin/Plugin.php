@@ -34,6 +34,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Util\Filesystem;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use RuntimeException;
 
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
@@ -51,6 +52,28 @@ class Plugin
 	 * @var IOInterface
 	 */
 	protected $inputOutput;
+
+	/**
+	 * Path to Contao root.
+	 *
+	 * @var string
+	 */
+	protected $contaoRoot;
+
+	/**
+	 * @var string
+	 */
+	protected $contaoVersion;
+
+	/**
+	 * @var string
+	 */
+	protected $contaoBuild;
+
+	/**
+	 * @var string
+	 */
+	protected $contaoUploadPath;
 
 	/**
 	 * {@inheritdoc}
@@ -71,9 +94,12 @@ class Plugin
 		}
 		$installationManager->addInstaller($installer);
 
-		$this->injectContaoCore();
-		$this->injectRequires();
-		$this->addLocalArtifactsRepository();
+		// We must not inject core etc. when the root package itself is being installed via this plugin.
+		if (!$installer->supports($composer->getPackage()->getType())) {
+			$this->injectContaoCore();
+			$this->injectRequires();
+			$this->addLocalArtifactsRepository();
+		}
 		$this->addLegacyPackagesRepository();
 	}
 
@@ -105,7 +131,7 @@ class Plugin
 		$versionParser = new VersionParser();
 
 		// detect provided Swift Mailer version
-		switch (VERSION) {
+		switch ($this->getContaoVersion()) {
 			case '2.11':
 				$file = $contaoRoot . '/plugins/swiftmailer/VERSION';
 				break;
@@ -161,7 +187,7 @@ class Plugin
 			return $version . '.' . $matches[1];
 		}
 
-		throw new \RuntimeException('Invalid version: ' . $version . '.' . $build);
+		throw new RuntimeException('Invalid version: ' . $version . '.' . $build);
 	}
 
 	/**
@@ -171,12 +197,12 @@ class Plugin
 	 */
 	public function injectContaoCore()
 	{
-		$root              = static::getContaoRoot($this->composer->getPackage());
+		$root              = $this->getContaoRoot($this->composer->getPackage());
 		$repositoryManager = $this->composer->getRepositoryManager();
 		$localRepository   = $repositoryManager->getLocalRepository();
 
 		$versionParser = new VersionParser();
-		$prettyVersion = $this->prepareContaoVersion(VERSION, BUILD);
+		$prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
 		$version       = $versionParser->normalize($prettyVersion);
 
 		/** @var PackageInterface $localPackage */
@@ -197,7 +223,7 @@ class Plugin
 			}
 		}
 
-		$contaoVersion = VERSION . '.' . BUILD;
+		$contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
 		$contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
 		$contaoCore->setType('metapackage');
 		$contaoCore->setDistType('zip');
@@ -233,11 +259,11 @@ class Plugin
 		$requires = $package->getRequires();
 
 		if (!isset($requires['contao/core'])) {
-			// load here to make sure the VERSION constant exists
-			static::getContaoRoot($this->composer->getPackage());
+			// load here to make sure the version information is present.
+			$this->getContaoRoot($this->composer->getPackage());
 
 			$versionParser = new VersionParser();
-			$prettyVersion = $this->prepareContaoVersion(VERSION, BUILD);
+			$prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
 			$version = $versionParser->normalize($prettyVersion);
 
 			$constraint = new VersionConstraint('==', $version);
@@ -260,7 +286,7 @@ class Plugin
 	 */
 	public function addLocalArtifactsRepository()
 	{
-		$contaoRoot             = static::getContaoRoot($this->composer->getPackage());
+		$contaoRoot             = $this->getContaoRoot($this->composer->getPackage());
 		$artifactRepositoryPath = $contaoRoot . DIRECTORY_SEPARATOR .
 			'composer' . DIRECTORY_SEPARATOR .
 			'packages';
@@ -321,7 +347,7 @@ class Plugin
 		switch ($event->getName()) {
 			case ScriptEvents::POST_UPDATE_CMD:
 				$package = $this->composer->getPackage();
-				$root    = static::getContaoRoot($package);
+				$root    = $this->getContaoRoot($package);
 
 				$this->createRunonce($this->inputOutput, $root);
 				$this->cleanCache($this->inputOutput, $root);
@@ -374,7 +400,7 @@ class Plugin
 
 	public function cleanLocalconfig()
 	{
-		$root = static::getContaoRoot($this->composer->getPackage());
+		$root = $this->getContaoRoot($this->composer->getPackage());
 
 		$localconfig = $root . '/system/config/localconfig.php';
 		if (file_exists($localconfig)) {
@@ -424,14 +450,20 @@ class Plugin
 	 * @param RootPackageInterface $package
 	 *
 	 * @return string
+	 *
+	 * @throws RuntimeException If the current working directory can not be determined.
 	 */
-	static public function getContaoRoot(RootPackageInterface $package)
+	public function getContaoRoot(RootPackageInterface $package)
 	{
-		if (!defined('TL_ROOT')) {
+		if (!isset($this->contaoRoot)) {
 			$root = dirname(getcwd());
 
 			$extra = $package->getExtra();
 			$cwd   = getcwd();
+
+			if (!$cwd) {
+				throw new RuntimeException('Could not determine current working directory.');
+			}
 
 			if (!empty($extra['contao']['root'])) {
 				$root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
@@ -448,19 +480,16 @@ class Plugin
 				}
 			}
 
-			define('TL_ROOT', $root);
-		}
-		else {
-			$root = TL_ROOT;
+			$this->contaoRoot = $root;
 		}
 
-		$systemDir = $root . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
+		$systemDir = $this->contaoRoot . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
 		$configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
 
-		static::detectVersion($systemDir, $configDir, $root);
-		static::loadConfig($configDir);
+		$this->detectVersion($systemDir, $configDir, $this->contaoRoot);
+		$this->loadConfig($configDir);
 
-		return $root;
+		return $this->contaoRoot;
 	}
 
 	/**
@@ -472,29 +501,158 @@ class Plugin
 	 *
 	 * @param $root
 	 *
-	 * @throws \RuntimeException
+	 * @throws RuntimeException
 	 */
-	static protected function detectVersion($systemDir, $configDir, $root)
+	protected function detectVersion($systemDir, $configDir, $root)
 	{
-		if (!defined('VERSION')) {
-			// Contao 3+
-			if (file_exists(
-				$constantsFile = $configDir . 'constants.php'
-			)
-			) {
-				require_once($constantsFile);
-			}
-			// Contao 2+
-			else if (file_exists(
-				$constantsFile = $systemDir . 'constants.php'
-			)
-			) {
-				require_once($constantsFile);
-			}
-			else {
-				throw new \RuntimeException('Could not find constants.php in ' . $root);
+		if (isset($this->contaoVersion) && isset($this->contaoBuild)) {
+			return;
+		}
+
+		foreach (array(
+			$configDir . 'constants.php',
+			$systemDir . 'constants.php'
+		) as $checkConstants) {
+			if (file_exists($checkConstants)) {
+				$constantsFile = $checkConstants;
+				break;
 			}
 		}
+
+		if (!isset($constantsFile)) {
+			throw new RuntimeException('Could not find constants.php in ' . $root);
+		}
+
+		$contents = file_get_contents($constantsFile);
+
+		if (preg_match('#define\(\'VERSION\', \'([^\']+)\'\);#', $contents, $match)) {
+			$this->contaoVersion = $match[1];
+		}
+
+		if (preg_match('#define\(\'BUILD\', \'([^\']+)\'\);#', $contents, $match)) {
+			$this->contaoBuild = $match[1];
+		}
+	}
+
+	public function getContaoVersion()
+	{
+		if (!isset($this->contaoVersion)) {
+			throw new RuntimeException(
+				'Contao version is not set. Has getContaoRoot() been called before?'
+			);
+		}
+
+		return $this->contaoVersion;
+	}
+
+	public function getContaoBuild()
+	{
+		if (!isset($this->contaoBuild)) {
+			throw new RuntimeException(
+				'Contao build is not set. Has getContaoRoot() been called before?'
+			);
+		}
+
+		return $this->contaoBuild;
+	}
+
+	public function getContaoUploadPath()
+	{
+		if (!isset($this->contaoUploadPath)) {
+			throw new RuntimeException(
+				'Contao upload path is not set. Has getContaoRoot() been called before?'
+			);
+		}
+
+		return $this->contaoUploadPath;
+	}
+
+	/**
+	 * Retrieve a config value from the given config file.
+	 *
+	 * This is a very rudimentary parser for the Contao config files.
+	 * It does only support on line assignments and primitive types but this is enough for this
+	 * plugin to retrieve the data it needs to retrieve.
+	 *
+	 * @param $configFile
+	 *
+	 * @param $key
+	 *
+	 * @return mixed
+	 */
+	protected function extractKeyFromConfigFile($configFile, $key)
+	{
+		if (!file_exists($configFile)) {
+			return null;
+		}
+
+		$value  = null;
+		$lines  = file($configFile);
+		$search = '$GLOBALS[\'TL_CONFIG\'][\'' . $key . '\']';
+		$length = strlen($search);
+		foreach ($lines as $line) {
+			$tline = trim($line);
+			if (strncmp($search, $tline, $length) === 0) {
+				$parts = explode('=', $tline, 2);
+				$tline = trim($parts[1]);
+
+				if ($tline === 'true;') {
+					$value = true;
+				}
+				else if ($tline === 'false;') {
+					$value = false;
+				}
+				else if ($tline === 'null;') {
+					$value = null;
+				}
+				else if ($tline === 'array();') {
+					$value = array();
+				}
+				else if ($tline[0] === '\'') {
+					$value = substr($tline, 1, -2);
+				}
+				else {
+					$value = substr($tline, 0, -1);
+				}
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Retrieve a config value from the given config path
+	 *
+	 * @param string $configPath
+	 *
+	 * @param $key
+	 *
+	 * @return mixed
+	 */
+	protected function extractKeyFromConfigPath($configPath, $key)
+	{
+		// load default config
+		if (version_compare($this->getContaoVersion(), '3', '>=')) {
+			$value = $this->extractKeyFromConfigFile(
+				$configPath . 'default.php',
+				$key
+			);
+		}
+		else {
+			$value = $this->extractKeyFromConfigFile(
+				$configPath . 'config.php',
+				$key
+			);
+		}
+
+		if ($override = $this->extractKeyFromConfigFile(
+			$configPath . 'localconfig.php',
+			$key
+		)) {
+			$value = $override;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -505,23 +663,10 @@ class Plugin
 	 * @SuppressWarnings(PHPMD.Superglobals)
 	 * @SuppressWarnings(PHPMD.CamelCaseVariableName)
 	 */
-	static protected function loadConfig($configDir)
+	protected function loadConfig($configDir)
 	{
-		if (empty($GLOBALS['TL_CONFIG'])) {
-			if (version_compare(VERSION, '3', '>=')) {
-				// load default.php
-				require_once($configDir . 'default.php');
-			}
-			else {
-				// load config.php
-				require_once($configDir . 'config.php');
-			}
-
-			// load localconfig.php
-			$file = $configDir . 'localconfig.php';
-			if (file_exists($file)) {
-				require_once($file);
-			}
+		if (!isset($this->contaoUploadPath)) {
+			$this->contaoUploadPath = $this->extractKeyFromConfigPath($configDir, 'uploadPath');
 		}
 	}
 }

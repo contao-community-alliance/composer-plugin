@@ -30,6 +30,3 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 $loader->add('ContaoCommunityAlliance\Composer\Plugin', __DIR__);
 
 require __DIR__.'/ContaoCommunityAlliance/Composer/Plugin/Test/TestCase.php';
-
-define('VERSION', '23.0.5');
-define('BUILD', '1776');

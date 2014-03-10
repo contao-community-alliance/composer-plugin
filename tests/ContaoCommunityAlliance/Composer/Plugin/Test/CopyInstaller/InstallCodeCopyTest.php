@@ -17,6 +17,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin\Test\CopyInstaller;
 
 use Composer\Config;
 use ContaoCommunityAlliance\Composer\Plugin\AbstractInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Test\InstallCodeBase;
 
 class InstallCodeCopyTest
 	extends InstallCodeBase

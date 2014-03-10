@@ -55,12 +55,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "604a65cc31f3e5d8a2b96802135ac24434e87678"
+                "reference": "fff913d6de5ec8c4315f466cf203c3e0acc3218a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/604a65cc31f3e5d8a2b96802135ac24434e87678",
-                "reference": "604a65cc31f3e5d8a2b96802135ac24434e87678",
+                "url": "https://api.github.com/repos/composer/composer/zipball/fff913d6de5ec8c4315f466cf203c3e0acc3218a",
+                "reference": "fff913d6de5ec8c4315f466cf203c3e0acc3218a",
                 "shasum": ""
             },
             "require": {
@@ -116,20 +116,20 @@
                 "dependency",
                 "package"
             ],
-            "time": "2014-03-06 09:26:16"
+            "time": "2014-03-01 20:25:32"
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "1.3.6",
+            "version": "1.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "d97cf3ce890fe80f247fc08594a1c8a1029fc7ed"
+                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/d97cf3ce890fe80f247fc08594a1c8a1029fc7ed",
-                "reference": "d97cf3ce890fe80f247fc08594a1c8a1029fc7ed",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/01949f6d2130e9737ffae5d3952909a8de70d114",
+                "reference": "01949f6d2130e9737ffae5d3952909a8de70d114",
                 "shasum": ""
             },
             "require": {
@@ -184,7 +184,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2014-03-05 15:03:52"
+            "time": "2013-12-13 15:21:04"
         },
         {
             "name": "pdepend/pdepend",

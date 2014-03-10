@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin\Test\CopyInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin\Test;
 
 use Composer\Composer;
 use Composer\Config;
@@ -25,7 +25,6 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\AbstractInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Plugin;
-use ContaoCommunityAlliance\Composer\Plugin\Test\TestCase;
 
 abstract class InstallCodeBase extends TestCase
 {
@@ -137,6 +136,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testSourcesCopy()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -161,6 +162,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testSourcesDelete()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -175,8 +178,9 @@ abstract class InstallCodeBase extends TestCase
 
 		$pkgRoot = $this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace/test';
 		$this->ensureDirectoryExistsAndClear($pkgRoot);
-		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'test\';');
 		$this->ensureDirectoryExistsAndClear($this->rootDir . '/system/modules/test');
+
+		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'test\';');
 		file_put_contents($this->rootDir . '/system/modules/test/testfile.php', '<?php echo \'test\';');
 
 		$library->updateCode($package, $packageNew);
@@ -189,6 +193,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testUserFilesCopy()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -201,6 +207,7 @@ abstract class InstallCodeBase extends TestCase
 
 		$pkgRoot = $this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace/test';
 		$this->ensureDirectoryExistsAndClear($pkgRoot);
+
 		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'test\';');
 
 		$library->installCode($package);
@@ -213,6 +220,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testUserFilesDoNotDelete()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -227,8 +236,9 @@ abstract class InstallCodeBase extends TestCase
 
 		$pkgRoot = $this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace/test';
 		$this->ensureDirectoryExistsAndClear($pkgRoot);
-		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'test\';');
 		$this->ensureDirectoryExistsAndClear($this->rootDir . '/' . $this->uploadDir . '/testdir');
+
+		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'test\';');
 		file_put_contents($this->rootDir . '/' . $this->uploadDir . '/testdir/testfile.php', '<?php echo \'test\';');
 
 		$library->updateCode($package, $packageNew);
@@ -241,6 +251,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testUserFilesDoNotOverwrite()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -261,8 +273,9 @@ abstract class InstallCodeBase extends TestCase
 
 		$pkgRoot = $this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace/test';
 		$this->ensureDirectoryExistsAndClear($pkgRoot);
-		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'NEW\';');
 		$this->ensureDirectoryExistsAndClear($this->rootDir . '/' . $this->uploadDir . '/testdir');
+
+		file_put_contents($pkgRoot . '/testfile.php', '<?php echo \'NEW\';');
 		file_put_contents($this->rootDir . '/' . $this->uploadDir . '/testdir/testfile.php', '<?php echo \'OLD\';');
 
 		$library->updateCode($package, $packageNew);
@@ -275,6 +288,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testFilesCopy()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -299,6 +314,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testFilesDoNotDelete()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -313,8 +330,9 @@ abstract class InstallCodeBase extends TestCase
 
 		$pkgRoot = $this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace/templates';
 		$this->ensureDirectoryExistsAndClear($pkgRoot);
-		file_put_contents($pkgRoot . '/fe_page.html5', '<html>');
 		$this->ensureDirectoryExistsAndClear($this->rootDir . '/templates');
+
+		file_put_contents($pkgRoot . '/fe_page.html5', '<html>');
 		file_put_contents($this->rootDir . '/templates/fe_page.html5', '<html>');
 
 		$library->updateCode($package, $packageNew);
@@ -327,6 +345,8 @@ abstract class InstallCodeBase extends TestCase
 	 */
 	public function testFilesDoNotOverwrite()
 	{
+		$this->ensureDirectoryExistsAndClear($this->rootDir);
+
 		$library = $this->mockInstaller();
 
 		$package = $this->createPackage(array(
@@ -347,8 +367,9 @@ abstract class InstallCodeBase extends TestCase
 
 		$pkgRoot = $this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace/templates';
 		$this->ensureDirectoryExistsAndClear($pkgRoot);
-		file_put_contents($pkgRoot . '/fe_page.html5', '<html> NEW');
 		$this->ensureDirectoryExistsAndClear($this->rootDir . '/templates');
+
+		file_put_contents($pkgRoot . '/fe_page.html5', '<html> NEW');
 		file_put_contents($this->rootDir . '/templates/fe_page.html5', '<html> OLD');
 
 		$library->updateCode($package, $packageNew);
