@@ -21,6 +21,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;
 use Composer\Package\PackageInterface;
+use SplFileInfo;
 
 /**
  * Basic installer that install Contao extensions.
@@ -79,6 +80,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 		parent::installCode($package);
 		$this->updateSources($map, $package);
 		$this->updateUserfiles($package);
+		$this->updateRootFiles($package);
 
 		$root        = $this->plugin->getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 		$installPath = self::unprefixPath($root, $this->getInstallPath($package));
@@ -91,6 +93,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 		parent::updateCode($initial, $target);
 		$this->updateSources($map, $target, $initial);
 		$this->updateUserfiles($target);
+		$this->updateRootFiles($target);
 
 		$root        = $this->plugin->getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
 		$installPath = self::unprefixPath($root, $this->getInstallPath($target));
@@ -338,7 +341,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 					$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
 					$targetReal = $root . DIRECTORY_SEPARATOR . $target;
 
-					$count += $this->installUserfiles($sourceReal, $targetReal, $target);
+					$count += $this->installFiles($sourceReal, $targetReal, $target);
 				}
 			}
 		}
@@ -353,7 +356,45 @@ abstract class AbstractInstaller extends LibraryInstaller
 		}
 	}
 
-	protected function installUserfiles($sourceReal, $targetReal, $target)
+	/**
+	 * @param PackageInterface $package
+	 */
+	public function updateRootFiles(PackageInterface $package)
+	{
+		$count = 0;
+
+		$extra = $package->getExtra();
+		if (array_key_exists('contao', $extra)) {
+			$contao = $extra['contao'];
+
+			if (is_array($contao) && array_key_exists('files', $contao)) {
+				$root       = $this->plugin->getContaoRoot($this->composer->getPackage());
+
+				$files   = (array) $contao['files'];
+				$installPath = $this->getInstallPath($package);
+
+				foreach ($files as $source => $target) {
+					$target = DIRECTORY_SEPARATOR . $target;
+
+					$sourceReal = $installPath . DIRECTORY_SEPARATOR . $source;
+					$targetReal = $root . DIRECTORY_SEPARATOR . $target;
+
+					$count += $this->installFiles($sourceReal, $targetReal, $target);
+				}
+			}
+		}
+
+		if ($count && $this->io->isVerbose()) {
+			$this->io->write(
+				sprintf(
+					'  - installed <info>%d</info> files',
+					$count
+				)
+			);
+		}
+	}
+
+	protected function installFiles($sourceReal, $targetReal, $target)
 	{
 		$count = 0;
 
@@ -371,7 +412,9 @@ abstract class AbstractInstaller extends LibraryInstaller
 				$this->filesystem->ensureDirectoryExists($targetReal);
 			}
 
+			/** @var RecursiveDirectoryIterator $iterator */
 			foreach ($iterator as $file) {
+				/** @var SplFileInfo $file*/
 				$targetPath = $targetReal . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 				if (!file_exists($targetPath)) {
 					if ($file->isDir()) {

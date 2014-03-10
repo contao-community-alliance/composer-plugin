@@ -15,20 +15,9 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
-use Composer\Autoload\ClassMapGenerator;
-use Composer\Composer;
-use Composer\IO\IOInterface;
-use Composer\Package\AliasPackage;
-use Composer\Package\CompletePackageInterface;
-use Composer\Package\RootPackageInterface;
-use Composer\Util\Filesystem;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Composer\Installer\LibraryInstaller;
-use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Script\Event;
 
 /**
  * Module installer that use copies to install the extensions into the contao file hierarchy.
@@ -40,7 +29,7 @@ class CopyInstaller extends AbstractInstaller
 		$deleteCount = 0;
 		$copyCount   = 0;
 
-		$root        = Plugin::getContaoRoot($this->composer->getPackage());
+		$root        = $this->plugin->getContaoRoot($this->composer->getPackage());
 		$installPath = $this->getInstallPath($package);
 		$sources     = $this->getSourcesSpec($package);
 
