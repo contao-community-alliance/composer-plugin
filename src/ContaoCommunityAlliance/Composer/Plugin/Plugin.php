@@ -231,6 +231,7 @@ class Plugin
 		$contaoCore->setDistReference($contaoVersion);
 		$contaoCore->setDistSha1Checksum($contaoVersion);
 		$contaoCore->setInstallationSource('dist');
+		$contaoCore->setAutoload(array());
 
 		$this->injectSwiftMailer($root, $contaoCore);
 
