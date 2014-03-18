@@ -15,6 +15,11 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
+/**
+ * This exception is raised when the constants file of Contao could not be found.
+ *
+ * @package ContaoCommunityAlliance\Composer\Plugin
+ */
 class ConstantsNotFoundException extends \RuntimeException
 {
 }

@@ -101,9 +101,11 @@ class Plugin
 				$this->injectRequires();
 				$this->addLocalArtifactsRepository();
 			}
+			// @codingStandardsIgnoreStart - Silently ignore the fact that the constants are not found.
 			catch (ConstantsNotFoundException $e) {
-				// silently ignore
+				// No op.
 			}
+			// @codingStandardsIgnoreEnd
 		}
 		$this->addLegacyPackagesRepository();
 	}
