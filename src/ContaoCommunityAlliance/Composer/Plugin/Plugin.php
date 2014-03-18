@@ -96,9 +96,14 @@ class Plugin
 
 		// We must not inject core etc. when the root package itself is being installed via this plugin.
 		if (!$installer->supports($composer->getPackage()->getType())) {
-			$this->injectContaoCore();
-			$this->injectRequires();
-			$this->addLocalArtifactsRepository();
+			try {
+				$this->injectContaoCore();
+				$this->injectRequires();
+				$this->addLocalArtifactsRepository();
+			}
+			catch (ConstantsNotFoundException $e) {
+				// silently ignore
+			}
 		}
 		$this->addLegacyPackagesRepository();
 	}
@@ -521,7 +526,7 @@ class Plugin
 		}
 
 		if (!isset($constantsFile)) {
-			throw new RuntimeException('Could not find constants.php in ' . $root);
+			throw new ConstantsNotFoundException('Could not find constants.php in ' . $root);
 		}
 
 		$contents = file_get_contents($constantsFile);
