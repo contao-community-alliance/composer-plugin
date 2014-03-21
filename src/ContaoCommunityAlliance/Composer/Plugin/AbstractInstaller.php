@@ -175,7 +175,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 		if (self::getNativePath($targetPath, '/') == 'system/runonce.php') {
 			$path = self::unprefixPath(
-				$this->plugin->getContaoRoot($package),
+				$this->plugin->getContaoRoot($this->composer->getPackage()),
 				$currentPath
 			);
 			RunonceManager::addRunonce($path);
