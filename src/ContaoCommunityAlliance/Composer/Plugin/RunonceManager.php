@@ -93,9 +93,7 @@ EOF;
 	 */
 	static public function addRunonce($path)
 	{
-		if (is_file($path)) {
-			static::$runonces[] = $path;
-		}
+		static::$runonces[] = $path;
 	}
 
 	/**
