@@ -32,6 +32,9 @@ class RunonceExecutor extends \System
 	 */
 	public function run(array $runonces)
 	{
+		// handle errors as exceptions
+		$previousErrorHandler = set_error_handler(array($this, 'handleError'), E_ALL);
+
 		foreach ($runonces as $runonce) {
 			try {
 				require_once($runonce);
@@ -40,5 +43,23 @@ class RunonceExecutor extends \System
 				log_message('Execute runonce ' . $runonce . ' failed with message:' . PHP_EOL . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
 			}
 		}
+
+		// restore contao error handler
+		set_error_handler($previousErrorHandler);
+	}
+
+	/**
+	 * Throw errors as error exceptions.
+	 *
+	 * @param int    $errno
+	 * @param string $errstr
+	 * @param string $errfile
+	 * @param int    $errline
+	 *
+	 * @throws \ErrorException
+	 */
+	public function handleError($errno, $errstr, $errfile, $errline)
+	{
+		throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
 	}
 }
