@@ -38,7 +38,7 @@ class RunonceExecutor extends \System
 		foreach ($runonces as $runonce) {
 			try {
 				if (is_file(TL_ROOT . DIRECTORY_SEPARATOR . $runonce)) {
-					include_once($runonce);
+					require_once($runonce);
 				}
 				else {
 					log_message('Skip non-existing runonce ' . $runonce);
