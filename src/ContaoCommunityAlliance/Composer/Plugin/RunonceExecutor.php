@@ -37,17 +37,7 @@ class RunonceExecutor extends \System
 				require_once($runonce);
 			}
 			catch (\Exception $e) {
-				// first trigger an error to write this into the log file
-				trigger_error(
-					$e->getMessage() . "\n" . $e->getTraceAsString(),
-					E_USER_ERROR
-				);
-				// now log into the system log
-				$this->log(
-					$e->getMessage() . "\n" . $e->getTraceAsString(),
-					'RunonceExecutor run()',
-					'ERROR'
-				);
+				log_message('Execute runonce ' . $runonce . ' failed with message:' . PHP_EOL . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
 			}
 		}
 	}
