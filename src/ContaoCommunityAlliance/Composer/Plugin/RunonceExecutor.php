@@ -37,7 +37,12 @@ class RunonceExecutor extends \System
 
 		foreach ($runonces as $runonce) {
 			try {
-				include_once($runonce);
+				if (is_file(TL_ROOT . DIRECTORY_SEPARATOR . $runonce)) {
+					include_once($runonce);
+				}
+				else {
+					log_message('Skip non-existing runonce ' . $runonce);
+				}
 			}
 			catch (\Exception $e) {
 				log_message('Execute runonce ' . $runonce . ' failed with message:' . PHP_EOL . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
