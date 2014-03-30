@@ -37,7 +37,7 @@ class RunonceExecutor extends \System
 
 		foreach ($runonces as $runonce) {
 			try {
-				require_once($runonce);
+				include_once($runonce);
 			}
 			catch (\Exception $e) {
 				log_message('Execute runonce ' . $runonce . ' failed with message:' . PHP_EOL . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
