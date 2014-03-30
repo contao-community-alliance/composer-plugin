@@ -45,7 +45,11 @@ class RunonceExecutor extends \System
 				}
 			}
 			catch (\Exception $e) {
-				log_message('Execute runonce ' . $runonce . ' failed with message:' . PHP_EOL . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
+				log_message(
+					'Execute runonce ' . $runonce . ' failed with message:'
+					. PHP_EOL . $e->getMessage()
+					. PHP_EOL . $e->getTraceAsString()
+				);
 			}
 		}
 
