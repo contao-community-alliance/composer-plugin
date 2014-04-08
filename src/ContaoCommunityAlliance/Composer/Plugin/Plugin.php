@@ -32,7 +32,6 @@ use Composer\Repository\ComposerRepository;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Script\PackageEvent;
-use Composer\Util\Filesystem;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use RuntimeException;
@@ -360,11 +359,14 @@ class Plugin
 				$root    = $this->getContaoRoot($package);
 
 				$this->createRunonce($this->inputOutput, $root);
-				$this->cleanCache($this->inputOutput, $root);
+				Housekeeper::cleanCache($this->inputOutput, $root);
 				break;
 
 			case ScriptEvents::POST_AUTOLOAD_DUMP:
-				$this->cleanLocalconfig();
+				Housekeeper::cleanLocalConfig(
+					$this->inputOutput,
+					$this->getContaoRoot($this->composer->getPackage())
+				);
 				break;
 
 			default:
@@ -381,65 +383,6 @@ class Plugin
 	public function createRunonce(IOInterface $inputOutput, $root)
 	{
 		RunonceManager::createRunonce($inputOutput, $root);
-	}
-
-	/**
-	 * Clean the internal cache of Contao after updates has been installed.
-	 *
-	 * @param IOInterface $inputOutput
-	 *
-	 * @param string      $root The contao installation root.
-	 */
-	public function cleanCache(IOInterface $inputOutput, $root)
-	{
-		// clean cache
-		$filesystem = new Filesystem();
-		foreach (array('config', 'dca', 'language', 'sql') as $dir) {
-			$cache = $root . '/system/cache/' . $dir;
-			if (is_dir($cache)) {
-				$inputOutput->write(
-					sprintf(
-						'<info>Clean contao internal %s cache</info>',
-						$dir
-					)
-				);
-				$filesystem->removeDirectory($cache);
-			}
-		}
-	}
-
-	public function cleanLocalconfig()
-	{
-		$root = $this->getContaoRoot($this->composer->getPackage());
-
-		$localconfig = $root . '/system/config/localconfig.php';
-		if (file_exists($localconfig)) {
-			$lines    = file($localconfig);
-			$remove   = false;
-			$modified = false;
-			foreach ($lines as $index => $line) {
-				$tline = trim($line);
-				if ($tline == '### COMPOSER CLASSES START ###') {
-					$modified = true;
-					$remove   = true;
-					unset($lines[$index]);
-				}
-				else if ($tline == '### COMPOSER CLASSES STOP ###') {
-					$remove = false;
-					unset($lines[$index]);
-				}
-				else if ($remove || $tline == '?>') {
-					unset($lines[$index]);
-				}
-			}
-
-			if ($modified) {
-				$file = implode('', $lines);
-				$file = rtrim($file);
-
-				file_put_contents($root . '/system/config/localconfig.php', $file);
-			}
-		}
 	}
 
 	/**
