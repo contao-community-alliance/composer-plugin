@@ -504,14 +504,14 @@ class Plugin
 	public function getContaoRoot(RootPackageInterface $package)
 	{
 		if (!isset($this->contaoRoot)) {
-			$root = dirname(getcwd());
-
-			$extra = $package->getExtra();
-			$cwd   = getcwd();
+			$cwd = getcwd();
 
 			if (!$cwd) {
 				throw new RuntimeException('Could not determine current working directory.');
 			}
+
+			$root  = dirname($cwd);
+			$extra = $package->getExtra();
 
 			if (!empty($extra['contao']['root'])) {
 				$root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
