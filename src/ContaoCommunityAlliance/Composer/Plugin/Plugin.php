@@ -31,6 +31,7 @@ use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
+use Composer\Script\PackageEvent;
 use Composer\Util\Filesystem;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
@@ -116,10 +117,11 @@ class Plugin
 	public static function getSubscribedEvents()
 	{
 		return array(
-			PluginEvents::COMMAND            => 'handleCommand',
-			ScriptEvents::POST_UPDATE_CMD    => 'handleScriptEvent',
-			ScriptEvents::POST_AUTOLOAD_DUMP => 'handleScriptEvent',
-			PluginEvents::PRE_FILE_DOWNLOAD  => 'handlePreDownload',
+			PluginEvents::COMMAND             => 'handleCommand',
+			ScriptEvents::POST_UPDATE_CMD     => 'handleScriptEvent',
+			ScriptEvents::POST_AUTOLOAD_DUMP  => 'handleScriptEvent',
+			ScriptEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
+			PluginEvents::PRE_FILE_DOWNLOAD   => 'handlePreDownload',
 		);
 	}
 
@@ -437,6 +439,44 @@ class Plugin
 
 				file_put_contents($root . '/system/config/localconfig.php', $file);
 			}
+		}
+	}
+
+	/**
+	 * Check if a contao package should be installed,
+	 * prevent from installing, if contao/core is installed in the parent directory.
+	 *
+	 * @var PackageEvent $event
+	 */
+	public function checkContaoPackage(PackageEvent $event)
+	{
+		/** @var PackageInterface $package */
+		$package = $event->getOperation()->getPackage();
+
+		if ($package->getName() == 'contao/core') {
+			try {
+				$composer = $event->getComposer();
+				$this->getContaoRoot($composer->getPackage());
+
+				// contao is already installed in parent directory,
+				// prevent installing contao/core in vendor!
+				if (isset($this->contaoVersion)) {
+					throw new DuplicateContaoException(
+						'Warning: Contao core was about to get installed but has been found in project root, ' .
+						'to recover from this problem please restart the operation'
+					);
+				}
+			}
+			// @codingStandardsIgnoreStart - Silently ignore the fact that the constants are not found.
+			catch (ConstantsNotFoundException $e) {
+				// gracefully ignore
+			}
+			// @codingStandardsIgnoreEnd
+
+			$this->contaoRoot       = null;
+			$this->contaoVersion    = null;
+			$this->contaoBuild      = null;
+			$this->contaoUploadPath = null;
 		}
 	}
 
