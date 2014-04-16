@@ -16,6 +16,7 @@
 namespace ContaoCommunityAlliance\Composer\Plugin\Test\RunonceManager;
 
 use Composer\IO\IOInterface;
+use Composer\Package\CompletePackage;
 use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 use ContaoCommunityAlliance\Composer\Plugin\Test\TestCase;
@@ -110,5 +111,93 @@ EOF;
 		$this->assertContains('system/runonce_1.php', $file1, 'Previous runonce has not been added.');
 		$this->assertContains('composer/vendor/unit/test/runonce2.php', $file1, 'runonce2 from module has not been added.');
 		$this->assertNotContains('composer/vendor/unit/test/runonce1.php', $file1, 'runonce1 is also mentioned in new runonce.php');
+	}
+
+	public function testDoNotAddInstalledRunOnce()
+	{
+		RunonceManager::clearRunonces();
+		$package = new CompletePackage('test/package', '1.0.0.0', '1.0.0');
+		$package->setExtra(array(
+			'contao' => array(
+				'sources' => array(
+					'test' => 'system/modules/test'
+				),
+				'runonce' => array(
+					'system/modules/test/config/runonce.php'
+				)
+			)
+		));
+		$package->setTargetDir('Some/Namespace');
+
+		RunonceManager::addRunonces($package, $this->rootDir);
+
+		$this->assertEquals(array(), RunonceManager::getRunonces(), 'Installed runonce has been added.');
+		$this->assertEmpty(RunonceManager::getRunonces(), 'Installed runonce has been added.');
+	}
+
+	public function testDoAddNotInstalledRunOnce()
+	{
+		RunonceManager::clearRunonces();
+		$package = new CompletePackage('test/package', '1.0.0.0', '1.0.0');
+		$package->setExtra(array(
+			'contao' => array(
+				'runonce' => array(
+					'system/modules/test/config/runonce.php'
+				)
+			)
+		));
+		$package->setTargetDir('Some/Namespace');
+
+		RunonceManager::addRunonces($package, $this->rootDir);
+
+		$this->assertEquals(
+			array($this->rootDir . DIRECTORY_SEPARATOR . 'system/modules/test/config/runonce.php'),
+			RunonceManager::getRunonces(),
+			'Mapped runonce has not been added.'
+		);
+	}
+
+	public function testDoNotAddInstalledRunOnce2()
+	{
+		RunonceManager::clearRunonces();
+		$package = new CompletePackage('test/package', '1.0.0.0', '1.0.0');
+		$package->setExtra(array(
+			'contao' => array(
+				'sources' => array(
+					'src/runonce.php' => 'system/modules/test/config/runonce.php'
+				),
+				'runonce' => array(
+					'system/modules/test/config/runonce.php'
+				)
+			)
+		));
+		$package->setTargetDir('Some/Namespace');
+
+		RunonceManager::addRunonces($package, $this->rootDir);
+
+		$this->assertEquals(array(), RunonceManager::getRunonces(), 'Installed runonce has been added.');
+		$this->assertEmpty(RunonceManager::getRunonces(), 'Installed runonce has been added.');
+	}
+
+	public function testDoNotAddInstalledRunOnce3()
+	{
+		RunonceManager::clearRunonces();
+		$package = new CompletePackage('test/package', '1.0.0.0', '1.0.0');
+		$package->setExtra(array(
+			'contao' => array(
+				'sources' => array(
+					'test' => 'system/modules/test'
+				),
+				'runonce' => array(
+					'system/runonce.php'
+				)
+			)
+		));
+		$package->setTargetDir('Some/Namespace');
+
+		RunonceManager::addRunonces($package, $this->rootDir);
+
+		$this->assertEquals(array(), RunonceManager::getRunonces(), 'Installed runonce has been added.');
+		$this->assertEmpty(RunonceManager::getRunonces(), 'Installed runonce has been added.');
 	}
 }
