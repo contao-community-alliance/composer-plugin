@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin\Test\SymlinkInstaller;
+namespace ContaoCommunityAlliance\Composer\Plugin\Test\RunonceManager;
 
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -47,12 +47,14 @@ class RunonceManagerTest
 
 	public function testNothingToDo()
 	{
+		RunonceManager::clearRunonces();
 		RunonceManager::createRunonce($this->io, $this->rootDir);
 		$this->assertFileNotExists($this->rootDir . '/system/runonce.php');
 	}
 
 	public function testSingleRunOnce()
 	{
+		RunonceManager::clearRunonces();
 		RunonceManager::addRunonce('composer/vendor/unit/test/runonce1.php');
 		RunonceManager::createRunonce($this->io, $this->rootDir);
 
@@ -63,6 +65,7 @@ class RunonceManagerTest
 
 	public function testRunonceCreateFiredTwice()
 	{
+		RunonceManager::clearRunonces();
 		RunonceManager::addRunonce('composer/vendor/unit/test/runonce1.php');
 		RunonceManager::createRunonce($this->io, $this->rootDir);
 
@@ -83,6 +86,7 @@ class RunonceManagerTest
 
 	public function testRunonceCreateFiredBeforeRunonceExecuted()
 	{
+		RunonceManager::clearRunonces();
 		$array = var_export(array('composer/vendor/unit/test/runonce1.php'), true);
 		$testData = <<<EOF
 <?php

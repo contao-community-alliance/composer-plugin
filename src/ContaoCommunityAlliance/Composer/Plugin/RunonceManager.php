@@ -156,4 +156,9 @@ EOF;
 	{
 		return static::$runonces;
 	}
+
+	static public function clearRunonces()
+	{
+		static::$runonces = array();
+	}
 }
