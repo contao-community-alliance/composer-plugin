@@ -368,7 +368,10 @@ class Plugin
 	 */
 	public function handlePostAutoloadDump(/* Event $event */)
 	{
-		$this->cleanLocalconfig();
+		Housekeeper::cleanLocalConfig(
+			$this->inputOutput,
+			$this->getContaoRoot($this->composer->getPackage())
+		);
 	}
 
 	/**
