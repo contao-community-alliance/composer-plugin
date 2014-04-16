@@ -45,8 +45,10 @@ class RunonceManager
 		$runonces = array_unique(static::$runonces);
 		if (count($runonces)) {
 			$file  = 'system/runonce.php';
+			$buffer  = '';
 			$index = 0;
 			while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
+				$buffer .= file_get_contents($root . DIRECTORY_SEPARATOR . $file);
 				$index++;
 				$file = 'system/runonce_' . $index . '.php';
 			}
@@ -61,7 +63,22 @@ class RunonceManager
 				);
 			}
 
-			$array = var_export($runonces, true);
+			// Filter the runonces.
+			$filtered = array();
+			foreach ($runonces as $runonce) {
+				if (strpos($buffer, $runonce) !== false) {
+					$inputOutput->write(
+						sprintf(
+							'<info>Not adding runonce %s, already mentioned in existing runonce file.</info>',
+							$runonce
+						)
+					);
+					continue;
+				}
+				$filtered[] = $runonce;
+			}
+
+			$array = var_export($filtered, true);
 
 			$runonce = <<<EOF
 <?php
