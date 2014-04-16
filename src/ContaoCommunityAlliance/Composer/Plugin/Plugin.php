@@ -117,8 +117,8 @@ class Plugin
 	{
 		return array(
 			PluginEvents::COMMAND             => 'handleCommand',
-			ScriptEvents::POST_UPDATE_CMD     => 'handleScriptEvent',
-			ScriptEvents::POST_AUTOLOAD_DUMP  => 'handleScriptEvent',
+			ScriptEvents::POST_UPDATE_CMD     => 'handlePostUpdateCmd',
+			ScriptEvents::POST_AUTOLOAD_DUMP  => 'handlePostAutoloadDump',
 			ScriptEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
 			PluginEvents::PRE_FILE_DOWNLOAD   => 'handlePreDownload',
 		);
@@ -345,32 +345,25 @@ class Plugin
 	}
 
 	/**
-	 * Handle script events.
-	 *
 	 * @param Event $event
-	 *
 	 * @return void
 	 */
-	public function handleScriptEvent(Event $event)
+	public function handlePostUpdateCmd(/* Event $event */)
 	{
-		switch ($event->getName()) {
-			case ScriptEvents::POST_UPDATE_CMD:
-				$package = $this->composer->getPackage();
-				$root    = $this->getContaoRoot($package);
+		$package = $this->composer->getPackage();
+		$root    = $this->getContaoRoot($package);
 
-				$this->createRunonce($this->inputOutput, $root);
-				Housekeeper::cleanCache($this->inputOutput, $root);
-				break;
+		$this->createRunonce($this->inputOutput, $root);
+		Housekeeper::cleanCache($this->inputOutput, $root);
+	}
 
-			case ScriptEvents::POST_AUTOLOAD_DUMP:
-				Housekeeper::cleanLocalConfig(
-					$this->inputOutput,
-					$this->getContaoRoot($this->composer->getPackage())
-				);
-				break;
-
-			default:
-		}
+	/**
+	 * @param Event $event
+	 * @return void
+	 */
+	public function handlePostAutoloadDump(/* Event $event */)
+	{
+		$this->cleanLocalconfig();
 	}
 
 	/**
