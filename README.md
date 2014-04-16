@@ -1,8 +1,9 @@
 Contao Composer Plugin
 ======================
-
-[![Build Status](https://travis-ci.org/contao-community-alliance/composer-plugin.png?branch=master)](https://travis-ci.org/contao-community-alliance/composer-plugin)
-[![Build Status](https://travis-ci.org/contao-community-alliance/composer-plugin.png?branch=develop)](https://travis-ci.org/contao-community-alliance/composer-plugin)
+[![Build Status](https://travis-ci.org/contao-community-alliance/composer-plugin.svg?branch=develop)](https://travis-ci.org/contao-community-alliance/composer-plugin)
+[![Latest Version tagged](http://img.shields.io/github/tag/contao-community-alliance/composer-plugin.svg)](https://github.com/contao-community-alliance/composer-plugin/tags)
+[![Latest Version on Packagist](http://img.shields.io/packagist/v/contao-community-alliance/composer-plugin.svg)](https://packagist.org/packages/contao-community-alliance/composer-plugin)
+[![Installations via composer per month](http://img.shields.io/packagist/dm/contao-community-alliance/composer-plugin.svg)](https://packagist.org/packages/contao-community-alliance/composer-plugin)
 
 contao composer installer
 
