@@ -71,6 +71,7 @@ class RunonceManager
 
 EOF;
 			file_put_contents($root . '/system/runonce.php', $runonce);
+			static::$runonces = array();
 
 			$inputOutput->write(
 				sprintf(
