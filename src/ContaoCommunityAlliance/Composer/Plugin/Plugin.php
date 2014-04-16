@@ -83,6 +83,7 @@ class Plugin
 		$this->composer    = $composer;
 		$this->inputOutput = $inputOutput;
 
+		$repoManager = $composer->getRepositoryManager();
 		$installationManager = $composer->getInstallationManager();
 
 		$config = $composer->getConfig();
@@ -99,15 +100,22 @@ class Plugin
 			try {
 				$this->injectContaoCore();
 				$this->injectRequires();
-				$this->addLocalArtifactsRepository();
 			}
 			// @codingStandardsIgnoreStart - Silently ignore the fact that the constants are not found.
 			catch (ConstantsNotFoundException $e) {
 				// No op.
 			}
 			// @codingStandardsIgnoreEnd
+			try {
+				$repo = $this->createLocalArtifactsRepository($composer, $inputOutput);
+				$repoManager->addRepository($repo);
+			}
+			catch (\RuntimeException $e) {
+				$inputOutput->write('skipping artifact repository: ' . $e->getMessage());
+			}
 		}
-		$this->addLegacyPackagesRepository();
+		$repo = $this->createLegacyPackagesRepository($composer, $inputOutput);
+		$repoManager->addRepository($repo);
 	}
 
 	/**
@@ -289,41 +297,38 @@ class Plugin
 	}
 
 	/**
-	 * Add the local artifacts repository to the composer installation.
+	 * Create the local artifacts repository
 	 *
-	 * @return void
+	 * @return ArtifactRepository
 	 */
-	public function addLocalArtifactsRepository()
+	public function createLocalArtifactsRepository(Composer $composer, IOInterface $inputOutput)
 	{
-		$contaoRoot             = $this->getContaoRoot($this->composer->getPackage());
-		$artifactRepositoryPath = $contaoRoot . DIRECTORY_SEPARATOR .
-			'composer' . DIRECTORY_SEPARATOR .
-			'packages';
-		if (is_dir($artifactRepositoryPath)) {
-			$artifactRepository = new ArtifactRepository(
-				array('url' => $artifactRepositoryPath),
-				$this->inputOutput
+		$path = $composer->getConfig()->get('home') . DIRECTORY_SEPARATOR . 'packages';
+		if (!is_dir($path) && !@mkdir($path, 0777, true)) {
+			throw new \RuntimeException(
+				'could not create directory "' . $path . '" for artifact repository',
+				1
 			);
-			$this->composer->getRepositoryManager()
-				->addRepository($artifactRepository);
 		}
+		return new ArtifactRepository(
+			array('url' => $path),
+			$inputOutput
+		);
 	}
 
 	/**
-	 * Add the legacy Contao packages repository to the composer installation.
+	 * Create the legacy Contao packages repository
 	 *
-	 * @return void
+	 * @return ComposerRepository
 	 */
-	public function addLegacyPackagesRepository()
+	public function createLegacyPackagesRepository(Composer $composer, IOInterface $inputOutput)
 	{
-		$legacyPackagistRepository = new ComposerRepository(
+		return new ComposerRepository(
 			array('url' => 'http://legacy-packages-via.contao-community-alliance.org/'),
-			$this->inputOutput,
-			$this->composer->getConfig(),
-			$this->composer->getEventDispatcher()
+			$inputOutput,
+			$composer->getConfig(),
+			$composer->getEventDispatcher()
 		);
-		$this->composer->getRepositoryManager()
-			->addRepository($legacyPackagistRepository);
 	}
 
 	/**
