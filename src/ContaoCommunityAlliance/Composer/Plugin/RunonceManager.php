@@ -151,4 +151,9 @@ EOF;
 			}
 		}
 	}
+
+	static public function getRunonces()
+	{
+		return static::$runonces;
+	}
 }
