@@ -2,6 +2,7 @@
 	"name": "contao-community-alliance/composer-plugin",
 	"description": "Composer plugin that provide contao integration and installer.",
 	"type": "composer-plugin",
+	"homepage":"http://c-c-a.org/",
 	"license": "LGPL-3.0+",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
