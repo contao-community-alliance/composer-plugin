@@ -96,7 +96,8 @@ class Plugin
 		$installationManager->addInstaller($installer);
 
 		// We must not inject core etc. when the root package itself is being installed via this plugin.
-		if (!$installer->supports($composer->getPackage()->getType())) {
+		if (!$installer->supports($composer->getPackage()->getType())
+			&& $composer->getPackage()->getPrettyName() !== 'contao/contao') {
 			try {
 				$this->injectContaoCore();
 				$this->injectRequires();
