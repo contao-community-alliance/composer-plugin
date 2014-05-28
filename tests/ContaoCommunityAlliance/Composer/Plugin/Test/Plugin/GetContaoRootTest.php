@@ -123,4 +123,17 @@ class GetContaoRootTest extends TestCase
 
 		$this->assertEquals(dirname($this->testRoot), $plugin->getContaoRoot($package));
 	}
+
+	/**
+	 * Test that a Contao installation can be found within current working directory.
+	 */
+	public function testCoreIsCwd()
+	{
+		$plugin = $this->clearTest();
+		mkdir($this->testRoot . DIRECTORY_SEPARATOR . 'system/modules', 0777, true);
+
+		$package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
+
+		$this->assertEquals($this->testRoot, $plugin->getContaoRoot($package));
+	}
 }

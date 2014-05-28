@@ -454,7 +454,15 @@ class Plugin
 				throw new RuntimeException('Could not determine current working directory.');
 			}
 
-			$root  = dirname($cwd);
+			// Check if we have a Contao installation in the current working dir. See #15.
+			if (is_dir($cwd . DIRECTORY_SEPARATOR . 'system')) {
+				$root = $cwd;
+			}
+			else
+			{
+				// Fallback - We assume we are in TL_ROOT/composer.
+				$root = dirname($cwd);
+			}
 			$extra = $package->getExtra();
 
 			if (!empty($extra['contao']['root'])) {
