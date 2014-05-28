@@ -472,7 +472,7 @@ class Plugin
 				}
 			}
 
-			$this->contaoRoot = $root;
+			$this->contaoRoot = realpath($root);
 		}
 
 		$systemDir = $this->contaoRoot . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
