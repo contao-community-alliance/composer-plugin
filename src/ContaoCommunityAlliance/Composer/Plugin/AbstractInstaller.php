@@ -101,6 +101,18 @@ abstract class AbstractInstaller extends LibraryInstaller
 		RunonceManager::addRunonces($target, $installPath);
 	}
 
+	public function updateContaoFiles(PackageInterface $package)
+	{
+		$map = $this->mapSources($package);
+		$this->updateSources($map, $package, $package);
+		$this->updateUserfiles($package);
+		$this->updateRootFiles($package);
+
+		$root        = $this->plugin->getContaoRoot($this->composer->getPackage()) . DIRECTORY_SEPARATOR;
+		$installPath = self::unprefixPath($root, $this->getInstallPath($package));
+		RunonceManager::addRunonces($package, $installPath);
+	}
+
 	public function removeCode(PackageInterface $package)
 	{
 		$this->removeSources($package);
