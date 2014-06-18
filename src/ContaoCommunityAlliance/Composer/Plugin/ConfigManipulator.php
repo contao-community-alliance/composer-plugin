@@ -352,6 +352,15 @@ class ConfigManipulator
 			$jsonModified = true;
 		}
 
+		if (!isset($configJson['config']['component-dir'])) {
+			if (!isset($configJson['config'])) {
+				$configJson['config'] = array();
+			}
+			$configJson['config']['component-dir'] = '../assets/components';
+			$messages[] = 'components installation path has been initialized to "../assets/components" in root composer.json!';
+			$jsonModified = true;
+		}
+
 		return $jsonModified;
 	}
 }
