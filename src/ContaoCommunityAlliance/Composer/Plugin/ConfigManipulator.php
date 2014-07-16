@@ -357,7 +357,8 @@ class ConfigManipulator
 				$configJson['config'] = array();
 			}
 			$configJson['config']['component-dir'] = '../assets/components';
-			$messages[] = 'components installation path has been initialized to "../assets/components" in root composer.json!';
+			$messages[] = 'components installation path has been initialized to "../assets/components"' .
+				' in root composer.json!';
 			$jsonModified = true;
 		}
 
