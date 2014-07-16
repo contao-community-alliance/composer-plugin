@@ -270,6 +270,72 @@ class RestoreNeededConfigKeysTest extends TestCase
 				'license'     => 'LGPL-3.0',
 				'type'        => 'project',
 				'description' => 'My Website',
+				'config'      => array
+				(
+					'component-dir' => '../assets/components'
+				)
+			),
+			$configJson
+		);
+		self::assertEmpty($messages);
+	}
+
+	public function testSetComponentsDir()
+	{
+		$configJson = array(
+			'name'        => 'local/website',
+			'type'        => 'project',
+			'license'     => 'proprietary',
+			'description' => 'My Website',
+		);
+
+		$messages = array();
+
+		self::assertTrue(ConfigManipulator::restoreNeededConfigKeys($configJson, $messages));
+
+		self::assertEquals(
+			array(
+				'name'        => 'local/website',
+				'license'     => 'proprietary',
+				'type'        => 'project',
+				'description' => 'My Website',
+				'config'      => array
+				(
+					'component-dir' => '../assets/components'
+				)
+			),
+			$configJson
+		);
+		self::assertEquals(1, count($messages));
+	}
+
+	public function testDoNotOverrideComponentsDir()
+	{
+		$configJson = array(
+			'name'        => 'local/website',
+			'license'     => 'LGPL-3.0',
+			'type'        => 'project',
+			'description' => 'My Website',
+			'config'      => array
+			(
+				'component-dir' => '../assets/local-components'
+			)
+		);
+
+		$messages = array();
+
+		self::assertFalse(ConfigManipulator::restoreNeededConfigKeys($configJson, $messages));
+
+		self::assertEquals(
+			array(
+				'name'        => 'local/website',
+				'license'     => 'LGPL-3.0',
+				'type'        => 'project',
+				'description' => 'My Website',
+				'config'      => array
+				(
+					'component-dir' => '../assets/local-components'
+				)
 			),
 			$configJson
 		);
