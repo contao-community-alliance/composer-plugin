@@ -341,4 +341,29 @@ class RestoreNeededConfigKeysTest extends TestCase
 		);
 		self::assertEmpty($messages);
 	}
+
+	public function testDoNotSetComponentsDirForContaoModule()
+	{
+		$configJson = array(
+			'name'        => 'local/website',
+			'license'     => 'LGPL-3.0',
+			'type'        => 'contao-module',
+			'description' => 'My Website',
+		);
+
+		$messages = array();
+
+		self::assertFalse(ConfigManipulator::restoreNeededConfigKeys($configJson, $messages));
+
+		self::assertEquals(
+			array(
+				'name'        => 'local/website',
+				'license'     => 'LGPL-3.0',
+				'type'        => 'contao-module',
+				'description' => 'My Website',
+			),
+			$configJson
+		);
+		self::assertEmpty($messages);
+	}
 }
