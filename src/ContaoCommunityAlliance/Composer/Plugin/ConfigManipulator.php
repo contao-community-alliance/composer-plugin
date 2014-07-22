@@ -352,7 +352,7 @@ class ConfigManipulator
 			$jsonModified = true;
 		}
 
-		if (!isset($configJson['config']['component-dir'])) {
+		if (($configJson['type'] !== 'contao-module') && !isset($configJson['config']['component-dir'])) {
 			if (!isset($configJson['config'])) {
 				$configJson['config'] = array();
 			}
