@@ -86,7 +86,11 @@ class SymlinkInstaller extends AbstractInstaller
 			$linkRel    = self::unprefixPath($root . DIRECTORY_SEPARATOR, $linkReal);
 
 			if (file_exists($linkReal)) {
-				if (!is_link($linkReal)) {
+				// an empty directory was left...
+				if (is_dir($linkReal) && count(scandir($linkReal)) == 2) {
+					rmdir($linkReal);
+				}
+				else if (!is_link($linkReal)) {
 					throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
 				}
 			}
