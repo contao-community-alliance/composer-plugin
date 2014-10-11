@@ -24,116 +24,116 @@ use Composer\Package\PackageInterface;
  */
 class CopyInstaller extends AbstractInstaller
 {
-	protected function updateSources($map, PackageInterface $package)
-	{
-		$deleteCount = 0;
-		$copyCount   = 0;
+    protected function updateSources($map, PackageInterface $package)
+    {
+        $deleteCount = 0;
+        $copyCount   = 0;
 
-		$root        = $this->plugin->getContaoRoot($this->composer->getPackage());
-		$installPath = $this->getInstallPath($package);
-		$sources     = $this->getSourcesSpec($package);
+        $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
+        $installPath = $this->getInstallPath($package);
+        $sources     = $this->getSourcesSpec($package);
 
-		// remove symlinks
-		$this->removeAllSymlinks($map, $root, $deleteCount);
+        // remove symlinks
+        $this->removeAllSymlinks($map, $root, $deleteCount);
 
-		// update copies
-		$copies = $this->updateAllCopies($sources, $root, $installPath, $copyCount);
+        // update copies
+        $copies = $this->updateAllCopies($sources, $root, $installPath, $copyCount);
 
-		// remove obsolete copies
-		$this->removeObsoleteCopies($map, $copies, $root, $deleteCount);
+        // remove obsolete copies
+        $this->removeObsoleteCopies($map, $copies, $root, $deleteCount);
 
-		if ($deleteCount) {
-			$this->write(
-				sprintf(
-					'  - removed <info>%d</info> files',
-					$deleteCount
-				)
-			);
-		}
+        if ($deleteCount) {
+            $this->write(
+                sprintf(
+                    '  - removed <info>%d</info> files',
+                    $deleteCount
+                )
+            );
+        }
 
-		if ($copyCount) {
-			$this->write(
-				sprintf(
-					'  - installed <info>%d</info> files',
-					$copyCount
-				)
-			);
-		}
-	}
+        if ($copyCount) {
+            $this->write(
+                sprintf(
+                    '  - installed <info>%d</info> files',
+                    $copyCount
+                )
+            );
+        }
+    }
 
-	protected function removeAllSymlinks($map, $root, &$deleteCount)
-	{
-		foreach (array_values($map['links']) as $link) {
-			$this->writeVerbose(
-				sprintf(
-					'  - rm link <info>%s</info>',
-					$link
-				)
-			);
+    protected function removeAllSymlinks($map, $root, &$deleteCount)
+    {
+        foreach (array_values($map['links']) as $link) {
+            $this->writeVerbose(
+                sprintf(
+                    '  - rm link <info>%s</info>',
+                    $link
+                )
+            );
 
-			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $link);
-			$deleteCount++;
-		}
-	}
+            $this->filesystem->remove($root . DIRECTORY_SEPARATOR . $link);
+            $deleteCount++;
+        }
+    }
 
-	protected function updateAllCopies($sources, $root, $installPath, &$copyCount)
-	{
-		$copies = array();
-		foreach ($sources as $source => $target) {
-			if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
-				$files    = array();
-				$iterator = new \RecursiveDirectoryIterator(
-					$installPath . DIRECTORY_SEPARATOR . $source,
-					\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
-				);
-				$iterator = new \RecursiveIteratorIterator(
-					$iterator
-				);
-				foreach ($iterator as $sourceFile) {
-					$unPrefixedPath     = self::unprefixPath(
-						$installPath . DIRECTORY_SEPARATOR . ($source ? $source . DIRECTORY_SEPARATOR : ''),
-						$sourceFile->getRealPath()
-					);
-					$targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
-					$files[$targetPath] = $sourceFile;
-				}
-			}
-			else {
-				$files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
-			}
+    protected function updateAllCopies($sources, $root, $installPath, &$copyCount)
+    {
+        $copies = array();
+        foreach ($sources as $source => $target) {
+            if (is_dir($installPath . DIRECTORY_SEPARATOR . $source)) {
+                $files    = array();
+                $iterator = new \RecursiveDirectoryIterator(
+                    $installPath . DIRECTORY_SEPARATOR . $source,
+                    \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+                );
+                $iterator = new \RecursiveIteratorIterator(
+                    $iterator
+                );
+                foreach ($iterator as $sourceFile) {
+                    $unPrefixedPath     = self::unprefixPath(
+                        $installPath . DIRECTORY_SEPARATOR . ($source ? $source . DIRECTORY_SEPARATOR : ''),
+                        $sourceFile->getRealPath()
+                    );
+                    $targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
+                    $files[$targetPath] = $sourceFile;
+                }
+            }
+            else {
+                $files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
+            }
 
-			/** @var \SplFileInfo $sourceFile */
-			foreach ($files as $targetPath => $sourceFile) {
-				$this->writeVerbose(
-					sprintf(
-						'  - cp <info>%s</info>',
-						$targetPath
-					)
-				);
+            /** @var \SplFileInfo $sourceFile */
+            foreach ($files as $targetPath => $sourceFile) {
+                $this->writeVerbose(
+                    sprintf(
+                        '  - cp <info>%s</info>',
+                        $targetPath
+                    )
+                );
 
-				$this->filesystem->ensureDirectoryExists(dirname($root . DIRECTORY_SEPARATOR . $targetPath));
-				copy($sourceFile->getRealPath(), $root . DIRECTORY_SEPARATOR . $targetPath);
-				$copyCount++;
-				$copies[] = $targetPath;
-			}
-		}
+                $this->filesystem->ensureDirectoryExists(dirname($root . DIRECTORY_SEPARATOR . $targetPath));
+                copy($sourceFile->getRealPath(), $root . DIRECTORY_SEPARATOR . $targetPath);
+                $copyCount++;
+                $copies[] = $targetPath;
+            }
+        }
 
-		return $copies;
-	}
+        return $copies;
+    }
 
-	protected function removeObsoleteCopies($map, $copies, $root, &$deleteCount)
-	{
-		$obsoleteCopies = array_diff($map['copies'], $copies);
-		foreach ($obsoleteCopies as $obsoleteCopy) {
-			$this->writeVerbose(
-				sprintf(
-					'  - rm obsolete <info>%s</info>',
-					$obsoleteCopy
-				)
-			);
+    protected function removeObsoleteCopies($map, $copies, $root, &$deleteCount)
+    {
+        $obsoleteCopies = array_diff($map['copies'], $copies);
+        foreach ($obsoleteCopies as $obsoleteCopy) {
+            $this->writeVerbose(
+                sprintf(
+                    '  - rm obsolete <info>%s</info>',
+                    $obsoleteCopy
+                )
+            );
 
-			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
-			$deleteCount++;
-		}
-	}
+            $this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
+            $deleteCount++;
+        }
+    }
 }

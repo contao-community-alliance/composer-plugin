@@ -25,343 +25,343 @@ use Composer\Package\Version\VersionParser;
  */
 class ConfigManipulator
 {
-	/**
-	 * Run all configuration updates.
-	 *
-	 * @param IOInterface $inputOutput
-	 * @param Composer    $composer
-	 *
-	 * @throws ConfigUpdateException
-	 * @throws null
-	 */
-	static public function run()
-	{
-		$messages     = array();
-		$configFile   = new JsonFile('composer.json');
-		$configJson   = $configFile->read();
+    /**
+     * Run all configuration updates.
+     *
+     * @param IOInterface $inputOutput
+     * @param Composer    $composer
+     *
+     * @throws ConfigUpdateException
+     * @throws null
+     */
+    static public function run()
+    {
+        $messages     = array();
+        $configFile   = new JsonFile('composer.json');
+        $configJson   = $configFile->read();
 
-		// NOTE: we do not need our hard-coded scripts anymore, since we have a plugin
+        // NOTE: we do not need our hard-coded scripts anymore, since we have a plugin
 
-		$jsonModified = static::runUpdates($configJson, $messages);
+        $jsonModified = static::runUpdates($configJson, $messages);
 
-		if ($jsonModified) {
-			copy('composer.json', 'composer.json~');
-			$configFile->write($configJson);
-		}
-		if (count($messages)) {
-			$exception = null;
-			foreach (array_reverse($messages) as $message) {
-				$exception = new ConfigUpdateException($message, 0, $exception);
-			}
-			throw $exception;
-		}
-	}
+        if ($jsonModified) {
+            copy('composer.json', 'composer.json~');
+            $configFile->write($configJson);
+        }
+        if (count($messages)) {
+            $exception = null;
+            foreach (array_reverse($messages) as $message) {
+                $exception = new ConfigUpdateException($message, 0, $exception);
+            }
+            throw $exception;
+        }
+    }
 
-	static public function runUpdates(
-		&$configJson,
-		&$messages
-	) {
-		$jsonModified = false;
+    static public function runUpdates(
+        &$configJson,
+        &$messages
+    ) {
+        $jsonModified = false;
 
-		$jsonModified = static::removeObsoleteScripts($configJson, $messages) || $jsonModified;
-		$jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
-		$jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
-		$jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
-		$jsonModified = static::removeObsoleteProvides($configJson, $messages) || $jsonModified;
-		$jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
-		$jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
+        $jsonModified = static::removeObsoleteScripts($configJson, $messages) || $jsonModified;
+        $jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
+        $jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
+        $jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
+        $jsonModified = static::removeObsoleteProvides($configJson, $messages) || $jsonModified;
+        $jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
+        $jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
 
-		// TODO we need a new contao version change check!!!
-		/*
-		if ($contaoVersionUpdated) {
-			// run all runonces after contao version changed
-			RunonceManager::addAllRunonces($composer);
-			RunonceManager::createRunonce($inputOutput, $root);
-		}
-		*/
+        // TODO we need a new contao version change check!!!
+        /*
+        if ($contaoVersionUpdated) {
+            // run all runonces after contao version changed
+            RunonceManager::addAllRunonces($composer);
+            RunonceManager::createRunonce($inputOutput, $root);
+        }
+        */
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove obsolete event scripts from the root composer.json.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteScripts(&$configJson, &$messages)
-	{
-		$jsonModified = false;
+    /**
+     * Remove obsolete event scripts from the root composer.json.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteScripts(&$configJson, &$messages)
+    {
+        $jsonModified = false;
 
-		// remove old installer scripts
-		$eventScripts = array(
-			'pre-update-cmd'     => array(
-				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateContaoPackage',
-				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateComposerConfig',
-				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::preUpdate',
-			),
-			'post-update-cmd'    => array(
-				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::createRunonce',
-				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postUpdate',
-			),
-			'post-autoload-dump' => array(
-				'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postAutoloadDump',
-			),
-		);
-		foreach ($eventScripts as $key => $scripts) {
-			foreach ($scripts as $script) {
-				$jsonModified = static::removeObsoleteScript($key, $script, $configJson, $messages) ||
-					$jsonModified;
-			}
-		}
+        // remove old installer scripts
+        $eventScripts = array(
+            'pre-update-cmd'     => array(
+                'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateContaoPackage',
+                'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::updateComposerConfig',
+                'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::preUpdate',
+            ),
+            'post-update-cmd'    => array(
+                'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::createRunonce',
+                'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postUpdate',
+            ),
+            'post-autoload-dump' => array(
+                'ContaoCommunityAlliance\\ComposerInstaller\\ModuleInstaller::postAutoloadDump',
+            ),
+        );
+        foreach ($eventScripts as $key => $scripts) {
+            foreach ($scripts as $script) {
+                $jsonModified = static::removeObsoleteScript($key, $script, $configJson, $messages) ||
+                    $jsonModified;
+            }
+        }
 
-		if (isset($configJson['scripts']) && empty($configJson['scripts'])) {
-			unset($configJson['scripts']);
-			$jsonModified = true;
-		}
+        if (isset($configJson['scripts']) && empty($configJson['scripts'])) {
+            unset($configJson['scripts']);
+            $jsonModified = true;
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove obsolete event script.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteScript($key, $script, &$configJson, &$messages)
-	{
-		if (isset($configJson['scripts'][$key])) {
-			if (is_array($configJson['scripts'][$key])) {
-				$index = array_search($script, $configJson['scripts'][$key]);
-				if ($index !== false) {
-					unset($configJson['scripts'][$key][$index]);
-					if (empty($configJson['scripts'][$key])) {
-						unset($configJson['scripts'][$key]);
-					}
+    /**
+     * Remove obsolete event script.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteScript($key, $script, &$configJson, &$messages)
+    {
+        if (isset($configJson['scripts'][$key])) {
+            if (is_array($configJson['scripts'][$key])) {
+                $index = array_search($script, $configJson['scripts'][$key]);
+                if ($index !== false) {
+                    unset($configJson['scripts'][$key][$index]);
+                    if (empty($configJson['scripts'][$key])) {
+                        unset($configJson['scripts'][$key]);
+                    }
 
-					$messages[]   = 'obsolete ' . $key . ' script ' . $script .
-						' was removed from root composer.json';
-					return true;
-				}
-			}
-			else if ($configJson['scripts'][$key] == $script) {
-				unset($configJson['scripts'][$key]);
+                    $messages[]   = 'obsolete ' . $key . ' script ' . $script .
+                        ' was removed from root composer.json';
+                    return true;
+                }
+            }
+            else if ($configJson['scripts'][$key] == $script) {
+                unset($configJson['scripts'][$key]);
 
-				$messages[]   = 'obsolete ' . $key . ' script ' . $script .
-					' was removed from root composer.json';
-				return true;
-			}
-		}
+                $messages[]   = 'obsolete ' . $key . ' script ' . $script .
+                    ' was removed from root composer.json';
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * Remove obsolete configuration entries from the root composer.json.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteConfigEntries(&$configJson, &$messages)
-	{
-		$jsonModified = false;
+    /**
+     * Remove obsolete configuration entries from the root composer.json.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteConfigEntries(&$configJson, &$messages)
+    {
+        $jsonModified = false;
 
-		if (isset($configJson['extra']['contao']['artifactPath'])) {
-			unset($configJson['extra']['contao']['artifactPath']);
+        if (isset($configJson['extra']['contao']['artifactPath'])) {
+            unset($configJson['extra']['contao']['artifactPath']);
 
-			$jsonModified = true;
-			$messages[]   = 'obsolete config entry { extra: { contao: { artifactPath: ... } } } ' .
-				'was removed from root composer.json';
-		}
+            $jsonModified = true;
+            $messages[]   = 'obsolete config entry { extra: { contao: { artifactPath: ... } } } ' .
+                'was removed from root composer.json';
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove obsolete repositories from the root composer.json.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteRepositories(&$configJson, &$messages)
-	{
-		if (!isset($configJson['repositories'])) {
-			return false;
-		}
+    /**
+     * Remove obsolete repositories from the root composer.json.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteRepositories(&$configJson, &$messages)
+    {
+        if (!isset($configJson['repositories'])) {
+            return false;
+        }
 
-		$jsonModified = false;
+        $jsonModified = false;
 
-		// filter the artifact and legacy packagist repositories
-		foreach ($configJson['repositories'] as $index => $repository) {
-			if (
-				$repository['type'] == 'artifact' &&
-				preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
-			) {
-				unset($configJson['repositories'][$index]);
+        // filter the artifact and legacy packagist repositories
+        foreach ($configJson['repositories'] as $index => $repository) {
+            if (
+                $repository['type'] == 'artifact' &&
+                preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
+            ) {
+                unset($configJson['repositories'][$index]);
 
-				$jsonModified = true;
-				$messages[]   = 'obsolete artifact repository was removed from root composer.json';
-			}
+                $jsonModified = true;
+                $messages[]   = 'obsolete artifact repository was removed from root composer.json';
+            }
 
-			if (
-				$repository['type'] == 'composer' &&
-				(
-					$repository['url'] == 'http://legacy-packages-via.contao-community-alliance.org/' ||
-					$repository['url'] == 'https://legacy-packages-via.contao-community-alliance.org/'
-				)
-			) {
-				unset($configJson['repositories'][$index]);
+            if (
+                $repository['type'] == 'composer' &&
+                (
+                    $repository['url'] == 'http://legacy-packages-via.contao-community-alliance.org/' ||
+                    $repository['url'] == 'https://legacy-packages-via.contao-community-alliance.org/'
+                )
+            ) {
+                unset($configJson['repositories'][$index]);
 
-				$jsonModified = true;
-				$messages[]   = 'obsolete legacy packages repository was removed from root composer.json';
-			}
-		}
+                $jsonModified = true;
+                $messages[]   = 'obsolete legacy packages repository was removed from root composer.json';
+            }
+        }
 
-		if ($jsonModified) {
-			$configJson['repositories'] = array_values($configJson['repositories']);
-		}
+        if ($jsonModified) {
+            $configJson['repositories'] = array_values($configJson['repositories']);
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove obsolete requires from the root composer.json.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteRequires(&$configJson, &$messages)
-	{
-		$jsonModified = false;
+    /**
+     * Remove obsolete requires from the root composer.json.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteRequires(&$configJson, &$messages)
+    {
+        $jsonModified = false;
 
-		// remove contao-community-alliance/composer dependency
-		if (
-			isset($configJson['require']['contao-community-alliance/composer']) &&
-			(
-				$configJson['require']['contao-community-alliance/composer'] == 'dev-master@dev' ||
-				$configJson['require']['contao-community-alliance/composer'] == '*'
-			)
-		) {
-			unset($configJson['require']['contao-community-alliance/composer']);
+        // remove contao-community-alliance/composer dependency
+        if (
+            isset($configJson['require']['contao-community-alliance/composer']) &&
+            (
+                $configJson['require']['contao-community-alliance/composer'] == 'dev-master@dev' ||
+                $configJson['require']['contao-community-alliance/composer'] == '*'
+            )
+        ) {
+            unset($configJson['require']['contao-community-alliance/composer']);
 
-			$jsonModified = true;
-			$messages[]   = 'obsolete require contao-community-alliance/composer ' .
-				'was removed from root composer.json';
-		}
+            $jsonModified = true;
+            $messages[]   = 'obsolete require contao-community-alliance/composer ' .
+                'was removed from root composer.json';
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove obsolete provide entries from the root composer.json.
-	 *
-	 * @param array $configJson The json config.
-	 *
-	 * @param array $messages   The message log.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteProvides(&$configJson, &$messages)
-	{
-		$jsonModified = false;
+    /**
+     * Remove obsolete provide entries from the root composer.json.
+     *
+     * @param array $configJson The json config.
+     *
+     * @param array $messages   The message log.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteProvides(&$configJson, &$messages)
+    {
+        $jsonModified = false;
 
-		if (
-			isset($configJson['name']) &&
-			isset($configJson['type']) &&
-			($configJson['name'] == 'contao/core') &&
-			($configJson['type'] == 'metapackage') &&
-			isset($configJson['provide']['swiftmailer/swiftmailer'])) {
-			unset($configJson['provide']['swiftmailer/swiftmailer']);
+        if (
+            isset($configJson['name']) &&
+            isset($configJson['type']) &&
+            ($configJson['name'] == 'contao/core') &&
+            ($configJson['type'] == 'metapackage') &&
+            isset($configJson['provide']['swiftmailer/swiftmailer'])) {
+            unset($configJson['provide']['swiftmailer/swiftmailer']);
 
-			$messages[] = '"swiftmailer/swiftmailer" has been removed from provide section ' .
-				'in root composer.json!';
+            $messages[] = '"swiftmailer/swiftmailer" has been removed from provide section ' .
+                'in root composer.json!';
 
-			$jsonModified = true;
+            $jsonModified = true;
 
-			if (empty($configJson['provide'])) {
-				unset($configJson['provide']);
-			}
-		}
+            if (empty($configJson['provide'])) {
+                unset($configJson['provide']);
+            }
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove the Contao Version and additional information from the root composer.json.
-	 *
-	 * @param array $configJson The json config.
-	 *
-	 * @param array $messages   The message log.
-	 *
-	 * @return boolean
-	 */
-	static public function removeObsoleteContaoVersion(&$configJson, &$messages)
-	{
-		$jsonModified = false;
+    /**
+     * Remove the Contao Version and additional information from the root composer.json.
+     *
+     * @param array $configJson The json config.
+     *
+     * @param array $messages   The message log.
+     *
+     * @return boolean
+     */
+    static public function removeObsoleteContaoVersion(&$configJson, &$messages)
+    {
+        $jsonModified = false;
 
-		if (
-			isset($configJson['name']) &&
-			isset($configJson['type']) &&
-			($configJson['name'] == 'contao/core') &&
-			($configJson['type'] == 'metapackage')
-		) {
-			$configJson['name'] = 'local/website';
-			$messages[]         = 'name has been changed to "local/website" in root composer.json!';
-			$configJson['type'] = 'project';
-			$messages[]         = 'type has been changed to "project" in root composer.json!';
+        if (
+            isset($configJson['name']) &&
+            isset($configJson['type']) &&
+            ($configJson['name'] == 'contao/core') &&
+            ($configJson['type'] == 'metapackage')
+        ) {
+            $configJson['name'] = 'local/website';
+            $messages[]         = 'name has been changed to "local/website" in root composer.json!';
+            $configJson['type'] = 'project';
+            $messages[]         = 'type has been changed to "project" in root composer.json!';
 
-			$jsonModified = true;
-			$messages[]   = 'obsolete contao version and meta information ' .
-				'was removed from root composer.json!';
-		}
+            $jsonModified = true;
+            $messages[]   = 'obsolete contao version and meta information ' .
+                'was removed from root composer.json!';
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 
-	/**
-	 * Remove the Contao Version and additional information from the root composer.json.
-	 *
-	 * @param array $configJson The json config.
-	 *
-	 * @param array $messages   The message log.
-	 *
-	 * @return boolean
-	 */
-	static public function restoreNeededConfigKeys(&$configJson, &$messages)
-	{
-		$jsonModified = false;
+    /**
+     * Remove the Contao Version and additional information from the root composer.json.
+     *
+     * @param array $configJson The json config.
+     *
+     * @param array $messages   The message log.
+     *
+     * @return boolean
+     */
+    static public function restoreNeededConfigKeys(&$configJson, &$messages)
+    {
+        $jsonModified = false;
 
-		if (!isset($configJson['name'])) {
-			$configJson['name'] = 'local/website';
-			$messages[] = 'name has been initialized to "local/website" in root composer.json!';
-			$jsonModified = true;
-		}
+        if (!isset($configJson['name'])) {
+            $configJson['name'] = 'local/website';
+            $messages[] = 'name has been initialized to "local/website" in root composer.json!';
+            $jsonModified = true;
+        }
 
-		if (!isset($configJson['description'])) {
-			$configJson['description'] = 'A local website project';
-			$messages[] = 'description has been initialized to "A local website project" ' .
-				'in root composer.json!';
-			$jsonModified = true;
-		}
+        if (!isset($configJson['description'])) {
+            $configJson['description'] = 'A local website project';
+            $messages[] = 'description has been initialized to "A local website project" ' .
+                'in root composer.json!';
+            $jsonModified = true;
+        }
 
-		if (!isset($configJson['type'])) {
-			$configJson['type'] = 'project';
-			$messages[] = 'type has been initialized to "project" in root composer.json!';
-			$jsonModified = true;
-		}
+        if (!isset($configJson['type'])) {
+            $configJson['type'] = 'project';
+            $messages[] = 'type has been initialized to "project" in root composer.json!';
+            $jsonModified = true;
+        }
 
-		if (!isset($configJson['license'])) {
-			$configJson['license'] = 'proprietary';
-			$messages[] = 'license has been initialized to "proprietary" in root composer.json!';
-			$jsonModified = true;
-		}
+        if (!isset($configJson['license'])) {
+            $configJson['license'] = 'proprietary';
+            $messages[] = 'license has been initialized to "proprietary" in root composer.json!';
+            $jsonModified = true;
+        }
 
-		if (($configJson['type'] !== 'contao-module') && !isset($configJson['config']['component-dir'])) {
-			if (!isset($configJson['config'])) {
-				$configJson['config'] = array();
-			}
-			$configJson['config']['component-dir'] = '../assets/components';
-			$messages[] = 'components installation path has been initialized to "../assets/components"' .
-				' in root composer.json!';
-			$jsonModified = true;
-		}
+        if (($configJson['type'] !== 'contao-module') && !isset($configJson['config']['component-dir'])) {
+            if (!isset($configJson['config'])) {
+                $configJson['config'] = array();
+            }
+            $configJson['config']['component-dir'] = '../assets/components';
+            $messages[] = 'components installation path has been initialized to "../assets/components"' .
+                ' in root composer.json!';
+            $jsonModified = true;
+        }
 
-		return $jsonModified;
-	}
+        return $jsonModified;
+    }
 }

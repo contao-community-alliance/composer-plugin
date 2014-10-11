@@ -20,32 +20,32 @@ use ContaoCommunityAlliance\Composer\Plugin\Test\TestCase;
 
 class ExtractKeyFromConfigFileTest extends TestCase
 {
-	protected function runWith($fixture, $key, $expectedValue)
-	{
-		$plugin = new Plugin();
+    protected function runWith($fixture, $key, $expectedValue)
+    {
+        $plugin = new Plugin();
 
-		$extractKeyFromConfigFile = new \ReflectionMethod($plugin, 'extractKeyFromConfigFile');
-		$extractKeyFromConfigFile->setAccessible(true);
+        $extractKeyFromConfigFile = new \ReflectionMethod($plugin, 'extractKeyFromConfigFile');
+        $extractKeyFromConfigFile->setAccessible(true);
 
-		$this->assertEquals(
-			$expectedValue,
-			$extractKeyFromConfigFile->invokeArgs($plugin, array(
-				dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . $fixture,
-				$key
-			))
-		);
-	}
+        $this->assertEquals(
+            $expectedValue,
+            $extractKeyFromConfigFile->invokeArgs($plugin, array(
+                dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . $fixture,
+                $key
+            ))
+        );
+    }
 
-	public function testDefault()
-	{
-		$this->runWith('default-contao-3.2.php', 'websiteTitle', 'Contao Open Source CMS');
-		$this->runWith('default-contao-3.2.php', 'characterSet', 'utf-8');
-		$this->runWith('default-contao-3.2.php', 'adminEmail', '');
-		$this->runWith('default-contao-3.2.php', 'enableSearch', true);
-		$this->runWith('default-contao-3.2.php', 'indexProtected', false);
-		$this->runWith('default-contao-3.2.php', 'dbPort', 3306);
-		$this->runWith('default-contao-3.2.php', 'requestTokenWhitelist', array());
+    public function testDefault()
+    {
+        $this->runWith('default-contao-3.2.php', 'websiteTitle', 'Contao Open Source CMS');
+        $this->runWith('default-contao-3.2.php', 'characterSet', 'utf-8');
+        $this->runWith('default-contao-3.2.php', 'adminEmail', '');
+        $this->runWith('default-contao-3.2.php', 'enableSearch', true);
+        $this->runWith('default-contao-3.2.php', 'indexProtected', false);
+        $this->runWith('default-contao-3.2.php', 'dbPort', 3306);
+        $this->runWith('default-contao-3.2.php', 'requestTokenWhitelist', array());
 
-		$this->runWith('localconfig-override.php', 'websiteTitle', 'Overridden');
-	}
+        $this->runWith('localconfig-override.php', 'websiteTitle', 'Overridden');
+    }
 }

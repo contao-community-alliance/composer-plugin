@@ -20,53 +20,53 @@ use ContaoCommunityAlliance\Composer\Plugin\AbstractInstaller;
 
 class GetNativePathTest extends TestCase
 {
-	public function test()
-	{
-		foreach (
-			array(
-				array(
-					'path'      => '',
-					'separator' => '',
-					'result'    => ''
-				),
-				array(
-					'path'      => '/var/lib/file.txt',
-					'separator' => '/',
-					'result'    => '/var/lib/file.txt'
-				),
-				array(
-					'path'      => 'C:\Foo\Bar',
-					'separator' => '/',
-					'result'    => 'C:/Foo/Bar'
-				),
-				array(
-					'path'      => '/home/user/file.txt',
-					'separator' => '/',
-					'result'    => '/home/user/file.txt'
-				),
-				array(
-					'path'      => 'C:\Foo/Bar/mixed\content',
-					'separator' => '/',
-					'result'    => 'C:/Foo/Bar/mixed/content'
-				),
-			)
-			as $testValues
-		)
-		{
-			self::assertEquals(
-				$testValues['result'],
-				AbstractInstaller::getNativePath($testValues['path'], $testValues['separator'])
-			);
-		}
+    public function test()
+    {
+        foreach (
+            array(
+                array(
+                    'path'      => '',
+                    'separator' => '',
+                    'result'    => ''
+                ),
+                array(
+                    'path'      => '/var/lib/file.txt',
+                    'separator' => '/',
+                    'result'    => '/var/lib/file.txt'
+                ),
+                array(
+                    'path'      => 'C:\Foo\Bar',
+                    'separator' => '/',
+                    'result'    => 'C:/Foo/Bar'
+                ),
+                array(
+                    'path'      => '/home/user/file.txt',
+                    'separator' => '/',
+                    'result'    => '/home/user/file.txt'
+                ),
+                array(
+                    'path'      => 'C:\Foo/Bar/mixed\content',
+                    'separator' => '/',
+                    'result'    => 'C:/Foo/Bar/mixed/content'
+                ),
+            )
+            as $testValues
+        )
+        {
+            self::assertEquals(
+                $testValues['result'],
+                AbstractInstaller::getNativePath($testValues['path'], $testValues['separator'])
+            );
+        }
 
-		self::assertEquals(
-			DIRECTORY_SEPARATOR . 'some' . DIRECTORY_SEPARATOR . 'file.txt',
-			AbstractInstaller::getNativePath('/some/file.txt')
-		);
+        self::assertEquals(
+            DIRECTORY_SEPARATOR . 'some' . DIRECTORY_SEPARATOR . 'file.txt',
+            AbstractInstaller::getNativePath('/some/file.txt')
+        );
 
-		self::assertEquals(
-			DIRECTORY_SEPARATOR . 'some' . DIRECTORY_SEPARATOR . 'file.txt',
-			AbstractInstaller::getNativePath('\some\file.txt')
-		);
-	}
+        self::assertEquals(
+            DIRECTORY_SEPARATOR . 'some' . DIRECTORY_SEPARATOR . 'file.txt',
+            AbstractInstaller::getNativePath('\some\file.txt')
+        );
+    }
 }

@@ -20,104 +20,104 @@ use ContaoCommunityAlliance\Composer\Plugin\ConfigManipulator;
 
 class RemoveObsoleteRepositoriesTest extends TestCase
 {
-	public function testNothingToDo()
-	{
-		$configJson = array(
-			'repositories' => array
-			(
-				array(
-					'type' => 'composer',
-					'url'  => 'http://my.packages.org/'
-				),
-			)
-		);
+    public function testNothingToDo()
+    {
+        $configJson = array(
+            'repositories' => array
+            (
+                array(
+                    'type' => 'composer',
+                    'url'  => 'http://my.packages.org/'
+                ),
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertFalse(ConfigManipulator::removeObsoleteRepositories($configJson, $messages));
-		self::assertEmpty($messages);
+        self::assertFalse(ConfigManipulator::removeObsoleteRepositories($configJson, $messages));
+        self::assertEmpty($messages);
 
-		self::assertEquals(
-			array(
-				'repositories' => array
-				(
-					array(
-						'type' => 'composer',
-						'url'  => 'http://my.packages.org/'
-					),
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'repositories' => array
+                (
+                    array(
+                        'type' => 'composer',
+                        'url'  => 'http://my.packages.org/'
+                    ),
+                )
+            ),
+            $configJson
+        );
+    }
 
-	public function testRemoveArtifact()
-	{
-		$configJson = array(
-			'repositories' => array
-			(
-				array(
-					'type' => 'composer',
-					'url'  => 'http://my.packages.org/'
-				),
-				array(
-					'type' => 'artifact',
-					'url'  => '/home/vhost/contao3.site.ub-gauss.ath.cx/composer/packages'
-				)
-			)
-		);
+    public function testRemoveArtifact()
+    {
+        $configJson = array(
+            'repositories' => array
+            (
+                array(
+                    'type' => 'composer',
+                    'url'  => 'http://my.packages.org/'
+                ),
+                array(
+                    'type' => 'artifact',
+                    'url'  => '/home/vhost/contao3.site.ub-gauss.ath.cx/composer/packages'
+                )
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertTrue(ConfigManipulator::removeObsoleteRepositories($configJson, $messages));
-		self::assertEquals(1, count($messages));
+        self::assertTrue(ConfigManipulator::removeObsoleteRepositories($configJson, $messages));
+        self::assertEquals(1, count($messages));
 
-		self::assertEquals(
-			array(
-				'repositories' => array
-				(
-					array(
-						'type' => 'composer',
-						'url'  => 'http://my.packages.org/'
-					),
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'repositories' => array
+                (
+                    array(
+                        'type' => 'composer',
+                        'url'  => 'http://my.packages.org/'
+                    ),
+                )
+            ),
+            $configJson
+        );
+    }
 
-	public function testRemoveLegacyPackages()
-	{
-		$configJson = array(
-			'repositories' => array
-			(
-				array(
-					'type' => 'composer',
-					'url'  => 'http://legacy-packages-via.contao-community-alliance.org/'
-				),
-				array(
-					'type' => 'composer',
-					'url'  => 'http://my.packages.org/'
-				),
-			)
-		);
+    public function testRemoveLegacyPackages()
+    {
+        $configJson = array(
+            'repositories' => array
+            (
+                array(
+                    'type' => 'composer',
+                    'url'  => 'http://legacy-packages-via.contao-community-alliance.org/'
+                ),
+                array(
+                    'type' => 'composer',
+                    'url'  => 'http://my.packages.org/'
+                ),
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertTrue(ConfigManipulator::removeObsoleteRepositories($configJson, $messages));
-		self::assertEquals(1, count($messages));
+        self::assertTrue(ConfigManipulator::removeObsoleteRepositories($configJson, $messages));
+        self::assertEquals(1, count($messages));
 
-		self::assertEquals(
-			array(
-				'repositories' => array
-				(
-					array(
-						'type' => 'composer',
-						'url'  => 'http://my.packages.org/'
-					),
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'repositories' => array
+                (
+                    array(
+                        'type' => 'composer',
+                        'url'  => 'http://my.packages.org/'
+                    ),
+                )
+            ),
+            $configJson
+        );
+    }
 }

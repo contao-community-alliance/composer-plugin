@@ -20,37 +20,37 @@ use ContaoCommunityAlliance\Composer\Plugin\AbstractInstaller;
 
 class UnprefixPathTest extends TestCase
 {
-	public function test()
-	{
-		foreach (array(
-			array(
-				'prefix' => '',
-				'path'   => '',
-				'result' => ''
-			),
-			array(
-				'prefix' => '/home/user',
-				'path'   => '/var/lib/file.txt',
-				'result' => '/var/lib/file.txt'
-			),
-			array(
-				'prefix' => 'C:\Foo\Bar',
-				'path'   => 'C:\Foo\Bar\fooBar.txt',
-				'result' => '\fooBar.txt'
-			),
-			array(
-				'prefix' => '/home/user',
-				'path'   => '/home/user/file.txt',
-				'result' => '/file.txt'
-			),
-		)
-			as $testValues
-		)
-		{
-			self::assertEquals(
-				$testValues['result'],
-				AbstractInstaller::unprefixPath($testValues['prefix'], $testValues['path'])
-			);
-		}
-	}
+    public function test()
+    {
+        foreach (array(
+            array(
+                'prefix' => '',
+                'path'   => '',
+                'result' => ''
+            ),
+            array(
+                'prefix' => '/home/user',
+                'path'   => '/var/lib/file.txt',
+                'result' => '/var/lib/file.txt'
+            ),
+            array(
+                'prefix' => 'C:\Foo\Bar',
+                'path'   => 'C:\Foo\Bar\fooBar.txt',
+                'result' => '\fooBar.txt'
+            ),
+            array(
+                'prefix' => '/home/user',
+                'path'   => '/home/user/file.txt',
+                'result' => '/file.txt'
+            ),
+        )
+            as $testValues
+        )
+        {
+            self::assertEquals(
+                $testValues['result'],
+                AbstractInstaller::unprefixPath($testValues['prefix'], $testValues['path'])
+            );
+        }
+    }
 }

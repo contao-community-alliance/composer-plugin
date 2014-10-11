@@ -20,21 +20,21 @@ use ContaoCommunityAlliance\Composer\Plugin\AbstractInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Test\InstallCodeBase;
 
 class InstallCodeSymlinkTest
-	extends InstallCodeBase
+    extends InstallCodeBase
 {
-	/**
-	 * @return AbstractInstaller
-	 */
-	protected function mockInstaller()
-	{
-		$installer = $this
-			->getMock('\ContaoCommunityAlliance\Composer\Plugin\SymlinkInstaller', array('getUploadPath'), array($this->io, $this->composer, $this->plugin));
+    /**
+     * @return AbstractInstaller
+     */
+    protected function mockInstaller()
+    {
+        $installer = $this
+            ->getMock('\ContaoCommunityAlliance\Composer\Plugin\SymlinkInstaller', array('getUploadPath'), array($this->io, $this->composer, $this->plugin));
 
-		$installer
-			->expects($this->any())
-			->method('getUploadPath')
-			->will($this->returnValue($this->uploadDir));
+        $installer
+            ->expects($this->any())
+            ->method('getUploadPath')
+            ->will($this->returnValue($this->uploadDir));
 
-		return $installer;
-	}
+        return $installer;
+    }
 }

@@ -20,55 +20,55 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
  */
 class RunonceExecutor extends \System
 {
-	public function __construct()
-	{
-		parent::__construct();
-	}
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-	/**
-	 * Run a list of runonce files.
-	 *
-	 * @param array $runonces
-	 */
-	public function run(array $runonces)
-	{
-		// handle errors as exceptions
-		$previousErrorHandler = set_error_handler(array($this, 'handleError'), E_ALL);
+    /**
+     * Run a list of runonce files.
+     *
+     * @param array $runonces
+     */
+    public function run(array $runonces)
+    {
+        // handle errors as exceptions
+        $previousErrorHandler = set_error_handler(array($this, 'handleError'), E_ALL);
 
-		foreach ($runonces as $runonce) {
-			try {
-				if (is_file(TL_ROOT . DIRECTORY_SEPARATOR . $runonce)) {
-					require_once(TL_ROOT . DIRECTORY_SEPARATOR . $runonce);
-				}
-				else {
-					log_message('Skip non-existing runonce ' . $runonce);
-				}
-			}
-			catch (\Exception $e) {
-				log_message(
-					'Execute runonce ' . $runonce . ' failed with message:' .
-					PHP_EOL . $e->getMessage() .
-					PHP_EOL . $e->getTraceAsString()
-				);
-			}
-		}
+        foreach ($runonces as $runonce) {
+            try {
+                if (is_file(TL_ROOT . DIRECTORY_SEPARATOR . $runonce)) {
+                    require_once(TL_ROOT . DIRECTORY_SEPARATOR . $runonce);
+                }
+                else {
+                    log_message('Skip non-existing runonce ' . $runonce);
+                }
+            }
+            catch (\Exception $e) {
+                log_message(
+                    'Execute runonce ' . $runonce . ' failed with message:' .
+                    PHP_EOL . $e->getMessage() .
+                    PHP_EOL . $e->getTraceAsString()
+                );
+            }
+        }
 
-		// restore contao error handler
-		set_error_handler($previousErrorHandler);
-	}
+        // restore contao error handler
+        set_error_handler($previousErrorHandler);
+    }
 
-	/**
-	 * Throw errors as error exceptions.
-	 *
-	 * @param int    $errno
-	 * @param string $errstr
-	 * @param string $errfile
-	 * @param int    $errline
-	 *
-	 * @throws \ErrorException
-	 */
-	public function handleError($errno, $errstr, $errfile, $errline)
-	{
-		throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
-	}
+    /**
+     * Throw errors as error exceptions.
+     *
+     * @param int    $errno
+     * @param string $errstr
+     * @param string $errfile
+     * @param int    $errline
+     *
+     * @throws \ErrorException
+     */
+    public function handleError($errno, $errstr, $errfile, $errline)
+    {
+        throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+    }
 }

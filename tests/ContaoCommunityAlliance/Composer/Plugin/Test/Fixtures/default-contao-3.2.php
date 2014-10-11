@@ -90,26 +90,26 @@ $GLOBALS['TL_CONFIG']['timeFormat']  = 'H:i';
  * system, which you can disable here (not recommended).
  */
 $GLOBALS['TL_CONFIG']['allowedTags']
-	= '<a><abbr><acronym><address><area><article><aside><audio>'
-	. '<b><bdi><bdo><big><blockquote><br><base><button>'
-	. '<canvas><caption><cite><code><col><colgroup>'
-	. '<data><datalist><dataset><dd><del><dfn><div><dl><dt>'
-	. '<em>'
-	. '<fieldset><figcaption><figure><footer><form>'
-	. '<h1><h2><h3><h4><h5><h6><header><hgroup><hr>'
-	. '<i><img><input><ins>'
-	. '<kbd><keygen>'
-	. '<label><legend><li><link>'
-	. '<map><mark><menu>'
-	. '<nav>'
-	. '<object><ol><optgroup><option><output>'
-	. '<p><param><pre>'
-	. '<q>'
-	. '<s><samp><section><select><small><source><span><strong><style><sub><sup>'
-	. '<table><tbody><td><textarea><tfoot><th><thead><time><tr><tt>'
-	. '<u><ul>'
-	. '<var><video>'
-	. '<wbr>';
+    = '<a><abbr><acronym><address><area><article><aside><audio>'
+    . '<b><bdi><bdo><big><blockquote><br><base><button>'
+    . '<canvas><caption><cite><code><col><colgroup>'
+    . '<data><datalist><dataset><dd><del><dfn><div><dl><dt>'
+    . '<em>'
+    . '<fieldset><figcaption><figure><footer><form>'
+    . '<h1><h2><h3><h4><h5><h6><header><hgroup><hr>'
+    . '<i><img><input><ins>'
+    . '<kbd><keygen>'
+    . '<label><legend><li><link>'
+    . '<map><mark><menu>'
+    . '<nav>'
+    . '<object><ol><optgroup><option><output>'
+    . '<p><param><pre>'
+    . '<q>'
+    . '<s><samp><section><select><small><source><span><strong><style><sub><sup>'
+    . '<table><tbody><td><textarea><tfoot><th><thead><time><tr><tt>'
+    . '<u><ul>'
+    . '<var><video>'
+    . '<wbr>';
 $GLOBALS['TL_CONFIG']['disableRefererCheck']   = false;
 $GLOBALS['TL_CONFIG']['disableIpCheck']        = false;
 $GLOBALS['TL_CONFIG']['requestTokenWhitelist'] = array();
@@ -201,11 +201,11 @@ $GLOBALS['TL_CONFIG']['encryptionCipher'] = 'rijndael-256';
  * Please enter how many upload fields you want to show in the back end.
  */
 $GLOBALS['TL_CONFIG']['uploadTypes']
-	= 'jpg,jpeg,gif,png,ico,'
-	. 'odt,ods,odp,odg,ott,ots,otp,otg,pdf,csv,'
-	. 'doc,docx,dot,dotx,xls,xlsx,xlt,xltx,ppt,pptx,pot,potx,'
-	. 'mp3,mp4,m4a,m4v,webm,ogg,ogv,wma,wmv,ram,rm,mov,fla,flv,swf,'
-	. 'css,js,html,htm,txt,zip,rar,7z,cto';
+    = 'jpg,jpeg,gif,png,ico,'
+    . 'odt,ods,odp,odg,ott,ots,otp,otg,pdf,csv,'
+    . 'doc,docx,dot,dotx,xls,xlsx,xlt,xltx,ppt,pptx,pot,potx,'
+    . 'mp3,mp4,m4a,m4v,webm,ogg,ogv,wma,wmv,ram,rm,mov,fla,flv,swf,'
+    . 'css,js,html,htm,txt,zip,rar,7z,cto';
 $GLOBALS['TL_CONFIG']['uploadPath']     = 'files';
 $GLOBALS['TL_CONFIG']['maxFileSize']    = 2048000;
 $GLOBALS['TL_CONFIG']['imageWidth']     = 800;
@@ -306,11 +306,11 @@ $GLOBALS['TL_CONFIG']['validImageTypes']      = 'jpg,jpeg,gif,png,tif,tiff,bmp';
 $GLOBALS['TL_CONFIG']['editableFiles']        = 'htm,html,css,js,txt,log,xml';
 $GLOBALS['TL_CONFIG']['templateFiles']        = 'tpl,html5,xhtml';
 $GLOBALS['TL_CONFIG']['allowedDownload']
-	= 'jpg,jpeg,gif,png,'
-	. 'odt,ods,odp,odg,ott,ots,otp,otg,pdf,'
-	. 'doc,docx,dot,dotx,xls,xlsx,xlt,xltx,ppt,pptx,pot,potx,'
-	. 'mp3,mp4,m4a,m4v,webm,ogg,ogv,wma,wmv,ram,rm,mov,'
-	. 'zip,rar,7z';
+    = 'jpg,jpeg,gif,png,'
+    . 'odt,ods,odp,odg,ott,ots,otp,otg,pdf,'
+    . 'doc,docx,dot,dotx,xls,xlsx,xlt,xltx,ppt,pptx,pot,potx,'
+    . 'mp3,mp4,m4a,m4v,webm,ogg,ogv,wma,wmv,ram,rm,mov,'
+    . 'zip,rar,7z';
 $GLOBALS['TL_CONFIG']['installPassword']      = '';
 $GLOBALS['TL_CONFIG']['liveUpdateBase']       = 'http://www.inetrobots.com/liveupdate/';
 $GLOBALS['TL_CONFIG']['repository_wsdl']      = 'http://contao.org/services/repository.wsdl';
