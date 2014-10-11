@@ -56,6 +56,36 @@ abstract class AbstractInstaller extends LibraryInstaller
 		$this->plugin = $plugin;
 	}
 
+	/**
+	 * Writes a message to the output.
+	 *
+	 * @param string|array $messages The message as an array of lines or a single string.
+	 *
+	 * @param bool         $newline  Whether to add a newline or not.
+	 *
+	 * @return void
+	 */
+	public function write($messages, $newline = true)
+	{
+		$this->io->write($messages, $newline);
+	}
+
+	/**
+	 * Writes a message to the output.
+	 *
+	 * @param string|array $messages The message as an array of lines or a single string.
+	 *
+	 * @param bool         $newline  Whether to add a newline or not.
+	 *
+	 * @return void
+	 */
+	public function writeVerbose($messages, $newline = true)
+	{
+		if ($this->io->isVerbose()) {
+			$this->io->write($messages, $newline);
+		}
+	}
+
 	static public function unprefixPath($prefix, $path)
 	{
 		$len = strlen($prefix);
@@ -264,14 +294,12 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 		// remove symlinks
 		foreach ($map['links'] as $link => $target) {
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - rm symlink <info>%s</info>',
-						$link
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - rm symlink <info>%s</info>',
+					$link
+				)
+			);
 
 			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $link);
 			$count++;
@@ -279,28 +307,24 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 		// remove copies
 		foreach ($map['copies'] as $target) {
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - rm file <info>%s</info>',
-						$target
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - rm file <info>%s</info>',
+					$target
+				)
+			);
 
 			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $target);
 			$count++;
 			$this->removeEmptyDirectories(dirname($root . DIRECTORY_SEPARATOR . $target));
 		}
 
-		if (!$this->io->isVerbose()) {
-			$this->io->write(
-				sprintf(
-					'  - removed <info>%d</info> files',
-					$count
-				)
-			);
-		}
+		$this->write(
+			sprintf(
+				'  - removed <info>%d</info> files',
+				$count
+			)
+		);
 	}
 
 	public function removeEmptyDirectories($pathname)
@@ -315,14 +339,12 @@ abstract class AbstractInstaller extends LibraryInstaller
 				}
 			);
 			if (empty($contents)) {
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - rm dir <info>%s</info>',
-							self::unprefixPath($root, $pathname)
-						)
-					);
-				}
+				$this->writeVerbose(
+					sprintf(
+						'  - rm dir <info>%s</info>',
+						self::unprefixPath($root, $pathname)
+					)
+				);
 
 				rmdir($pathname);
 				$this->removeEmptyDirectories(dirname($pathname));
@@ -359,8 +381,8 @@ abstract class AbstractInstaller extends LibraryInstaller
 			}
 		}
 
-		if ($count && $this->io->isVerbose()) {
-			$this->io->write(
+		if ($count) {
+			$this->writeVerbose(
 				sprintf(
 					'  - installed <info>%d</info> userfiles',
 					$count
@@ -397,8 +419,8 @@ abstract class AbstractInstaller extends LibraryInstaller
 			}
 		}
 
-		if ($count && $this->io->isVerbose()) {
-			$this->io->write(
+		if ($count) {
+			$this->writeVerbose(
 				sprintf(
 					'  - installed <info>%d</info> files',
 					$count
@@ -434,14 +456,12 @@ abstract class AbstractInstaller extends LibraryInstaller
 						$this->filesystem->ensureDirectoryExists($targetPath);
 					}
 					else {
-						if ($this->io->isVerbose()) {
-							$this->io->write(
-								sprintf(
-									'  - install userfile <info>%s</info>',
-									$iterator->getSubPathName()
-								)
-							);
-						}
+						$this->writeVerbose(
+							sprintf(
+								'  - install userfile <info>%s</info>',
+								$iterator->getSubPathName()
+							)
+						);
 						copy($file->getPathname(), $targetPath);
 						$count++;
 					}
@@ -455,14 +475,12 @@ abstract class AbstractInstaller extends LibraryInstaller
 
 			$targetPath = dirname($targetReal);
 			$this->filesystem->ensureDirectoryExists($targetPath);
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - install userfile <info>%s</info>',
-						$target
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - install userfile <info>%s</info>',
+					$target
+				)
+			);
 			copy($sourceReal, $targetReal);
 			$count++;
 		}

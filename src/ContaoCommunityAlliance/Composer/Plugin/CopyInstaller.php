@@ -42,8 +42,8 @@ class CopyInstaller extends AbstractInstaller
 		// remove obsolete copies
 		$this->removeObsoleteCopies($map, $copies, $root, $deleteCount);
 
-		if ($deleteCount && !$this->io->isVerbose()) {
-			$this->io->write(
+		if ($deleteCount) {
+			$this->write(
 				sprintf(
 					'  - removed <info>%d</info> files',
 					$deleteCount
@@ -51,8 +51,8 @@ class CopyInstaller extends AbstractInstaller
 			);
 		}
 
-		if ($copyCount && !$this->io->isVerbose()) {
-			$this->io->write(
+		if ($copyCount) {
+			$this->write(
 				sprintf(
 					'  - installed <info>%d</info> files',
 					$copyCount
@@ -64,14 +64,12 @@ class CopyInstaller extends AbstractInstaller
 	protected function removeAllSymlinks($map, $root, &$deleteCount)
 	{
 		foreach (array_values($map['links']) as $link) {
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - rm link <info>%s</info>',
-						$link
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - rm link <info>%s</info>',
+					$link
+				)
+			);
 
 			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $link);
 			$deleteCount++;
@@ -106,14 +104,12 @@ class CopyInstaller extends AbstractInstaller
 
 			/** @var \SplFileInfo $sourceFile */
 			foreach ($files as $targetPath => $sourceFile) {
-				if ($this->io->isVerbose()) {
-					$this->io->write(
-						sprintf(
-							'  - cp <info>%s</info>',
-							$targetPath
-						)
-					);
-				}
+				$this->writeVerbose(
+					sprintf(
+						'  - cp <info>%s</info>',
+						$targetPath
+					)
+				);
 
 				$this->filesystem->ensureDirectoryExists(dirname($root . DIRECTORY_SEPARATOR . $targetPath));
 				copy($sourceFile->getRealPath(), $root . DIRECTORY_SEPARATOR . $targetPath);
@@ -129,14 +125,13 @@ class CopyInstaller extends AbstractInstaller
 	{
 		$obsoleteCopies = array_diff($map['copies'], $copies);
 		foreach ($obsoleteCopies as $obsoleteCopy) {
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - rm obsolete <info>%s</info>',
-						$obsoleteCopy
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - rm obsolete <info>%s</info>',
+					$obsoleteCopy
+				)
+			);
+
 			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
 			$deleteCount++;
 		}

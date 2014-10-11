@@ -40,8 +40,8 @@ class SymlinkInstaller extends AbstractInstaller
 		// remove obsolete links
 		$this->removeObsoleteSymlinks($map, $links, $root, $deleteCount);
 
-		if ($deleteCount && !$this->io->isVerbose()) {
-			$this->io->write(
+		if ($deleteCount) {
+			$this->write(
 				sprintf(
 					'  - removed <info>%d</info> files',
 					$deleteCount
@@ -49,8 +49,8 @@ class SymlinkInstaller extends AbstractInstaller
 			);
 		}
 
-		if ($linkCount && !$this->io->isVerbose()) {
-			$this->io->write(
+		if ($linkCount) {
+			$this->write(
 				sprintf(
 					'  - created <info>%d</info> links',
 					$linkCount
@@ -62,14 +62,12 @@ class SymlinkInstaller extends AbstractInstaller
 	protected function removeAllCopies($map, $root, &$deleteCount)
 	{
 		foreach ($map['copies'] as $target) {
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - rm copy <info>%s</info>',
-						$target
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - rm copy <info>%s</info>',
+					$target
+				)
+			);
 
 			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $target);
 			$deleteCount++;
@@ -110,14 +108,12 @@ class SymlinkInstaller extends AbstractInstaller
 				}
 			}
 
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - symlink <info>%s</info>',
-						$linkRel
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - symlink <info>%s</info>',
+					$linkRel
+				)
+			);
 
 			$linkParent = dirname($linkReal);
 			if (!is_dir($linkParent)) {
@@ -166,14 +162,12 @@ class SymlinkInstaller extends AbstractInstaller
 	{
 		$obsoleteLinks = array_diff(array_keys($map['links']), $links);
 		foreach ($obsoleteLinks as $obsoleteLink) {
-			if ($this->io->isVerbose()) {
-				$this->io->write(
-					sprintf(
-						'  - rm symlink <info>%s</info>',
-						$obsoleteLink
-					)
-				);
-			}
+			$this->writeVerbose(
+				sprintf(
+					'  - rm symlink <info>%s</info>',
+					$obsoleteLink
+				)
+			);
 
 			$this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteLink);
 			$deleteCount++;
