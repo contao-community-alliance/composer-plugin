@@ -1,20 +1,11 @@
-<?xml version="1.0"?>
-<project name="Example" default="test">
-	<target name="phpunit">
-		<exec dir="${basedir}" executable="vendor/bin/phpunit" failonerror="true" />
-	</target>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ This project is using the Contao Community Alliance Build System (CCABS)
 
-	<target name="phpcs">
-		<exec dir="${basedir}" executable="vendor/bin/phpcs" failonerror="true">
-			<arg line="--standard=${basedir}/vendor/bit3/php-coding-standard/phpcs/Bit3/ruleset.xml ${basedir}/src"/>
-		</exec>
-	</target>
+ For documentation visit:
+   https://github.com/contao-community-alliance/build-system
 
-	<target name="phpmd">
-		<exec dir="${basedir}" executable="vendor/bin/phpmd" failonerror="true">
-			<arg line="${basedir}/src text ${basedir}/vendor/bit3/php-coding-standard/phpmd/ruleset.xml"/>
-		</exec>
-	</target>
-
-	<target name="test" depends="phpunit,phpcs,phpmd"/>
+-->
+<project name="composer plugin" default="build">
+    <import file="vendor/contao-community-alliance/build-system/ccabs.main.xml" />
 </project>
