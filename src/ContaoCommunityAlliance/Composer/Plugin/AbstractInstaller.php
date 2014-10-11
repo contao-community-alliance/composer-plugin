@@ -39,16 +39,20 @@ abstract class AbstractInstaller extends LibraryInstaller
     const LEGACY_MODULE_TYPE = 'legacy-contao-module';
 
     /**
+     * The plugin instance.
+     *
      * @var Plugin
      */
     protected $plugin;
 
     /**
-     * @param IOInterface $inputOutput
+     * Create a new instance.
      *
-     * @param Composer    $composer
+     * @param IOInterface $inputOutput The input output interface to use.
      *
-     * @param Plugin      $plugin
+     * @param Composer    $composer    The composer instance.
+     *
+     * @param Plugin      $plugin      The plugin instance.
      */
     public function __construct(IOInterface $inputOutput, Composer $composer, $plugin)
     {
@@ -86,6 +90,15 @@ abstract class AbstractInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     * Strip the prefix from the given path.
+     *
+     * @param string $prefix The prefix to strip.
+     *
+     * @param string $path   The path from where the prefix shall get stripped.
+     *
+     * @return string
+     */
     static public function unprefixPath($prefix, $path)
     {
         $len = strlen($prefix);
@@ -100,11 +113,23 @@ abstract class AbstractInstaller extends LibraryInstaller
         return $path;
     }
 
+    /**
+     * Translate a path with mixed slash and backslash occurrences to a string containing only the passed separator.
+     *
+     * @param string $path The path.
+     *
+     * @param string $sep  The desired directory separator (optional, defaults to current OS default).
+     *
+     * @return mixed
+     */
     static public function getNativePath($path, $sep = DIRECTORY_SEPARATOR)
     {
         return str_replace(array('/', '\\'), $sep, $path);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function installCode(PackageInterface $package)
     {
         $map = $this->mapSources($package);
@@ -118,6 +143,9 @@ abstract class AbstractInstaller extends LibraryInstaller
         RunonceManager::addRunonces($package, $installPath);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function updateCode(PackageInterface $initial, PackageInterface $target)
     {
         $map = $this->mapSources($initial);
@@ -131,6 +159,18 @@ abstract class AbstractInstaller extends LibraryInstaller
         RunonceManager::addRunonces($target, $installPath);
     }
 
+    /**
+     * Update all files in the Contao installation.
+     *
+     * The installed files are:
+     * 1. sources.
+     * 2. user files.
+     * 3. root files.
+     *
+     * @param PackageInterface $package The package being processed.
+     *
+     * @return void
+     */
     public function updateContaoFiles(PackageInterface $package)
     {
         $map = $this->mapSources($package);
@@ -143,12 +183,18 @@ abstract class AbstractInstaller extends LibraryInstaller
         RunonceManager::addRunonces($package, $installPath);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function removeCode(PackageInterface $package)
     {
         $this->removeSources($package);
         parent::removeCode($package);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getSourcesSpec(PackageInterface $package)
     {
         $sources = array();
@@ -205,6 +251,21 @@ abstract class AbstractInstaller extends LibraryInstaller
         return $sources;
     }
 
+    /**
+     * Create the spec list for legacy packages.
+     *
+     * @param string           $installPath The installation path.
+     *
+     * @param string           $startPath   The destination path.
+     *
+     * @param string           $currentPath The current working directory.
+     *
+     * @param array            $sources     The sources list.
+     *
+     * @param PackageInterface $package     The package being examined.
+     *
+     * @return void
+     */
     protected function createLegacySourcesSpec(
         $installPath,
         $startPath,
@@ -243,6 +304,13 @@ abstract class AbstractInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     * Map the sources to copy.
+     *
+     * @param PackageInterface $package The package being processed.
+     *
+     * @return array
+     */
     protected function mapSources(PackageInterface $package)
     {
         $root    = $this->plugin->getContaoRoot($this->composer->getPackage());
@@ -283,8 +351,24 @@ abstract class AbstractInstaller extends LibraryInstaller
         return $map;
     }
 
+    /**
+     * Update the sources in the destination folder.
+     *
+     * @param array            $map     The sources to update.
+     *
+     * @param PackageInterface $package The package being processed.
+     *
+     * @return void
+     */
     abstract protected function updateSources($map, PackageInterface $package);
 
+    /**
+     * Remove all obsolete sources.
+     *
+     * @param PackageInterface $package The package being processed.
+     *
+     * @return void
+     */
     protected function removeSources(PackageInterface $package)
     {
         $map  = $this->mapSources($package);
@@ -327,6 +411,13 @@ abstract class AbstractInstaller extends LibraryInstaller
         );
     }
 
+    /**
+     * Clean up empty directories.
+     *
+     * @param string $pathname The path in which empty directories should be removed.
+     *
+     * @void
+     */
     public function removeEmptyDirectories($pathname)
     {
         if (is_dir($pathname)) {
@@ -353,7 +444,11 @@ abstract class AbstractInstaller extends LibraryInstaller
     }
 
     /**
-     * @param PackageInterface $package
+     * Update the user files.
+     *
+     * @param PackageInterface $package The package being processed.
+     *
+     * @return void
      */
     public function updateUserfiles(PackageInterface $package)
     {
@@ -392,7 +487,11 @@ abstract class AbstractInstaller extends LibraryInstaller
     }
 
     /**
-     * @param PackageInterface $package
+     * Update the root files.
+     *
+     * @param PackageInterface $package The package being processed.
+     *
+     * @return void
      */
     public function updateRootFiles(PackageInterface $package)
     {
@@ -429,6 +528,17 @@ abstract class AbstractInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     *  Install files into the target folder.
+     *
+     * @param string $sourceReal The source filename/directory.
+     *
+     * @param string $targetReal The destination filename/directory.
+     *
+     * @param string $target     The target filename.
+     *
+     * @return int
+     */
     protected function installFiles($sourceReal, $targetReal, $target)
     {
         $count = 0;
@@ -489,6 +599,8 @@ abstract class AbstractInstaller extends LibraryInstaller
     }
 
     /**
+     * Get the Contao upload path.
+     *
      * @return string
      */
     protected function getUploadPath()

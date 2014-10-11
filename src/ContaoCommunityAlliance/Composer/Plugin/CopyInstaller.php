@@ -24,6 +24,9 @@ use Composer\Package\PackageInterface;
  */
 class CopyInstaller extends AbstractInstaller
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function updateSources($map, PackageInterface $package)
     {
         $deleteCount = 0;
@@ -61,6 +64,17 @@ class CopyInstaller extends AbstractInstaller
         }
     }
 
+    /**
+     * Remove all symlinks.
+     *
+     * @param array  $map         The mapping.
+     *
+     * @param string $root        The root dir.
+     *
+     * @param int    $deleteCount The amount of items deleted.
+     *
+     * @return void
+     */
     protected function removeAllSymlinks($map, $root, &$deleteCount)
     {
         foreach (array_values($map['links']) as $link) {
@@ -76,6 +90,19 @@ class CopyInstaller extends AbstractInstaller
         }
     }
 
+    /**
+     * Update the files in the destination dir.
+     *
+     * @param array  $sources     The file map to be copied.
+     *
+     * @param string $root        The root directory.
+     *
+     * @param string $installPath The destination path.
+     *
+     * @param int    $copyCount   The amount of items copied.
+     *
+     * @return array
+     */
     protected function updateAllCopies($sources, $root, $installPath, &$copyCount)
     {
         $copies = array();
@@ -121,6 +148,19 @@ class CopyInstaller extends AbstractInstaller
         return $copies;
     }
 
+    /**
+     * Remove all obsolete files.
+     *
+     * @param array  $map         The file map.
+     *
+     * @param array  $copies      The files that have been copied.
+     *
+     * @param string $root        The root directory.
+     *
+     * @param int    $deleteCount The amount of files deleted.
+     *
+     * @return void
+     */
     protected function removeObsoleteCopies($map, $copies, $root, &$deleteCount)
     {
         $obsoleteCopies = array_diff($map['copies'], $copies);

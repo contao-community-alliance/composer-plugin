@@ -22,6 +22,9 @@ use Composer\Package\PackageInterface;
  */
 class SymlinkInstaller extends AbstractInstaller
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function updateSources($map, PackageInterface $package)
     {
         $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
@@ -59,6 +62,17 @@ class SymlinkInstaller extends AbstractInstaller
         }
     }
 
+    /**
+     * Remove all copies.
+     *
+     * @param array  $map         The mapping.
+     *
+     * @param string $root        The root dir.
+     *
+     * @param int    $deleteCount The amount of items deleted.
+     *
+     * @return void
+     */
     protected function removeAllCopies($map, $root, &$deleteCount)
     {
         foreach ($map['copies'] as $target) {
@@ -75,6 +89,21 @@ class SymlinkInstaller extends AbstractInstaller
         }
     }
 
+    /**
+     * Update the files in the destination dir.
+     *
+     * @param array  $sources     The file map to be copied.
+     *
+     * @param string $root        The root directory.
+     *
+     * @param string $installPath The destination path.
+     *
+     * @param int    $linkCount   The amount of items linked.
+     *
+     * @return array
+     *
+     * @throws \Exception When a symlink could not be created.
+     */
     protected function updateAllSymlinks($sources, $root, $installPath, &$linkCount)
     {
         $links = array();
@@ -126,6 +155,15 @@ class SymlinkInstaller extends AbstractInstaller
         return $links;
     }
 
+    /**
+     * Calculate the correct link target.
+     *
+     * @param string $targetReal The target path.
+     *
+     * @param string $linkReal   The destination path.
+     *
+     * @return string
+     */
     protected function calculateLinkTarget($targetReal, $linkReal)
     {
         $targetParts = explode(DIRECTORY_SEPARATOR, $targetReal);
@@ -158,6 +196,19 @@ class SymlinkInstaller extends AbstractInstaller
         return implode(DIRECTORY_SEPARATOR, $linkTargetParts);
     }
 
+    /**
+     * Remove all obsolete symlinks.
+     *
+     * @param array  $map         The file map.
+     *
+     * @param array  $links       The files that have been copied.
+     *
+     * @param string $root        The root directory.
+     *
+     * @param int    $deleteCount The amount of files deleted.
+     *
+     * @return void
+     */
     protected function removeObsoleteSymlinks($map, $links, $root, &$deleteCount)
     {
         $obsoleteLinks = array_diff(array_keys($map['links']), $links);

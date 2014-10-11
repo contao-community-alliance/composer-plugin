@@ -36,8 +36,11 @@ class RunonceManager
     /**
      * Create the global runonce file TL_ROOT/system/runonce.php file if required.
      *
-     * @param IOInterface $inputOutput   The composer io stream.
-     * @param string      $root The Contao installation root path.
+     * @param IOInterface $inputOutput The composer io stream.
+     *
+     * @param string      $root        The Contao installation root path.
+     *
+     * @return void
      */
     static public function createRunonce(IOInterface $inputOutput, $root)
     {
@@ -108,12 +111,23 @@ EOF;
      * Add a runonce file by path.
      *
      * @param string $path The absolute runonce file path.
+     *
+     * @return void
      */
     static public function addRunonce($path)
     {
         static::$runonces[] = $path;
     }
 
+    /**
+     * Check if the file is contained within the given pathes.
+     *
+     * @param string   $file   The file to check.
+     *
+     * @param string[] $pathes The pathes to check against.
+     *
+     * @return bool
+     */
     static public function checkIsInInstallPathes($file, $pathes)
     {
         foreach ($pathes as $path) {
@@ -125,6 +139,15 @@ EOF;
         return false;
     }
 
+    /**
+     * Check if a file is installed.
+     *
+     * @param string           $file    The filename.
+     *
+     * @param PackageInterface $package The package to check against.
+     *
+     * @return bool
+     */
     static public function isInstalledFile($file, PackageInterface $package)
     {
         // Root runonce, definately getting called from Contao.
@@ -158,7 +181,9 @@ EOF;
     /**
      * Add runonce files from a package.
      *
-     * @param PackageInterface $package
+     * @param PackageInterface $package The package to retrieve runonce files from.
+     *
+     * @return void
      */
     static public function addRunonces(PackageInterface $package, $installPath)
     {
@@ -177,7 +202,9 @@ EOF;
     /**
      * Update all runonce files from all installed packages.
      *
-     * @param Composer $composer
+     * @param Composer $composer The composer instance.
+     *
+     * @return void
      */
     static public function addAllRunonces(Composer $composer)
     {
@@ -195,11 +222,21 @@ EOF;
         }
     }
 
+    /**
+     * Retrieve the collected runonce files.
+     *
+     * @return array
+     */
     static public function getRunonces()
     {
         return static::$runonces;
     }
 
+    /**
+     * Clear the runonces.
+     *
+     * @return void
+     */
     static public function clearRunonces()
     {
         static::$runonces = array();

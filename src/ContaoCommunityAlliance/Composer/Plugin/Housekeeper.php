@@ -63,6 +63,8 @@ class Housekeeper
      * @param IOInterface $inputOutput The input output interface to use.
      *
      * @param string      $root        The contao installation root.
+     *
+     * @return void
      */
     public static function cleanLocalConfig(IOInterface $inputOutput, $root)
     {

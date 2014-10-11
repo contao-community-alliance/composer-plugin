@@ -44,11 +44,15 @@ class Plugin
     implements PluginInterface, EventSubscriberInterface
 {
     /**
+     * The composer instance.
+     *
      * @var Composer
      */
     protected $composer;
 
     /**
+     * The input output interface.
+     *
      * @var IOInterface
      */
     protected $inputOutput;
@@ -61,16 +65,22 @@ class Plugin
     protected $contaoRoot;
 
     /**
+     * The Contao version.
+     *
      * @var string
      */
     protected $contaoVersion;
 
     /**
+     * The Contao build.
+     *
      * @var string
      */
     protected $contaoBuild;
 
     /**
+     * The Contao upload path.
+     *
      * @var string
      */
     protected $contaoUploadPath;
@@ -136,9 +146,9 @@ class Plugin
     /**
      * Inject the swiftMailer version into the Contao package.
      *
-     * @param string          $contaoRoot
+     * @param string          $contaoRoot The Contao root dir.
      *
-     * @param CompletePackage $package
+     * @param CompletePackage $package    The package being processed.
      *
      * @return void
      */
@@ -187,6 +197,17 @@ class Plugin
         $package->setProvides($provides);
     }
 
+    /**
+     * Prepare a Contao version to be compatible with composer.
+     *
+     * @param string $version The version string.
+     *
+     * @param string $build   The version build portion.
+     *
+     * @return string
+     *
+     * @throws \RuntimeException When an invalid version is encountered.
+     */
     protected function prepareContaoVersion($version, $build)
     {
         // Regular stable build
@@ -208,7 +229,7 @@ class Plugin
     }
 
     /**
-     * Inject the currently installed contao/core as metapackage.
+     * Inject the currently installed contao/core as meta package.
      *
      * @return void
      */
@@ -298,9 +319,15 @@ class Plugin
     }
 
     /**
-     * Create the local artifacts repository
+     * Create the local artifacts repository.
+     *
+     * @param Composer    $composer    The composer instance.
+     *
+     * @param IOInterface $inputOutput The input output interface.
      *
      * @return ArtifactRepository
+     *
+     * @throws \RuntimeException When a directory could not be created.
      */
     public function createLocalArtifactsRepository(Composer $composer, IOInterface $inputOutput)
     {
@@ -318,7 +345,11 @@ class Plugin
     }
 
     /**
-     * Create the legacy Contao packages repository
+     * Create the legacy Contao packages repository.
+     *
+     * @param Composer    $composer    The composer instance.
+     *
+     * @param IOInterface $inputOutput The input output interface.
      *
      * @return ComposerRepository
      */
@@ -335,7 +366,7 @@ class Plugin
     /**
      * Handle command events.
      *
-     * @param CommandEvent $event
+     * @param CommandEvent $event The event being raised.
      *
      * @return void
      */
@@ -351,7 +382,8 @@ class Plugin
     }
 
     /**
-     * @param Event $event
+     * Handle post update events.
+     *
      * @return void
      */
     public function handlePostUpdateCmd(/* Event $event */)
@@ -364,7 +396,8 @@ class Plugin
     }
 
     /**
-     * @param Event $event
+     * Handle post dump autoload events.
+     *
      * @return void
      */
     public function handlePostAutoloadDump(/* Event $event */)
@@ -378,9 +411,11 @@ class Plugin
     /**
      * Create the global runonce.php after updates has been installed.
      *
-     * @param IOInterface $inputOutput
+     * @param IOInterface $inputOutput The input output interface.
      *
-     * @param string      $root The contao installation root.
+     * @param string      $root        The contao installation root.
+     *
+     * @return void
      */
     public function createRunonce(IOInterface $inputOutput, $root)
     {
@@ -388,10 +423,15 @@ class Plugin
     }
 
     /**
-     * Check if a contao package should be installed,
-     * prevent from installing, if contao/core is installed in the parent directory.
+     * Check if a contao package should be installed.
      *
-     * @var PackageEvent $event
+     * This prevents from installing, if contao/core is installed in the parent directory.
+     *
+     * @param PackageEvent $event The event being raised.
+     *
+     * @return void
+     *
+     * @throws DuplicateContaoException When Contao would be installed within an existing Contao installation.
      */
     public function checkContaoPackage(PackageEvent $event)
     {
@@ -426,9 +466,13 @@ class Plugin
     }
 
     /**
+     * Handle pre download events.
+     *
      * @draft
      *
-     * @param PreFileDownloadEvent $event
+     * @param PreFileDownloadEvent $event The event bein raised.
+     *
+     * @return void
      */
     public function handlePreDownload()
     {
@@ -436,11 +480,11 @@ class Plugin
     }
 
     /**
-     * Detect the contao installation root and set the TL_ROOT constant
-     * if not already exist (from previous run or when run within contao).
-     * Also detect the contao version and local configuration settings.
+     * Detect the contao installation root, version and configuration and set the TL_ROOT constant if not already exist.
      *
-     * @param RootPackageInterface $package
+     * Existing values could originate from previous run or when run within contao.
+     *
+     * @param RootPackageInterface $package The package being processed.
      *
      * @return string
      *
@@ -496,13 +540,15 @@ class Plugin
     /**
      * Detect the installed Contao version.
      *
-     * @param $systemDir
+     * @param string $systemDir The system directory.
      *
-     * @param $configDir
+     * @param string $configDir The configuration directory.
      *
-     * @param $root
+     * @param string $root      The root directory.
      *
-     * @throws RuntimeException
+     * @return void
+     *
+     * @throws ConstantsNotFoundException When the constants file could not be found.
      */
     protected function detectVersion($systemDir, $configDir, $root)
     {
@@ -535,6 +581,13 @@ class Plugin
         }
     }
 
+    /**
+     * Retrieve the Contao version.
+     *
+     * @return string
+     *
+     * @throws RuntimeException When getContaoRoot() has not been called prior.
+     */
     public function getContaoVersion()
     {
         if (!isset($this->contaoVersion)) {
@@ -546,6 +599,13 @@ class Plugin
         return $this->contaoVersion;
     }
 
+    /**
+     * Retrieve the Contao build number.
+     *
+     * @return string
+     *
+     * @throws RuntimeException When getContaoRoot() has not been called prior.
+     */
     public function getContaoBuild()
     {
         if (!isset($this->contaoBuild)) {
@@ -557,6 +617,13 @@ class Plugin
         return $this->contaoBuild;
     }
 
+    /**
+     * Retrieve the Contao upload path.
+     *
+     * @return string
+     *
+     * @throws RuntimeException When getContaoRoot() has not been called prior.
+     */
     public function getContaoUploadPath()
     {
         if (!isset($this->contaoUploadPath)) {
@@ -575,9 +642,9 @@ class Plugin
      * It does only support on line assignments and primitive types but this is enough for this
      * plugin to retrieve the data it needs to retrieve.
      *
-     * @param $configFile
+     * @param string $configFile The filename.
      *
-     * @param $key
+     * @param string $key        The config key to retrieve.
      *
      * @return mixed
      */
@@ -622,11 +689,11 @@ class Plugin
     }
 
     /**
-     * Retrieve a config value from the given config path
+     * Retrieve a config value from the given config path.
      *
-     * @param string $configPath
+     * @param string $configPath The path where the config files are located.
      *
-     * @param $key
+     * @param string $key        The config key to retrieve.
      *
      * @return mixed
      */
@@ -659,10 +726,9 @@ class Plugin
     /**
      * Load the configuration.
      *
-     * @param $configDir
+     * @param string $configDir The path where the config files are located.
      *
-     * @SuppressWarnings(PHPMD.Superglobals)
-     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     * @return void
      */
     protected function loadConfig($configDir)
     {

@@ -20,6 +20,9 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
  */
 class RunonceExecutor extends \System
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -28,7 +31,9 @@ class RunonceExecutor extends \System
     /**
      * Run a list of runonce files.
      *
-     * @param array $runonces
+     * @param array $runonces The list of runonce.php files.
+     *
+     * @return void
      */
     public function run(array $runonces)
     {
@@ -60,12 +65,17 @@ class RunonceExecutor extends \System
     /**
      * Throw errors as error exceptions.
      *
-     * @param int    $errno
-     * @param string $errstr
-     * @param string $errfile
-     * @param int    $errline
+     * @param int    $errno   Contains the level of the error raised, as an integer.
      *
-     * @throws \ErrorException
+     * @param string $errstr  The error message.
+     *
+     * @param string $errfile The file in which the error occured.
+     *
+     * @param int    $errline The line in the file on which the error occured.
+     *
+     * @return void
+     *
+     * @throws \ErrorException Always, the error converted to an ErrorException.
      */
     public function handleError($errno, $errstr, $errfile, $errline)
     {

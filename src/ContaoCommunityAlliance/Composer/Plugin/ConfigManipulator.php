@@ -28,11 +28,9 @@ class ConfigManipulator
     /**
      * Run all configuration updates.
      *
-     * @param IOInterface $inputOutput
-     * @param Composer    $composer
+     * @throws ConfigUpdateException When the upgrade process did perform any action. The process should be restarted.
      *
-     * @throws ConfigUpdateException
-     * @throws null
+     * @return void
      */
     static public function run()
     {
@@ -57,6 +55,17 @@ class ConfigManipulator
         }
     }
 
+    /**
+     * Run the updates on the given config.
+     *
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
+     */
     static public function runUpdates(
         &$configJson,
         &$messages
@@ -86,7 +95,13 @@ class ConfigManipulator
     /**
      * Remove obsolete event scripts from the root composer.json.
      *
-     * @return boolean
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteScripts(&$configJson, &$messages)
     {
@@ -125,7 +140,17 @@ class ConfigManipulator
     /**
      * Remove obsolete event script.
      *
-     * @return boolean
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param string $key        The key under which the script is registered.
+     *
+     * @param string $script     The script to remove.
+     *
+     * @param array  $configJson The json config (composer.json).
+     *
+     * @param array  $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteScript($key, $script, &$configJson, &$messages)
     {
@@ -158,7 +183,13 @@ class ConfigManipulator
     /**
      * Remove obsolete configuration entries from the root composer.json.
      *
-     * @return boolean
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteConfigEntries(&$configJson, &$messages)
     {
@@ -178,7 +209,13 @@ class ConfigManipulator
     /**
      * Remove obsolete repositories from the root composer.json.
      *
-     * @return boolean
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteRepositories(&$configJson, &$messages)
     {
@@ -224,7 +261,13 @@ class ConfigManipulator
     /**
      * Remove obsolete requires from the root composer.json.
      *
-     * @return boolean
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteRequires(&$configJson, &$messages)
     {
@@ -251,11 +294,13 @@ class ConfigManipulator
     /**
      * Remove obsolete provide entries from the root composer.json.
      *
-     * @param array $configJson The json config.
+     * Returns true when the config has been manipulated, false otherwise.
      *
-     * @param array $messages   The message log.
+     * @param array $configJson The json config (composer.json).
      *
-     * @return boolean
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteProvides(&$configJson, &$messages)
     {
@@ -285,11 +330,13 @@ class ConfigManipulator
     /**
      * Remove the Contao Version and additional information from the root composer.json.
      *
-     * @param array $configJson The json config.
+     * Returns true when the config has been manipulated, false otherwise.
      *
-     * @param array $messages   The message log.
+     * @param array $configJson The json config (composer.json).
      *
-     * @return boolean
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function removeObsoleteContaoVersion(&$configJson, &$messages)
     {
@@ -317,11 +364,13 @@ class ConfigManipulator
     /**
      * Remove the Contao Version and additional information from the root composer.json.
      *
-     * @param array $configJson The json config.
+     * Returns true when the config has been manipulated, false otherwise.
      *
-     * @param array $messages   The message log.
+     * @param array $configJson The json config (composer.json).
      *
-     * @return boolean
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
      */
     static public function restoreNeededConfigKeys(&$configJson, &$messages)
     {
