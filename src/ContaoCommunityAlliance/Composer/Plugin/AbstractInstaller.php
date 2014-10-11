@@ -99,7 +99,7 @@ abstract class AbstractInstaller extends LibraryInstaller
      *
      * @return string
      */
-    static public function unprefixPath($prefix, $path)
+    public static function unprefixPath($prefix, $path)
     {
         $len = strlen($prefix);
         if (!$len || $len > strlen($path)) {
@@ -122,7 +122,7 @@ abstract class AbstractInstaller extends LibraryInstaller
      *
      * @return mixed
      */
-    static public function getNativePath($path, $sep = DIRECTORY_SEPARATOR)
+    public static function getNativePath($path, $sep = DIRECTORY_SEPARATOR)
     {
         return str_replace(array('/', '\\'), $sep, $path);
     }
@@ -222,8 +222,7 @@ abstract class AbstractInstaller extends LibraryInstaller
             $extra                        = $package->getExtra();
             $extra['contao']['userfiles'] = $userfiles;
             $package->setExtra($extra);
-        }
-        else {
+        } else {
             $extra = $package->getExtra();
 
             if (array_key_exists('contao', $extra)) {
@@ -282,20 +281,19 @@ abstract class AbstractInstaller extends LibraryInstaller
                 $currentPath
             );
             RunonceManager::addRunonce($path);
-        }
-        else if (is_file($currentPath) || preg_match(
+        } elseif (is_file($currentPath)
+            || preg_match(
                 '#^system/modules/[^/]+$#',
                 self::getNativePath($targetPath, '/')
             )
         ) {
             $sources[$sourcePath] = $targetPath;
-        }
-        else if (is_dir($currentPath)) {
+        } elseif (is_dir($currentPath)) {
             $files = new \FilesystemIterator(
                 $currentPath,
-                \FilesystemIterator::SKIP_DOTS |
+                (\FilesystemIterator::SKIP_DOTS |
                 \FilesystemIterator::UNIX_PATHS |
-                \FilesystemIterator::CURRENT_AS_PATHNAME
+                \FilesystemIterator::CURRENT_AS_PATHNAME)
             );
 
             foreach ($files as $file) {
@@ -323,27 +321,26 @@ abstract class AbstractInstaller extends LibraryInstaller
         foreach ($sources as $source => $target) {
             if (is_link($root . DIRECTORY_SEPARATOR . $target)) {
                 $map['links'][$target] = readlink($root . DIRECTORY_SEPARATOR . $target);
-            }
-            else if (is_dir($root . DIRECTORY_SEPARATOR . $target)) {
+            } elseif (is_dir($root . DIRECTORY_SEPARATOR . $target)) {
                 $iterator = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
                         $root . DIRECTORY_SEPARATOR . $target,
-                        \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+                        (\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS)
                     )
                 );
 
                 /** @var \SplFileInfo $targetFile */
                 foreach ($iterator as $targetFile) {
                     $pathname = self::unprefixPath($root . DIRECTORY_SEPARATOR, $targetFile->getRealPath());
-
-                    $key                 = ($source ? $source . DIRECTORY_SEPARATOR : '') . self::unprefixPath(
+                    $key      = ($source ? $source . DIRECTORY_SEPARATOR : '') .
+                        self::unprefixPath(
                             $target . DIRECTORY_SEPARATOR,
                             $pathname
                         );
+
                     $map['copies'][$key] = $pathname;
                 }
-            }
-            else if (is_file($root . DIRECTORY_SEPARATOR . $target)) {
+            } elseif (is_file($root . DIRECTORY_SEPARATOR . $target)) {
                 $map['copies'][$source] = $target;
             }
         }
@@ -416,7 +413,7 @@ abstract class AbstractInstaller extends LibraryInstaller
      *
      * @param string $pathname The path in which empty directories should be removed.
      *
-     * @void
+     * @return void
      */
     public function removeEmptyDirectories($pathname)
     {
@@ -462,7 +459,7 @@ abstract class AbstractInstaller extends LibraryInstaller
                 $root       = $this->plugin->getContaoRoot($this->composer->getPackage());
                 $uploadPath = $this->getUploadPath();
 
-                $userfiles   = (array) $contao['userfiles'];
+                $userfiles   = (array)$contao['userfiles'];
                 $installPath = $this->getInstallPath($package);
 
                 foreach ($userfiles as $source => $target) {
@@ -502,9 +499,8 @@ abstract class AbstractInstaller extends LibraryInstaller
             $contao = $extra['contao'];
 
             if (is_array($contao) && array_key_exists('files', $contao)) {
-                $root       = $this->plugin->getContaoRoot($this->composer->getPackage());
-
-                $files   = (array) $contao['files'];
+                $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
+                $files       = (array)$contao['files'];
                 $installPath = $this->getInstallPath($package);
 
                 foreach ($files as $source => $target) {
@@ -546,7 +542,7 @@ abstract class AbstractInstaller extends LibraryInstaller
         if (is_dir($sourceReal)) {
             $iterator = new RecursiveDirectoryIterator(
                 $sourceReal,
-                RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+                (RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS)
             );
             $iterator = new RecursiveIteratorIterator(
                 $iterator,
@@ -564,8 +560,7 @@ abstract class AbstractInstaller extends LibraryInstaller
                 if (!file_exists($targetPath)) {
                     if ($file->isDir()) {
                         $this->filesystem->ensureDirectoryExists($targetPath);
-                    }
-                    else {
+                    } else {
                         $this->writeVerbose(
                             sprintf(
                                 '  - install userfile <info>%s</info>',
@@ -577,8 +572,7 @@ abstract class AbstractInstaller extends LibraryInstaller
                     }
                 }
             }
-        }
-        else {
+        } else {
             if (file_exists($targetReal)) {
                 return $count;
             }

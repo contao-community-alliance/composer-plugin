@@ -22,11 +22,13 @@ class RunonceExecutor extends \System
 {
     /**
      * Create a new instance.
+     * @codingStandardsIgnoreStart
      */
     public function __construct()
     {
         parent::__construct();
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Run a list of runonce files.
@@ -44,12 +46,10 @@ class RunonceExecutor extends \System
             try {
                 if (is_file(TL_ROOT . DIRECTORY_SEPARATOR . $runonce)) {
                     require_once(TL_ROOT . DIRECTORY_SEPARATOR . $runonce);
-                }
-                else {
+                } else {
                     log_message('Skip non-existing runonce ' . $runonce);
                 }
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 log_message(
                     'Execute runonce ' . $runonce . ' failed with message:' .
                     PHP_EOL . $e->getMessage() .

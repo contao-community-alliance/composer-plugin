@@ -111,7 +111,7 @@ class CopyInstaller extends AbstractInstaller
                 $files    = array();
                 $iterator = new \RecursiveDirectoryIterator(
                     $installPath . DIRECTORY_SEPARATOR . $source,
-                    \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+                    (\FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS)
                 );
                 $iterator = new \RecursiveIteratorIterator(
                     $iterator
@@ -124,8 +124,7 @@ class CopyInstaller extends AbstractInstaller
                     $targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
                     $files[$targetPath] = $sourceFile;
                 }
-            }
-            else {
+            } else {
                 $files = array($target => new \SplFileInfo($installPath . DIRECTORY_SEPARATOR . $source));
             }
 

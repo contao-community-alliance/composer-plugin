@@ -116,8 +116,7 @@ class SymlinkInstaller extends AbstractInstaller
                 // an empty directory was left...
                 if (is_dir($linkReal) && count(scandir($linkReal)) == 2) {
                     rmdir($linkReal);
-                }
-                else if (!is_link($linkReal)) {
+                } elseif (!is_link($linkReal)) {
                     throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
                 }
             }
@@ -130,9 +129,8 @@ class SymlinkInstaller extends AbstractInstaller
                 // link target has changed
                 if (readlink($linkReal) != $linkTarget) {
                     unlink($linkReal);
-                }
-                // link exists and have the correct target
-                else {
+                } else {
+                    // link exists and has the correct target.
                     continue;
                 }
             }
@@ -177,9 +175,13 @@ class SymlinkInstaller extends AbstractInstaller
         // calculate a relative link target
         $linkTargetParts = array();
 
-        while (count($targetParts) && count($linkParts) && $targetParts[0] == $linkParts[0]) {
+        $targetPartsCount = count($targetParts);
+        $linkPartsCount   = count($linkParts);
+        while ($targetPartsCount && $linkPartsCount && $targetParts[0] == $linkParts[0]) {
             array_shift($targetParts);
             array_shift($linkParts);
+            $targetPartsCount = count($targetParts);
+            $linkPartsCount   = count($linkParts);
         }
 
         $count = count($linkParts);

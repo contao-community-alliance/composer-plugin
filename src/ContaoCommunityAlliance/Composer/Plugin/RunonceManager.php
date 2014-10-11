@@ -42,14 +42,14 @@ class RunonceManager
      *
      * @return void
      */
-    static public function createRunonce(IOInterface $inputOutput, $root)
+    public static function createRunonce(IOInterface $inputOutput, $root)
     {
         // create runonce
         $runonces = array_unique(static::$runonces);
         if (count($runonces)) {
-            $file  = 'system/runonce.php';
-            $buffer  = '';
-            $index = 0;
+            $file   = 'system/runonce.php';
+            $buffer = '';
+            $index  = 0;
             while (file_exists($root . DIRECTORY_SEPARATOR . $file)) {
                 $buffer .= file_get_contents($root . DIRECTORY_SEPARATOR . $file);
                 $index++;
@@ -114,7 +114,7 @@ EOF;
      *
      * @return void
      */
-    static public function addRunonce($path)
+    public static function addRunonce($path)
     {
         static::$runonces[] = $path;
     }
@@ -128,7 +128,7 @@ EOF;
      *
      * @return bool
      */
-    static public function checkIsInInstallPathes($file, $pathes)
+    public static function checkIsInInstallPathes($file, $pathes)
     {
         foreach ($pathes as $path) {
             if (strncmp($file, $path, strlen($path)) === 0) {
@@ -148,7 +148,7 @@ EOF;
      *
      * @return bool
      */
-    static public function isInstalledFile($file, PackageInterface $package)
+    public static function isInstalledFile($file, PackageInterface $package)
     {
         // Root runonce, definately getting called from Contao.
         if (preg_match('#system/runonce.php#', $file)) {
@@ -165,12 +165,10 @@ EOF;
         if (isset($extra['contao']['shadow-copies'])
             && static::checkIsInInstallPathes($file, $extra['contao']['shadow-copies'])) {
             return true;
-        }
-        else if (isset($extra['contao']['symlinks'])
+        } elseif (isset($extra['contao']['symlinks'])
             && static::checkIsInInstallPathes($file, $extra['contao']['symlinks'])) {
             return true;
-        }
-        else if (isset($extra['contao']['sources'])
+        } elseif (isset($extra['contao']['sources'])
             && static::checkIsInInstallPathes($file, $extra['contao']['sources'])) {
             return true;
         }
@@ -181,15 +179,17 @@ EOF;
     /**
      * Add runonce files from a package.
      *
-     * @param PackageInterface $package The package to retrieve runonce files from.
+     * @param PackageInterface $package     The package to retrieve runonce files from.
+     *
+     * @param string           $installPath The installation path.
      *
      * @return void
      */
-    static public function addRunonces(PackageInterface $package, $installPath)
+    public static function addRunonces(PackageInterface $package, $installPath)
     {
         $extra = $package->getExtra();
         if (isset($extra['contao']['runonce'])) {
-            $runonces = (array) $extra['contao']['runonce'];
+            $runonces = (array)$extra['contao']['runonce'];
 
             foreach ($runonces as $file) {
                 if (!static::isInstalledFile($file, $package)) {
@@ -206,7 +206,7 @@ EOF;
      *
      * @return void
      */
-    static public function addAllRunonces(Composer $composer)
+    public static function addAllRunonces(Composer $composer)
     {
         $installationManager = $composer->getInstallationManager();
         $repositoryManager   = $composer->getRepositoryManager();
@@ -227,7 +227,7 @@ EOF;
      *
      * @return array
      */
-    static public function getRunonces()
+    public static function getRunonces()
     {
         return static::$runonces;
     }
@@ -237,7 +237,7 @@ EOF;
      *
      * @return void
      */
-    static public function clearRunonces()
+    public static function clearRunonces()
     {
         static::$runonces = array();
     }

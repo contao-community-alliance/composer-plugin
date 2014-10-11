@@ -29,7 +29,6 @@ use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\ArtifactRepository;
 use Composer\Repository\ComposerRepository;
-use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Script\PackageEvent;
 use Composer\Package\LinkConstraint\EmptyConstraint;
@@ -40,8 +39,7 @@ use RuntimeException;
  * Installer that install Contao extensions via shadow copies or symlinks
  * into the Contao file hierarchy.
  */
-class Plugin
-    implements PluginInterface, EventSubscriberInterface
+class Plugin implements PluginInterface, EventSubscriberInterface
 {
     /**
      * The composer instance.
@@ -93,14 +91,13 @@ class Plugin
         $this->composer    = $composer;
         $this->inputOutput = $inputOutput;
 
-        $repoManager = $composer->getRepositoryManager();
+        $repoManager         = $composer->getRepositoryManager();
         $installationManager = $composer->getInstallationManager();
 
         $config = $composer->getConfig();
         if ($config->get('preferred-install') == 'dist') {
             $installer = new CopyInstaller($inputOutput, $composer, $this);
-        }
-        else {
+        } else {
             $installer = new SymlinkInstaller($inputOutput, $composer, $this);
         }
         $installationManager->addInstaller($installer);
@@ -111,17 +108,13 @@ class Plugin
             try {
                 $this->injectContaoCore();
                 $this->injectRequires();
-            }
-            // @codingStandardsIgnoreStart - Silently ignore the fact that the constants are not found.
-            catch (ConstantsNotFoundException $e) {
+            } catch (ConstantsNotFoundException $e) {
                 // No op.
             }
-            // @codingStandardsIgnoreEnd
             try {
                 $repo = $this->createLocalArtifactsRepository($composer, $inputOutput);
                 $repoManager->addRepository($repo);
-            }
-            catch (\RuntimeException $e) {
+            } catch (\RuntimeException $e) {
                 $inputOutput->write('skipping artifact repository: ' . $e->getMessage());
             }
         }
@@ -206,7 +199,7 @@ class Plugin
      *
      * @return string
      *
-     * @throws \RuntimeException When an invalid version is encountered.
+     * @throws RuntimeException When an invalid version is encountered.
      */
     protected function prepareContaoVersion($version, $build)
     {
@@ -250,12 +243,10 @@ class Plugin
                     // stop if the contao package is required somehow
                     // and must not be injected
                     return;
-                }
-                else if ($localPackage->getVersion() == $version) {
+                } elseif ($localPackage->getVersion() == $version) {
                     // stop if the virtual contao package is already injected
                     return;
-                }
-                else {
+                } else {
                     $localRepository->removePackage($localPackage);
                 }
             }
@@ -303,7 +294,7 @@ class Plugin
 
             $versionParser = new VersionParser();
             $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
-            $version = $versionParser->normalize($prettyVersion);
+            $version       = $versionParser->normalize($prettyVersion);
 
             $constraint = new VersionConstraint('==', $version);
             $constraint->setPrettyString($prettyVersion);
@@ -332,12 +323,15 @@ class Plugin
     public function createLocalArtifactsRepository(Composer $composer, IOInterface $inputOutput)
     {
         $path = $composer->getConfig()->get('home') . DIRECTORY_SEPARATOR . 'packages';
+        // @codingStandardsIgnoreStart - silencing the error is ok here.
         if (!is_dir($path) && !@mkdir($path, 0777, true)) {
             throw new \RuntimeException(
                 'could not create directory "' . $path . '" for artifact repository',
                 1
             );
         }
+        // @codingStandardsIgnoreEnd
+
         return new ArtifactRepository(
             array('url' => $path),
             $inputOutput
@@ -386,7 +380,7 @@ class Plugin
      *
      * @return void
      */
-    public function handlePostUpdateCmd(/* Event $event */)
+    public function handlePostUpdateCmd()
     {
         $package = $this->composer->getPackage();
         $root    = $this->getContaoRoot($package);
@@ -400,7 +394,7 @@ class Plugin
      *
      * @return void
      */
-    public function handlePostAutoloadDump(/* Event $event */)
+    public function handlePostAutoloadDump()
     {
         Housekeeper::cleanLocalConfig(
             $this->inputOutput,
@@ -451,12 +445,9 @@ class Plugin
                         'to recover from this problem please restart the operation'
                     );
                 }
+            } catch (ConstantsNotFoundException $e) {
+                // Silently ignore the fact that the constants are not found.
             }
-            // @codingStandardsIgnoreStart - Silently ignore the fact that the constants are not found.
-            catch (ConstantsNotFoundException $e) {
-                // gracefully ignore
-            }
-            // @codingStandardsIgnoreEnd
 
             $this->contaoRoot       = null;
             $this->contaoVersion    = null;
@@ -465,12 +456,11 @@ class Plugin
         }
     }
 
+    // @codingStandardsIgnoreStart
     /**
      * Handle pre download events.
      *
-     * @draft
-     *
-     * @param PreFileDownloadEvent $event The event bein raised.
+     * @param PreFileDownloadEvent $event The event being raised.
      *
      * @return void
      */
@@ -478,6 +468,7 @@ class Plugin
     {
         // TODO: handle the pre download event.
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Detect the contao installation root, version and configuration and set the TL_ROOT constant if not already exist.
@@ -502,9 +493,7 @@ class Plugin
             // Check if we have a Contao installation in the current working dir. See #15.
             if (is_dir($cwd . DIRECTORY_SEPARATOR . 'system')) {
                 $root = $cwd;
-            }
-            else
-            {
+            } else {
                 // Fallback - We assume we are in TL_ROOT/composer.
                 $root = dirname($cwd);
             }
@@ -512,9 +501,8 @@ class Plugin
 
             if (!empty($extra['contao']['root'])) {
                 $root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
-            }
-            // test, do we have the core within vendor/contao/core.
-            else {
+            } else {
+                // test, do we have the core within vendor/contao/core.
                 $vendorRoot = $cwd . DIRECTORY_SEPARATOR .
                     'vendor' . DIRECTORY_SEPARATOR .
                     'contao' . DIRECTORY_SEPARATOR .
@@ -666,20 +654,15 @@ class Plugin
 
                 if ($tline === 'true;') {
                     $value = true;
-                }
-                else if ($tline === 'false;') {
+                } elseif ($tline === 'false;') {
                     $value = false;
-                }
-                else if ($tline === 'null;') {
+                } elseif ($tline === 'null;') {
                     $value = null;
-                }
-                else if ($tline === 'array();') {
+                } elseif ($tline === 'array();') {
                     $value = array();
-                }
-                else if ($tline[0] === '\'') {
+                } elseif ($tline[0] === '\'') {
                     $value = substr($tline, 1, -2);
-                }
-                else {
+                } else {
                     $value = substr($tline, 0, -1);
                 }
             }
@@ -705,8 +688,7 @@ class Plugin
                 $configPath . 'default.php',
                 $key
             );
-        }
-        else {
+        } else {
             $value = $this->extractKeyFromConfigFile(
                 $configPath . 'config.php',
                 $key

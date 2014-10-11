@@ -15,10 +15,7 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
-use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Package\Version\VersionParser;
 
 /**
  * Manipulate the root composer.json on the fly.
@@ -32,11 +29,11 @@ class ConfigManipulator
      *
      * @return void
      */
-    static public function run()
+    public static function run()
     {
-        $messages     = array();
-        $configFile   = new JsonFile('composer.json');
-        $configJson   = $configFile->read();
+        $messages   = array();
+        $configFile = new JsonFile('composer.json');
+        $configJson = $configFile->read();
 
         // NOTE: we do not need our hard-coded scripts anymore, since we have a plugin
 
@@ -66,7 +63,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function runUpdates(
+    public static function runUpdates(
         &$configJson,
         &$messages
     ) {
@@ -80,6 +77,7 @@ class ConfigManipulator
         $jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
         $jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
 
+        // @codingStandardsIgnoreStart
         // TODO we need a new contao version change check!!!
         /*
         if ($contaoVersionUpdated) {
@@ -88,6 +86,7 @@ class ConfigManipulator
             RunonceManager::createRunonce($inputOutput, $root);
         }
         */
+        // @codingStandardsIgnoreEnd
 
         return $jsonModified;
     }
@@ -103,7 +102,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteScripts(&$configJson, &$messages)
+    public static function removeObsoleteScripts(&$configJson, &$messages)
     {
         $jsonModified = false;
 
@@ -152,7 +151,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteScript($key, $script, &$configJson, &$messages)
+    public static function removeObsoleteScript($key, $script, &$configJson, &$messages)
     {
         if (isset($configJson['scripts'][$key])) {
             if (is_array($configJson['scripts'][$key])) {
@@ -163,15 +162,14 @@ class ConfigManipulator
                         unset($configJson['scripts'][$key]);
                     }
 
-                    $messages[]   = 'obsolete ' . $key . ' script ' . $script .
+                    $messages[] = 'obsolete ' . $key . ' script ' . $script .
                         ' was removed from root composer.json';
                     return true;
                 }
-            }
-            else if ($configJson['scripts'][$key] == $script) {
+            } elseif ($configJson['scripts'][$key] == $script) {
                 unset($configJson['scripts'][$key]);
 
-                $messages[]   = 'obsolete ' . $key . ' script ' . $script .
+                $messages[] = 'obsolete ' . $key . ' script ' . $script .
                     ' was removed from root composer.json';
                 return true;
             }
@@ -191,7 +189,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteConfigEntries(&$configJson, &$messages)
+    public static function removeObsoleteConfigEntries(&$configJson, &$messages)
     {
         $jsonModified = false;
 
@@ -217,7 +215,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteRepositories(&$configJson, &$messages)
+    public static function removeObsoleteRepositories(&$configJson, &$messages)
     {
         if (!isset($configJson['repositories'])) {
             return false;
@@ -269,7 +267,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteRequires(&$configJson, &$messages)
+    public static function removeObsoleteRequires(&$configJson, &$messages)
     {
         $jsonModified = false;
 
@@ -302,7 +300,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteProvides(&$configJson, &$messages)
+    public static function removeObsoleteProvides(&$configJson, &$messages)
     {
         $jsonModified = false;
 
@@ -338,7 +336,7 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function removeObsoleteContaoVersion(&$configJson, &$messages)
+    public static function removeObsoleteContaoVersion(&$configJson, &$messages)
     {
         $jsonModified = false;
 
@@ -372,33 +370,33 @@ class ConfigManipulator
      *
      * @return bool
      */
-    static public function restoreNeededConfigKeys(&$configJson, &$messages)
+    public static function restoreNeededConfigKeys(&$configJson, &$messages)
     {
         $jsonModified = false;
 
         if (!isset($configJson['name'])) {
             $configJson['name'] = 'local/website';
-            $messages[] = 'name has been initialized to "local/website" in root composer.json!';
-            $jsonModified = true;
+            $messages[]         = 'name has been initialized to "local/website" in root composer.json!';
+            $jsonModified       = true;
         }
 
         if (!isset($configJson['description'])) {
             $configJson['description'] = 'A local website project';
-            $messages[] = 'description has been initialized to "A local website project" ' .
-                'in root composer.json!';
-            $jsonModified = true;
+            $messages[]                = 'description has been initialized to "A local website project" ' .
+                                         'in root composer.json!';
+            $jsonModified              = true;
         }
 
         if (!isset($configJson['type'])) {
             $configJson['type'] = 'project';
-            $messages[] = 'type has been initialized to "project" in root composer.json!';
-            $jsonModified = true;
+            $messages[]         = 'type has been initialized to "project" in root composer.json!';
+            $jsonModified       = true;
         }
 
         if (!isset($configJson['license'])) {
             $configJson['license'] = 'proprietary';
-            $messages[] = 'license has been initialized to "proprietary" in root composer.json!';
-            $jsonModified = true;
+            $messages[]            = 'license has been initialized to "proprietary" in root composer.json!';
+            $jsonModified          = true;
         }
 
         if (($configJson['type'] !== 'contao-module') && !isset($configJson['config']['component-dir'])) {
@@ -406,9 +404,9 @@ class ConfigManipulator
                 $configJson['config'] = array();
             }
             $configJson['config']['component-dir'] = '../assets/components';
-            $messages[] = 'components installation path has been initialized to "../assets/components"' .
-                ' in root composer.json!';
-            $jsonModified = true;
+            $messages[]                            = 'components installation path has been initialized to ' .
+                                                     '"../assets/components" in root composer.json!';
+            $jsonModified                          = true;
         }
 
         return $jsonModified;

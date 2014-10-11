@@ -79,12 +79,10 @@ class Housekeeper
                     $modified = true;
                     $remove   = true;
                     unset($lines[$index]);
-                }
-                else if ($tline == '### COMPOSER CLASSES STOP ###') {
+                } elseif ($tline == '### COMPOSER CLASSES STOP ###') {
                     $remove = false;
                     unset($lines[$index]);
-                }
-                else if ($remove || $tline == '?>') {
+                } elseif ($remove || $tline == '?>') {
                     unset($lines[$index]);
                 }
             }
