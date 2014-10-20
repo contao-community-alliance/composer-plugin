@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d99958923ddba7e1a6ba9e30087f1212",
+    "hash": "b68aa076fc8356aea1e1a632d25c7940",
     "packages": [],
     "packages-dev": [
         {
@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "73e9db5d9952d52a46ecbc20a269a8c5f9c5b011"
+                "reference": "373c688f8c2de8e3c4454c542d8526f394c06887"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/73e9db5d9952d52a46ecbc20a269a8c5f9c5b011",
-                "reference": "73e9db5d9952d52a46ecbc20a269a8c5f9c5b011",
+                "url": "https://api.github.com/repos/composer/composer/zipball/373c688f8c2de8e3c4454c542d8526f394c06887",
+                "reference": "373c688f8c2de8e3c4454c542d8526f394c06887",
                 "shasum": ""
             },
             "require": {
@@ -73,7 +73,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2014-10-07 15:03:19"
+            "time": "2014-10-17 19:28:38"
         },
         {
             "name": "contao-community-alliance/build-system",
@@ -81,12 +81,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/build-system.git",
-                "reference": "a9a6c4acc1bf51552d3737e2921069bd04dc5ade"
+                "reference": "68438b2b46e1806c3eb6447fbbd1929f460fc8bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/build-system/zipball/a9a6c4acc1bf51552d3737e2921069bd04dc5ade",
-                "reference": "a9a6c4acc1bf51552d3737e2921069bd04dc5ade",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system/zipball/68438b2b46e1806c3eb6447fbbd1929f460fc8bc",
+                "reference": "68438b2b46e1806c3eb6447fbbd1929f460fc8bc",
                 "shasum": ""
             },
             "suggest": {
@@ -118,7 +118,7 @@
                 }
             ],
             "description": "CCABS base system.",
-            "time": "2014-10-11 09:27:17"
+            "time": "2014-10-20 18:22:49"
         },
         {
             "name": "contao-community-alliance/build-system-all-tasks",
@@ -377,12 +377,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/coding-standard.git",
-                "reference": "3a85aed9da71e04367d371be37991e0930762cb8"
+                "reference": "d93fb7810678ffb4d161964521065cab65aefcee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/coding-standard/zipball/3a85aed9da71e04367d371be37991e0930762cb8",
-                "reference": "3a85aed9da71e04367d371be37991e0930762cb8",
+                "url": "https://api.github.com/repos/contao-community-alliance/coding-standard/zipball/d93fb7810678ffb4d161964521065cab65aefcee",
+                "reference": "d93fb7810678ffb4d161964521065cab65aefcee",
                 "shasum": ""
             },
             "require": {
@@ -411,7 +411,7 @@
             ],
             "description": "contao community alliance coding standard",
             "homepage": "http://c-c-a.org/",
-            "time": "2014-10-10 22:01:40"
+            "time": "2014-10-17 12:13:37"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -851,16 +851,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "3.7.37",
+            "version": "3.7.38",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "ae6cefd7cc84586a5ef27e04bae11ee940ec63dc"
+                "reference": "38709dc22d519a3d1be46849868aa2ddf822bcf6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ae6cefd7cc84586a5ef27e04bae11ee940ec63dc",
-                "reference": "ae6cefd7cc84586a5ef27e04bae11ee940ec63dc",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/38709dc22d519a3d1be46849868aa2ddf822bcf6",
+                "reference": "38709dc22d519a3d1be46849868aa2ddf822bcf6",
                 "shasum": ""
             },
             "require": {
@@ -920,7 +920,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2014-04-30 12:24:19"
+            "time": "2014-10-17 09:04:17"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -1822,6 +1822,8 @@
         "composer/composer": 20
     },
     "prefer-stable": true,
-    "platform": [],
+    "platform": {
+        "php": ">=5.3.2"
+    },
     "platform-dev": []
 }
