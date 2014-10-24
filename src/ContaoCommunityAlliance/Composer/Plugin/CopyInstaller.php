@@ -162,6 +162,12 @@ class CopyInstaller extends AbstractInstaller
      */
     protected function removeObsoleteCopies($map, $copies, $root, &$deleteCount)
     {
+        // fix inconsistence directory separator
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $map['copies'] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $map['copies']);
+            $copies        = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $copies);
+        }
+        
         $obsoleteCopies = array_diff($map['copies'], $copies);
         foreach ($obsoleteCopies as $obsoleteCopy) {
             $this->writeVerbose(
