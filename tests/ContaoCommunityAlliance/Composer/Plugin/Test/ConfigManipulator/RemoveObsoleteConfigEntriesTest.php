@@ -20,58 +20,58 @@ use ContaoCommunityAlliance\Composer\Plugin\ConfigManipulator;
 
 class RemoveObsoleteConfigEntriesTest extends TestCase
 {
-	public function testNothingToDo()
-	{
-		$configJson = array(
-			'extra' => array
-			(
-				'contao' => array(),
-			)
-		);
+    public function testNothingToDo()
+    {
+        $configJson = array(
+            'extra' => array
+            (
+                'contao' => array(),
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertFalse(ConfigManipulator::removeObsoleteConfigEntries($configJson, $messages));
-		self::assertEmpty($messages);
+        self::assertFalse(ConfigManipulator::removeObsoleteConfigEntries($configJson, $messages));
+        self::assertEmpty($messages);
 
-		self::assertEquals(
-			array(
-				'extra' => array
-				(
-					'contao' => array(),
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'extra' => array
+                (
+                    'contao' => array(),
+                )
+            ),
+            $configJson
+        );
+    }
 
-	public function testRemoveArtifactPath()
-	{
-		$configJson = array(
-			'extra' => array
-			(
-				'contao' => array(
-					'somedata' => 'some-value',
-					'artifactPath' => '/home/contao/packages'
-				),
-			)
-		);
+    public function testRemoveArtifactPath()
+    {
+        $configJson = array(
+            'extra' => array
+            (
+                'contao' => array(
+                    'somedata' => 'some-value',
+                    'artifactPath' => '/home/contao/packages'
+                ),
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertTrue(ConfigManipulator::removeObsoleteConfigEntries($configJson, $messages));
-		self::assertEquals(1, count($messages));
+        self::assertTrue(ConfigManipulator::removeObsoleteConfigEntries($configJson, $messages));
+        self::assertEquals(1, count($messages));
 
-		self::assertEquals(
-			array(
-				'extra' => array
-				(
-					'contao' => array(
-						'somedata' => 'some-value',
-					),
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'extra' => array
+                (
+                    'contao' => array(
+                        'somedata' => 'some-value',
+                    ),
+                )
+            ),
+            $configJson
+        );
+    }
 }

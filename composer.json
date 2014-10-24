@@ -1,37 +1,38 @@
 {
-	"name": "contao-community-alliance/composer-plugin",
-	"description": "Composer plugin that provide contao integration and installer.",
-	"type": "composer-plugin",
-	"homepage":"http://c-c-a.org/",
-	"license": "LGPL-3.0+",
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"require": {
-		"composer-plugin-api": "1.0.0"
-	},
-	"require-dev": {
-		"bit3/php-coding-standard": "*",
-		"pdepend/pdepend": "1.1.*",
-		"composer/composer": "dev-master",
-		"phpunit/phpunit": ">=3.7.10,<4-dev"
-	},
-	"replace": {
-		"contao-community-alliance/composer-installer": "1.7.1"
-	},
-	"conflict": {
-		"contao/core": "3.0.*",
-		"contao-community-alliance/composer": "<0.9-dev"
-	},
-	"autoload": {
-		"psr-0": {
-			"ContaoCommunityAlliance\\Composer\\Plugin": "src/"
-		}
-	},
-	"extra": {
-		"class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
-		"branch-alias": {
-			"dev-master": "2.2.x-dev",
-			"dev-develop": "2.3.x-dev"
-		}
-	}
+    "name": "contao-community-alliance/composer-plugin",
+    "description": "Composer plugin that provide contao integration and installer.",
+    "type": "composer-plugin",
+    "homepage":"http://c-c-a.org/",
+    "license": "LGPL-3.0+",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=5.3.2",
+        "composer-plugin-api": "1.0.0"
+    },
+    "require-dev": {
+        "composer/composer": "dev-master",
+        "contao-community-alliance/coding-standard": "~1.0",
+        "contao-community-alliance/build-system": "~1.0",
+        "contao-community-alliance/build-system-all-tasks": "~1.0"
+    },
+    "replace": {
+        "contao-community-alliance/composer-installer": "1.7.1"
+    },
+    "conflict": {
+        "contao/core": "3.0.*",
+        "contao-community-alliance/composer": "<0.9-dev"
+    },
+    "autoload": {
+        "psr-0": {
+            "ContaoCommunityAlliance\\Composer\\Plugin": "src/"
+        }
+    },
+    "extra": {
+        "class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
+        "branch-alias": {
+            "dev-master": "2.2.x-dev",
+            "dev-develop": "2.3.x-dev"
+        }
+    }
 }

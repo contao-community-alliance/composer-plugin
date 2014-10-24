@@ -20,81 +20,81 @@ use ContaoCommunityAlliance\Composer\Plugin\ConfigManipulator;
 
 class RemoveObsoleteRequiresTest extends TestCase
 {
-	public function testNothingToDo()
-	{
-		$configJson = array(
-			'require' => array
-			(
-				'some/package' => '*'
-			)
-		);
+    public function testNothingToDo()
+    {
+        $configJson = array(
+            'require' => array
+            (
+                'some/package' => '*'
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertFalse(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
-		self::assertEmpty($messages);
+        self::assertFalse(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
+        self::assertEmpty($messages);
 
-		self::assertEquals(
-			array(
-				'require' => array
-				(
-					'some/package' => '*'
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'require' => array
+                (
+                    'some/package' => '*'
+                )
+            ),
+            $configJson
+        );
+    }
 
-	public function testRemoveContaoCommunityAllianceComposer()
-	{
-		$configJson = array(
-			'require' => array
-			(
-				'some/package' => '*',
-				'contao-community-alliance/composer' => '*'
-			)
-		);
+    public function testRemoveContaoCommunityAllianceComposer()
+    {
+        $configJson = array(
+            'require' => array
+            (
+                'some/package' => '*',
+                'contao-community-alliance/composer' => '*'
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertTrue(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
-		self::assertEquals(1, count($messages));
+        self::assertTrue(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
+        self::assertEquals(1, count($messages));
 
-		self::assertEquals(
-			array(
-				'require' => array
-				(
-					'some/package' => '*'
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'require' => array
+                (
+                    'some/package' => '*'
+                )
+            ),
+            $configJson
+        );
+    }
 
-	public function testDoNotRemoveContaoCommunityAllianceComposer()
-	{
-		$configJson = array(
-			'require' => array
-			(
-				'some/package' => '*',
-				'contao-community-alliance/composer' => 'dev-branchname'
-			)
-		);
+    public function testDoNotRemoveContaoCommunityAllianceComposer()
+    {
+        $configJson = array(
+            'require' => array
+            (
+                'some/package' => '*',
+                'contao-community-alliance/composer' => 'dev-branchname'
+            )
+        );
 
-		$messages = array();
+        $messages = array();
 
-		self::assertFalse(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
-		self::assertEquals(0, count($messages));
+        self::assertFalse(ConfigManipulator::removeObsoleteRequires($configJson, $messages));
+        self::assertEquals(0, count($messages));
 
-		self::assertEquals(
-			array(
-				'require' => array
-				(
-					'some/package' => '*',
-				'contao-community-alliance/composer' => 'dev-branchname'
-				)
-			),
-			$configJson
-		);
-	}
+        self::assertEquals(
+            array(
+                'require' => array
+                (
+                    'some/package' => '*',
+                'contao-community-alliance/composer' => 'dev-branchname'
+                )
+            ),
+            $configJson
+        );
+    }
 }
