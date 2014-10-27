@@ -164,6 +164,11 @@ class SymlinkInstaller extends AbstractInstaller
      */
     protected function calculateLinkTarget($targetReal, $linkReal)
     {
+        // return absolute path for Windows platforms
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return $targetReal;
+        }
+        
         $targetParts = explode(DIRECTORY_SEPARATOR, $targetReal);
         $targetParts = array_filter($targetParts);
         $targetParts = array_values($targetParts);
