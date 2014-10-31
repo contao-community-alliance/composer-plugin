@@ -459,7 +459,7 @@ abstract class AbstractInstaller extends LibraryInstaller
                 $root       = $this->plugin->getContaoRoot($this->composer->getPackage());
                 $uploadPath = $this->getUploadPath();
 
-                $userfiles   = (array)$contao['userfiles'];
+                $userfiles   = (array) $contao['userfiles'];
                 $installPath = $this->getInstallPath($package);
 
                 foreach ($userfiles as $source => $target) {
@@ -500,7 +500,7 @@ abstract class AbstractInstaller extends LibraryInstaller
 
             if (is_array($contao) && array_key_exists('files', $contao)) {
                 $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
-                $files       = (array)$contao['files'];
+                $files       = (array) $contao['files'];
                 $installPath = $this->getInstallPath($package);
 
                 foreach ($files as $source => $target) {
