@@ -189,7 +189,7 @@ EOF;
     {
         $extra = $package->getExtra();
         if (isset($extra['contao']['runonce'])) {
-            $runonces = (array)$extra['contao']['runonce'];
+            $runonces = (array) $extra['contao']['runonce'];
 
             foreach ($runonces as $file) {
                 if (!static::isInstalledFile($file, $package)) {
