@@ -108,8 +108,8 @@ class SymlinkInstaller extends AbstractInstaller
     {
         $links = array();
         foreach ($sources as $target => $link) {
-            $targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-            $linkReal   = $root . DIRECTORY_SEPARATOR . $link;
+            $targetReal = self::getNativePath(realpath($installPath . DIRECTORY_SEPARATOR . $target));
+            $linkReal   = self::getNativePath($root . DIRECTORY_SEPARATOR . $link);
             $linkRel    = self::unprefixPath($root . DIRECTORY_SEPARATOR, $linkReal);
 
             if (file_exists($linkReal)) {
@@ -121,14 +121,18 @@ class SymlinkInstaller extends AbstractInstaller
                 }
             }
 
-            $linkTarget = $this->calculateLinkTarget($targetReal, $linkReal);
+            $linkTarget = self::getNativePath($this->calculateLinkTarget($targetReal, $linkReal));
 
             $links[] = $linkRel;
 
             if (is_link($linkReal)) {
                 // link target has changed
                 if (readlink($linkReal) != $linkTarget) {
-                    unlink($linkReal);
+                    if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                        rmdir($linkReal);
+                    } else {
+                        unlink($linkReal);
+                    }
                 } else {
                     // link exists and has the correct target.
                     continue;
@@ -147,7 +151,11 @@ class SymlinkInstaller extends AbstractInstaller
                 mkdir($linkParent, 0777, true);
             }
 
-            symlink($linkTarget, $linkReal);
+            if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                symlink($targetReal, $linkReal);
+            } else {
+                symlink($linkTarget, $linkReal);
+            }
             $linkCount++;
         }
         return $links;
