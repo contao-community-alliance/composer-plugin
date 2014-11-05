@@ -199,13 +199,15 @@ class SymlinkInstaller extends AbstractInstaller
     }
 
     /**
-     * Create the symlinks for unix and windows systems
+     * Create the symlinks for unix and windows systems.
      *
-     * @param string $targetReal  Real target Path
+     * @param string $targetReal  Real target Path.
      *
-     * @param string $linkReal    Real link path
+     * @param string $linkReal    Real link path.
      *
-     * @param string $linkTarget  Relative link target
+     * @param string $linkTarget  Relative link target.
+	 *
+	 * @return void
      */
     protected function createSymlink($targetReal, $linkReal, $linkTarget)
     {
@@ -245,9 +247,11 @@ class SymlinkInstaller extends AbstractInstaller
     }
 
     /**
-     * Remove symlink
+     * Remove symlink.
      *
-     * @param string $linkReal    Real link path
+     * @param string $linkReal    Real link path.
+	 *
+	 * @return void
      */
     protected function removeSymlink($linkReal)
     {
