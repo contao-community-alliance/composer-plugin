@@ -108,8 +108,8 @@ class SymlinkInstaller extends AbstractInstaller
     {
         $links = array();
         foreach ($sources as $target => $link) {
-            $targetReal = realpath($installPath . DIRECTORY_SEPARATOR . $target);
-            $linkReal   = $root . DIRECTORY_SEPARATOR . $link;
+            $targetReal = self::getNativePath(realpath($installPath . DIRECTORY_SEPARATOR . $target));
+            $linkReal   = self::getNativePath($root . DIRECTORY_SEPARATOR . $link);
             $linkRel    = self::unprefixPath($root . DIRECTORY_SEPARATOR, $linkReal);
 
             if (file_exists($linkReal)) {
@@ -121,14 +121,14 @@ class SymlinkInstaller extends AbstractInstaller
                 }
             }
 
-            $linkTarget = $this->calculateLinkTarget($targetReal, $linkReal);
+            $linkTarget = self::getNativePath($this->calculateLinkTarget($targetReal, $linkReal));
 
             $links[] = $linkRel;
 
             if (is_link($linkReal)) {
                 // link target has changed
                 if (readlink($linkReal) != $linkTarget) {
-                    unlink($linkReal);
+                    $this->removeSymlink($linkTarget);
                 } else {
                     // link exists and has the correct target.
                     continue;
@@ -147,7 +147,7 @@ class SymlinkInstaller extends AbstractInstaller
                 mkdir($linkParent, 0777, true);
             }
 
-            symlink($linkTarget, $linkReal);
+            $this->createSymlink($targetReal, $linkReal, $linkTarget);
             $linkCount++;
         }
         return $links;
@@ -199,6 +199,26 @@ class SymlinkInstaller extends AbstractInstaller
     }
 
     /**
+     * Create the symlinks for unix and windows systems.
+     *
+     * @param string $targetReal Real target Path.
+     *
+     * @param string $linkReal   Real link path.
+     *
+     * @param string $linkTarget Relative link target.
+     *
+     * @return void
+     */
+    protected function createSymlink($targetReal, $linkReal, $linkTarget)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            symlink($targetReal, $linkReal);
+        } else {
+            symlink($linkTarget, $linkReal);
+        }
+    }
+
+    /**
      * Remove all obsolete symlinks.
      *
      * @param array  $map         The file map.
@@ -224,6 +244,22 @@ class SymlinkInstaller extends AbstractInstaller
 
             $this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteLink);
             $deleteCount++;
+        }
+    }
+
+    /**
+     * Remove symlink.
+     *
+     * @param string $linkReal Real link path.
+     *
+     * @return void
+     */
+    protected function removeSymlink($linkReal)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            rmdir($linkReal);
+        } else {
+            unlink($linkReal);
         }
     }
 }
