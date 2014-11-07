@@ -539,6 +539,13 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         if (!is_dir($sourceReal)) {
             if (file_exists($targetReal)) {
+                $this->write(
+                    sprintf(
+                        '  - not overwriting already present userfile <info>%s</info>',
+                        $targetReal
+                    )
+                );
+
                 return 0;
             }
 
@@ -585,6 +592,13 @@ abstract class AbstractInstaller extends LibraryInstaller
                     copy($file->getPathname(), $targetPath);
                     $count++;
                 }
+            } else {
+                $this->write(
+                    sprintf(
+                        '  - not overwriting already present userfile <info>%s</info>',
+                        $iterator->getSubPathName()
+                    )
+                );
             }
         }
 
