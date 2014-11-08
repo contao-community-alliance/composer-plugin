@@ -537,44 +537,16 @@ abstract class AbstractInstaller extends LibraryInstaller
      */
     protected function installFiles($sourceReal, $targetReal, $target)
     {
-        $count = 0;
-
-        if (is_dir($sourceReal)) {
-            $iterator = new RecursiveDirectoryIterator(
-                $sourceReal,
-                (RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS)
-            );
-            $iterator = new RecursiveIteratorIterator(
-                $iterator,
-                RecursiveIteratorIterator::SELF_FIRST
-            );
-
-            if (!file_exists($targetReal)) {
-                $this->filesystem->ensureDirectoryExists($targetReal);
-            }
-
-            /** @var RecursiveDirectoryIterator $iterator */
-            foreach ($iterator as $file) {
-                /** @var SplFileInfo $file*/
-                $targetPath = $targetReal . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
-                if (!file_exists($targetPath)) {
-                    if ($file->isDir()) {
-                        $this->filesystem->ensureDirectoryExists($targetPath);
-                    } else {
-                        $this->writeVerbose(
-                            sprintf(
-                                '  - install userfile <info>%s</info>',
-                                $iterator->getSubPathName()
-                            )
-                        );
-                        copy($file->getPathname(), $targetPath);
-                        $count++;
-                    }
-                }
-            }
-        } else {
+        if (!is_dir($sourceReal)) {
             if (file_exists($targetReal)) {
-                return $count;
+                $this->write(
+                    sprintf(
+                        '  - not overwriting already present userfile <info>%s</info>',
+                        $targetReal
+                    )
+                );
+
+                return 0;
             }
 
             $targetPath = dirname($targetReal);
@@ -586,7 +558,48 @@ abstract class AbstractInstaller extends LibraryInstaller
                 )
             );
             copy($sourceReal, $targetReal);
-            $count++;
+            return 1;
+        }
+
+        $count    = 0;
+        $iterator = new RecursiveDirectoryIterator(
+            $sourceReal,
+            (RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS)
+        );
+        $iterator = new RecursiveIteratorIterator(
+            $iterator,
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        if (!file_exists($targetReal)) {
+            $this->filesystem->ensureDirectoryExists($targetReal);
+        }
+
+        /** @var RecursiveDirectoryIterator $iterator */
+        foreach ($iterator as $file) {
+            /** @var SplFileInfo $file*/
+            $targetPath = $targetReal . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+            if (!file_exists($targetPath)) {
+                if ($file->isDir()) {
+                    $this->filesystem->ensureDirectoryExists($targetPath);
+                } else {
+                    $this->writeVerbose(
+                        sprintf(
+                            '  - install userfile <info>%s</info>',
+                            $iterator->getSubPathName()
+                        )
+                    );
+                    copy($file->getPathname(), $targetPath);
+                    $count++;
+                }
+            } else {
+                $this->write(
+                    sprintf(
+                        '  - not overwriting already present userfile <info>%s</info>',
+                        $iterator->getSubPathName()
+                    )
+                );
+            }
         }
 
         return $count;

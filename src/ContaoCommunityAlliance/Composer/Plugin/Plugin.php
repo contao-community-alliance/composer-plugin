@@ -120,6 +120,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
         $repo = $this->createLegacyPackagesRepository($composer, $inputOutput);
         $repoManager->addRepository($repo);
+
+        class_exists('ContaoCommunityAlliance\Composer\Plugin\Housekeeper');
     }
 
     /**

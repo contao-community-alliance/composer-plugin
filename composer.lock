@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "a309e1d89ded6919935a842faeaed8e888fbfe37"
+                "reference": "ffffab37a294f3383c812d0329623f0a4ba45387"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/a309e1d89ded6919935a842faeaed8e888fbfe37",
-                "reference": "a309e1d89ded6919935a842faeaed8e888fbfe37",
+                "url": "https://api.github.com/repos/composer/composer/zipball/ffffab37a294f3383c812d0329623f0a4ba45387",
+                "reference": "ffffab37a294f3383c812d0329623f0a4ba45387",
                 "shasum": ""
             },
             "require": {
@@ -73,7 +73,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2014-10-20 19:16:14"
+            "time": "2014-11-05 06:04:18"
         },
         {
             "name": "contao-community-alliance/build-system",
@@ -81,12 +81,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/build-system.git",
-                "reference": "40a6cdfc9f42299dcc008ee8d484f11a373fe91a"
+                "reference": "83e0eb892526658dcfb99d0babd0f39b4d263dff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/build-system/zipball/40a6cdfc9f42299dcc008ee8d484f11a373fe91a",
-                "reference": "40a6cdfc9f42299dcc008ee8d484f11a373fe91a",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system/zipball/83e0eb892526658dcfb99d0babd0f39b4d263dff",
+                "reference": "83e0eb892526658dcfb99d0babd0f39b4d263dff",
                 "shasum": ""
             },
             "suggest": {
@@ -118,7 +118,7 @@
                 }
             ],
             "description": "CCABS base system.",
-            "time": "2014-10-30 09:54:37"
+            "time": "2014-11-05 00:42:09"
         },
         {
             "name": "contao-community-alliance/build-system-all-tasks",
@@ -126,17 +126,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/build-system-all-tasks.git",
-                "reference": "545671bb27b8a437cc71c6f48ec5c99169cf7a40"
+                "reference": "22f280266d96729d41e041cb5b8d4ff3c2920eef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/build-system-all-tasks/zipball/545671bb27b8a437cc71c6f48ec5c99169cf7a40",
-                "reference": "545671bb27b8a437cc71c6f48ec5c99169cf7a40",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system-all-tasks/zipball/22f280266d96729d41e041cb5b8d4ff3c2920eef",
+                "reference": "22f280266d96729d41e041cb5b8d4ff3c2920eef",
                 "shasum": ""
             },
             "require": {
                 "contao-community-alliance/build-system": "~1.0",
                 "contao-community-alliance/build-system-repository-git": "~1.0",
+                "contao-community-alliance/build-system-tool-autoloading-validation": "~1.0",
                 "contao-community-alliance/build-system-tool-branch-alias-validation": "~1.0",
                 "contao-community-alliance/build-system-tool-travis-configuration-check": "~1.0",
                 "pdepend/pdepend": "2.0.*",
@@ -171,7 +172,7 @@
                 }
             ],
             "description": "Meta package to enable all tasks",
-            "time": "2014-10-11 10:19:03"
+            "time": "2014-11-05 00:10:26"
         },
         {
             "name": "contao-community-alliance/build-system-logger",
@@ -251,17 +252,74 @@
             "time": "2014-09-19 12:53:11"
         },
         {
-            "name": "contao-community-alliance/build-system-tool-branch-alias-validation",
-            "version": "1.0.3",
+            "name": "contao-community-alliance/build-system-tool-autoloading-validation",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/contao-community-alliance/build-system-tool-branch-alias-validation.git",
-                "reference": "09bdb6b499680f173af22c57d955b833558b7173"
+                "url": "https://github.com/contao-community-alliance/build-system-tool-autoloading-validation.git",
+                "reference": "be8bb0a3443598cccacf5e47c60d3c156358fcb9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/build-system-tool-branch-alias-validation/zipball/09bdb6b499680f173af22c57d955b833558b7173",
-                "reference": "09bdb6b499680f173af22c57d955b833558b7173",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system-tool-autoloading-validation/zipball/be8bb0a3443598cccacf5e47c60d3c156358fcb9",
+                "reference": "be8bb0a3443598cccacf5e47c60d3c156358fcb9",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.4",
+                "symfony/console": "~2.3"
+            },
+            "require-dev": {
+                "contao-community-alliance/build-system-all-tasks": "~1.0",
+                "contao-community-alliance/coding-standard": "~1.0"
+            },
+            "bin": [
+                "bin/check-autoloading.php"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ContaoCommunityAlliance\\BuildSystem\\Tool\\AutoloadingValidation\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tristan Lins",
+                    "email": "tristan.lins@bit3.de",
+                    "homepage": "http://bit3.de",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Christian Schiffler",
+                    "email": "c.schiffler@cyberspectrum.de",
+                    "homepage": "http://www.cyberspectrum.de",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Check that the contents of the composer.json autoload keys are correct.",
+            "time": "2014-11-05 20:43:20"
+        },
+        {
+            "name": "contao-community-alliance/build-system-tool-branch-alias-validation",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contao-community-alliance/build-system-tool-branch-alias-validation.git",
+                "reference": "d8396e347fcc584367a3bd0bdc9e71feb38bfc8e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system-tool-branch-alias-validation/zipball/d8396e347fcc584367a3bd0bdc9e71feb38bfc8e",
+                "reference": "d8396e347fcc584367a3bd0bdc9e71feb38bfc8e",
                 "shasum": ""
             },
             "require": {
@@ -305,7 +363,7 @@
                 }
             ],
             "description": "Validation tool to ensure that all branches are ahead of the most recent tag.",
-            "time": "2014-10-28 13:36:44"
+            "time": "2014-11-03 15:53:34"
         },
         {
             "name": "contao-community-alliance/build-system-tool-travis-configuration-check",
