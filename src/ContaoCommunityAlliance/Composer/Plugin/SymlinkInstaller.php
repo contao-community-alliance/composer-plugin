@@ -128,7 +128,7 @@ class SymlinkInstaller extends AbstractInstaller
             if (is_link($linkReal)) {
                 // link target has changed
                 if (readlink($linkReal) != $linkTarget) {
-                    $this->removeSymlink($linkTarget);
+                    $this->removeSymlink($linkReal);
                 } else {
                     // link exists and has the correct target.
                     continue;
