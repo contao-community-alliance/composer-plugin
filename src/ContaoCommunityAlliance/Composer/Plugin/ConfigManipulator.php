@@ -287,6 +287,10 @@ class ConfigManipulator
      */
     public static function updateRequirements(&$configJson, &$messages)
     {
+        if (isset($configJson['type']) && $configJson['type'] === 'contao-module') {
+            return false;
+        }
+
         $jsonModified = false;
 
         // remove contao-community-alliance/composer dependency
@@ -333,6 +337,10 @@ class ConfigManipulator
      */
     public static function restoreRepositories(&$configJson, &$messages)
     {
+        if (isset($configJson['type']) && $configJson['type'] === 'contao-module') {
+            return false;
+        }
+
         if (!isset($configJson['repositories']) || !is_array($configJson['repositories'])) {
             $configJson['repositories'] = array();
         }
