@@ -71,9 +71,9 @@ class ConfigManipulator
 
         $jsonModified = static::removeObsoleteScripts($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
-        $jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteProvides($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
+        $jsonModified = static::updateRequirements($configJson, $messages) || $jsonModified;
         $jsonModified = static::restoreRepositories($configJson, $messages) || $jsonModified;
         $jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
 
@@ -205,39 +205,6 @@ class ConfigManipulator
     }
 
     /**
-     * Remove obsolete requires from the root composer.json.
-     *
-     * Returns true when the config has been manipulated, false otherwise.
-     *
-     * @param array $configJson The json config (composer.json).
-     *
-     * @param array $messages   The destination buffer for messages raised by the update process.
-     *
-     * @return bool
-     */
-    public static function removeObsoleteRequires(&$configJson, &$messages)
-    {
-        $jsonModified = false;
-
-        // remove contao-community-alliance/composer dependency
-        if (
-            isset($configJson['require']['contao-community-alliance/composer']) &&
-            (
-                $configJson['require']['contao-community-alliance/composer'] == 'dev-master@dev' ||
-                $configJson['require']['contao-community-alliance/composer'] == '*'
-            )
-        ) {
-            unset($configJson['require']['contao-community-alliance/composer']);
-
-            $jsonModified = true;
-            $messages[]   = 'obsolete require contao-community-alliance/composer ' .
-                'was removed from root composer.json';
-        }
-
-        return $jsonModified;
-    }
-
-    /**
      * Remove obsolete provide entries from the root composer.json.
      *
      * Returns true when the config has been manipulated, false otherwise.
@@ -268,6 +235,86 @@ class ConfigManipulator
             if (empty($configJson['provide'])) {
                 unset($configJson['provide']);
             }
+        }
+
+        return $jsonModified;
+    }
+
+    /**
+     * Remove the Contao Version and additional information from the root composer.json.
+     *
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
+     */
+    public static function removeObsoleteContaoVersion(&$configJson, &$messages)
+    {
+        $jsonModified = false;
+
+        if (
+            isset($configJson['name']) &&
+            isset($configJson['type']) &&
+            ($configJson['name'] == 'contao/core') &&
+            ($configJson['type'] == 'metapackage')
+        ) {
+            $configJson['name'] = 'local/website';
+            $messages[]         = 'name has been changed to "local/website" in root composer.json!';
+            $configJson['type'] = 'project';
+            $messages[]         = 'type has been changed to "project" in root composer.json!';
+
+            $jsonModified = true;
+            $messages[]   = 'obsolete contao version and meta information ' .
+                'was removed from root composer.json!';
+        }
+
+        return $jsonModified;
+    }
+
+    /**
+     * Update requires in the root composer.json.
+     *
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
+     */
+    public static function updateRequirements(&$configJson, &$messages)
+    {
+        $jsonModified = false;
+
+        // remove contao-community-alliance/composer dependency
+        if (isset($configJson['require']['contao-community-alliance/composer'])) {
+            if (isset($configJson['require']['contao-community-alliance/composer-client'])) {
+                unset($configJson['require']['contao-community-alliance/composer']);
+
+                $jsonModified = true;
+                $messages[]   = 'obsolete require contao-community-alliance/composer ' .
+                                'was removed from root composer.json';
+            } else {
+                $configJson['require']['contao-community-alliance/composer-client'] =
+                    $configJson['require']['contao-community-alliance/composer'];
+                unset($configJson['require']['contao-community-alliance/composer']);
+
+                $jsonModified = true;
+                $messages[]   = 'require contao-community-alliance/composer was upgraded to ' .
+                                'contao-community-alliance/composer-client in root composer.json';
+            }
+        }
+
+        // add contao-community-alliance/composer-client dependency
+        if (!isset($configJson['require']['contao-community-alliance/composer-client'])) {
+            $configJson['require']['contao-community-alliance/composer-client'] = '~0.14';
+
+            $jsonModified = true;
+            $messages[]   = 'require contao-community-alliance/composer-client ' .
+                'was added to root composer.json';
         }
 
         return $jsonModified;
@@ -363,40 +410,6 @@ class ConfigManipulator
         }
 
         return array($artifactRepositoryExists, $legacyRepositoryExists);
-    }
-
-    /**
-     * Remove the Contao Version and additional information from the root composer.json.
-     *
-     * Returns true when the config has been manipulated, false otherwise.
-     *
-     * @param array $configJson The json config (composer.json).
-     *
-     * @param array $messages   The destination buffer for messages raised by the update process.
-     *
-     * @return bool
-     */
-    public static function removeObsoleteContaoVersion(&$configJson, &$messages)
-    {
-        $jsonModified = false;
-
-        if (
-            isset($configJson['name']) &&
-            isset($configJson['type']) &&
-            ($configJson['name'] == 'contao/core') &&
-            ($configJson['type'] == 'metapackage')
-        ) {
-            $configJson['name'] = 'local/website';
-            $messages[]         = 'name has been changed to "local/website" in root composer.json!';
-            $configJson['type'] = 'project';
-            $messages[]         = 'type has been changed to "project" in root composer.json!';
-
-            $jsonModified = true;
-            $messages[]   = 'obsolete contao version and meta information ' .
-                'was removed from root composer.json!';
-        }
-
-        return $jsonModified;
     }
 
     /**
