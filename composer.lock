@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b68aa076fc8356aea1e1a632d25c7940",
+    "hash": "81a576bf059b6119dc28e5f91ce3cb0f",
     "packages": [],
     "packages-dev": [
         {
@@ -81,12 +81,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/build-system.git",
-                "reference": "83e0eb892526658dcfb99d0babd0f39b4d263dff"
+                "reference": "772a29697ded1064ab2f778c1c9fcbfe41c3f16f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/build-system/zipball/83e0eb892526658dcfb99d0babd0f39b4d263dff",
-                "reference": "83e0eb892526658dcfb99d0babd0f39b4d263dff",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system/zipball/772a29697ded1064ab2f778c1c9fcbfe41c3f16f",
+                "reference": "772a29697ded1064ab2f778c1c9fcbfe41c3f16f",
                 "shasum": ""
             },
             "suggest": {
@@ -118,7 +118,7 @@
                 }
             ],
             "description": "CCABS base system.",
-            "time": "2014-11-05 00:42:09"
+            "time": "2014-11-14 01:18:22"
         },
         {
             "name": "contao-community-alliance/build-system-all-tasks",
@@ -257,12 +257,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/build-system-tool-autoloading-validation.git",
-                "reference": "be8bb0a3443598cccacf5e47c60d3c156358fcb9"
+                "reference": "0eb0030453d281fd2b30a826385680ea6d65a107"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/build-system-tool-autoloading-validation/zipball/be8bb0a3443598cccacf5e47c60d3c156358fcb9",
-                "reference": "be8bb0a3443598cccacf5e47c60d3c156358fcb9",
+                "url": "https://api.github.com/repos/contao-community-alliance/build-system-tool-autoloading-validation/zipball/0eb0030453d281fd2b30a826385680ea6d65a107",
+                "reference": "0eb0030453d281fd2b30a826385680ea6d65a107",
                 "shasum": ""
             },
             "require": {
@@ -306,7 +306,7 @@
                 }
             ],
             "description": "Check that the contents of the composer.json autoload keys are correct.",
-            "time": "2014-11-05 20:43:20"
+            "time": "2014-11-12 19:50:02"
         },
         {
             "name": "contao-community-alliance/build-system-tool-branch-alias-validation",
@@ -470,6 +470,124 @@
             "time": "2014-10-28 19:03:26"
         },
         {
+            "name": "contao/core",
+            "version": "3.3.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contao-community-alliance/composerized-contao-core.git",
+                "reference": "2f3e313e10e7c8047d4c0d992287b8a0e77f386b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contao-community-alliance/composerized-contao-core/zipball/2f3e313e10e7c8047d4c0d992287b8a0e77f386b",
+                "reference": "2f3e313e10e7c8047d4c0d992287b8a0e77f386b",
+                "shasum": ""
+            },
+            "require": {
+                "contao-community-alliance/composer-plugin": "*",
+                "contao/idna": "dev-master",
+                "contao/php-diff": "dev-master",
+                "leafo/lessphp": "~0.4.0",
+                "leafo/scssphp": "dev-master",
+                "leafo/scssphp-compass": "dev-master",
+                "michelf/php-markdown": "~1.4",
+                "php": ">=5.3.2",
+                "simplepie/simplepie": "~1.3",
+                "swiftmailer/swiftmailer": "~5.2",
+                "tecnick.com/tcpdf": "dev-master"
+            },
+            "type": "project",
+            "autoload": {
+                "classmap": [
+                    "system/modules"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Leo Feyer",
+                    "homepage": "https://github.com/leofeyer"
+                }
+            ],
+            "description": "Contao Open Source CMS",
+            "homepage": "https://contao.org",
+            "keywords": [
+                "contao",
+                "core"
+            ],
+            "time": "2014-10-31 16:48:47"
+        },
+        {
+            "name": "contao/idna",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contao/idna.git",
+                "reference": "176e7549aeac534f3be8dfbf8a543fd9c54b431c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contao/idna/zipball/176e7549aeac534f3be8dfbf8a543fd9c54b431c",
+                "reference": "176e7549aeac534f3be8dfbf8a543fd9c54b431c",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "idna_convert.class.php",
+                    "uctc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1+"
+            ],
+            "authors": [
+                {
+                    "name": "Leo Feyer",
+                    "homepage": "https://github.com/leofeyer"
+                }
+            ],
+            "description": "A library for encoding and decoding internationalized domain names.",
+            "time": "2014-05-17 19:04:55"
+        },
+        {
+            "name": "contao/php-diff",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contao/php-diff.git",
+                "reference": "f84024ea2ca4f5142dc2ed54a8c457b9cb62cfcd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contao/php-diff/zipball/f84024ea2ca4f5142dc2ed54a8c457b9cb62cfcd",
+                "reference": "f84024ea2ca4f5142dc2ed54a8c457b9cb62cfcd",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Diff": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Leo Feyer",
+                    "homepage": "https://github.com/leofeyer"
+                }
+            ],
+            "description": "A comprehensive library for generating differences between two hashable objects (strings or arrays).",
+            "time": "2014-10-21 12:48:52"
+        },
+        {
             "name": "justinrainbow/json-schema",
             "version": "1.3.7",
             "source": {
@@ -534,6 +652,188 @@
                 "schema"
             ],
             "time": "2014-08-25 02:48:14"
+        },
+        {
+            "name": "leafo/lessphp",
+            "version": "v0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/lessphp.git",
+                "reference": "51f3f06f0fe78a722dabfd14578444bdd078d9de"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/lessphp/zipball/51f3f06f0fe78a722dabfd14578444bdd078d9de",
+                "reference": "51f3f06f0fe78a722dabfd14578444bdd078d9de",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.3-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "lessc.inc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "lessphp is a compiler for LESS written in PHP.",
+            "homepage": "http://leafo.net/lessphp/",
+            "time": "2013-08-09 17:09:19"
+        },
+        {
+            "name": "leafo/scssphp",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/scssphp.git",
+                "reference": "b65729d314abd13f83507a406246746e278f135d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/scssphp/zipball/b65729d314abd13f83507a406246746e278f135d",
+                "reference": "b65729d314abd13f83507a406246746e278f135d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*"
+            },
+            "bin": [
+                "bin/pscss"
+            ],
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "classmap.php"
+                ],
+                "psr-4": {
+                    "Leafo\\ScssPhp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "scssphp is a compiler for SCSS written in PHP.",
+            "homepage": "http://leafo.net/scssphp/",
+            "keywords": [
+                "css",
+                "less",
+                "sass",
+                "scss",
+                "stylesheet"
+            ],
+            "time": "2014-11-01 17:49:18"
+        },
+        {
+            "name": "leafo/scssphp-compass",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/scssphp-compass.git",
+                "reference": "f1631ddb17731326863954d99b39694f0bbed6ec"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/scssphp-compass/zipball/f1631ddb17731326863954d99b39694f0bbed6ec",
+                "reference": "f1631ddb17731326863954d99b39694f0bbed6ec",
+                "shasum": ""
+            },
+            "require": {
+                "leafo/scssphp": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "compass.inc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "Compass for scssphp",
+            "homepage": "http://leafo.net/scssphp/",
+            "time": "2012-08-02 02:04:32"
+        },
+        {
+            "name": "michelf/php-markdown",
+            "version": "1.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/michelf/php-markdown.git",
+                "reference": "de9a19c7bf352d41cc99ed86c3c0ef17e87394b6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/michelf/php-markdown/zipball/de9a19c7bf352d41cc99ed86c3c0ef17e87394b6",
+                "reference": "de9a19c7bf352d41cc99ed86c3c0ef17e87394b6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-lib": "1.4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Michelf": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Michel Fortin",
+                    "email": "michel.fortin@michelf.ca",
+                    "homepage": "http://michelf.ca/",
+                    "role": "Developer"
+                },
+                {
+                    "name": "John Gruber",
+                    "homepage": "http://daringfireball.net/"
+                }
+            ],
+            "description": "PHP Markdown",
+            "homepage": "http://michelf.ca/projects/php-markdown/",
+            "keywords": [
+                "markdown"
+            ],
+            "time": "2014-05-05 02:43:50"
         },
         {
             "name": "pdepend/pdepend",
@@ -1280,6 +1580,60 @@
             "time": "2014-09-05 15:36:20"
         },
         {
+            "name": "simplepie/simplepie",
+            "version": "1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/simplepie/simplepie.git",
+                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/ce53709778bc1e2e4deda1651b66e5081398d5cc",
+                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "SimplePie": "library"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan Parman",
+                    "homepage": "http://ryanparman.com/",
+                    "role": "Creator, alumnus developer"
+                },
+                {
+                    "name": "Geoffrey Sneddon",
+                    "homepage": "http://gsnedders.com/",
+                    "role": "Alumnus developer"
+                },
+                {
+                    "name": "Ryan McCue",
+                    "email": "me@ryanmccue.info",
+                    "homepage": "http://ryanmccue.info/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A simple Atom/RSS parsing library for PHP",
+            "homepage": "http://simplepie.org/",
+            "keywords": [
+                "atom",
+                "feeds",
+                "rss"
+            ],
+            "time": "2012-10-30 17:54:03"
+        },
+        {
             "name": "squizlabs/php_codesniffer",
             "version": "1.5.5",
             "source": {
@@ -1353,6 +1707,58 @@
                 "standards"
             ],
             "time": "2014-09-25 03:33:46"
+        },
+        {
+            "name": "swiftmailer/swiftmailer",
+            "version": "v5.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/swiftmailer/swiftmailer.git",
+                "reference": "b86b927dfefdb56ab0b22d1350033d9a38e9f205"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/b86b927dfefdb56ab0b22d1350033d9a38e9f205",
+                "reference": "b86b927dfefdb56ab0b22d1350033d9a38e9f205",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "mockery/mockery": "~0.9.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "5.3-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "lib/swift_required.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chris Corbyn"
+                },
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                }
+            ],
+            "description": "Swiftmailer, free feature-rich PHP mailer",
+            "homepage": "http://swiftmailer.org",
+            "keywords": [
+                "mail",
+                "mailer"
+            ],
+            "time": "2014-10-04 05:53:18"
         },
         {
             "name": "symfony/config",
@@ -1701,6 +2107,69 @@
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
             "time": "2014-10-01 05:50:18"
+        },
+        {
+            "name": "tecnick.com/tcpdf",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tecnickcom/TCPDF.git",
+                "reference": "75e7ad39458e060d0cae6fcb7d50a2c9f3af1b01"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tecnickcom/TCPDF/zipball/75e7ad39458e060d0cae6fcb7d50a2c9f3af1b01",
+                "reference": "75e7ad39458e060d0cae6fcb7d50a2c9f3af1b01",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "fonts",
+                    "config",
+                    "include",
+                    "tcpdf.php",
+                    "tcpdf_parser.php",
+                    "tcpdf_import.php",
+                    "tcpdf_barcodes_1d.php",
+                    "tcpdf_barcodes_2d.php",
+                    "include/tcpdf_colors.php",
+                    "include/tcpdf_filters.php",
+                    "include/tcpdf_font_data.php",
+                    "include/tcpdf_fonts.php",
+                    "include/tcpdf_images.php",
+                    "include/tcpdf_static.php",
+                    "include/barcodes/datamatrix.php",
+                    "include/barcodes/pdf417.php",
+                    "include/barcodes/qrcode.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPLv3"
+            ],
+            "authors": [
+                {
+                    "name": "Nicola Asuni",
+                    "email": "info@tecnick.com",
+                    "homepage": "http://nicolaasuni.tecnick.com"
+                }
+            ],
+            "description": "TCPDF is a PHP class for generating PDF documents and barcodes.",
+            "homepage": "http://www.tcpdf.org/",
+            "keywords": [
+                "PDFD32000-2008",
+                "TCPDF",
+                "barcodes",
+                "datamatrix",
+                "pdf",
+                "pdf417",
+                "qrcode"
+            ],
+            "time": "2014-11-15 12:35:49"
         },
         {
             "name": "theseer/fdomdocument",
