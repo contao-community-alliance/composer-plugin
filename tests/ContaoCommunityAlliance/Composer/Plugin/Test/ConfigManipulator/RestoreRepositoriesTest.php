@@ -191,4 +191,23 @@ class RestoreRepositoriesTest extends TestCase
             $configJson
         );
     }
+
+    public function testDoNothingForContaoModule()
+    {
+        $configJson = array(
+            'type' => 'contao-module',
+        );
+
+        $messages = array();
+
+        self::assertFalse(ConfigManipulator::restoreRepositories($configJson, $messages));
+        self::assertEmpty($messages);
+
+        self::assertEquals(
+            array(
+                'type' => 'contao-module',
+            ),
+            $configJson
+        );
+    }
 }

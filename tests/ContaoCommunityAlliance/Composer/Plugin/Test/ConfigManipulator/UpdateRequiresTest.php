@@ -127,4 +127,31 @@ class UpdateRequiresTest extends TestCase
             $configJson
         );
     }
+
+    public function testDoNothingForContaoModule()
+    {
+        $configJson = array(
+            'type' => 'contao-module',
+            'require' => array
+            (
+                'some/package' => '~1.0',
+            )
+        );
+
+        $messages = array();
+
+        self::assertFalse(ConfigManipulator::updateRequirements($configJson, $messages));
+        self::assertEmpty($messages);
+
+        self::assertEquals(
+            array(
+                'type' => 'contao-module',
+                'require' => array
+                (
+                    'some/package' => '~1.0',
+                )
+            ),
+            $configJson
+        );
+    }
 }
