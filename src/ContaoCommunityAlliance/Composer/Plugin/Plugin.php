@@ -91,7 +91,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $this->composer    = $composer;
         $this->inputOutput = $inputOutput;
 
-        $repoManager         = $composer->getRepositoryManager();
         $installationManager = $composer->getInstallationManager();
 
         $config = $composer->getConfig();
@@ -111,15 +110,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             } catch (ConstantsNotFoundException $e) {
                 // No op.
             }
-            try {
-                $repo = $this->createLocalArtifactsRepository($composer, $inputOutput);
-                $repoManager->addRepository($repo);
-            } catch (\RuntimeException $e) {
-                $inputOutput->write('skipping artifact repository: ' . $e->getMessage());
-            }
         }
-        $repo = $this->createLegacyPackagesRepository($composer, $inputOutput);
-        $repoManager->addRepository($repo);
 
         class_exists('ContaoCommunityAlliance\Composer\Plugin\Housekeeper');
     }
@@ -312,54 +303,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Create the local artifacts repository.
-     *
-     * @param Composer    $composer    The composer instance.
-     *
-     * @param IOInterface $inputOutput The input output interface.
-     *
-     * @return ArtifactRepository
-     *
-     * @throws \RuntimeException When a directory could not be created.
-     */
-    public function createLocalArtifactsRepository(Composer $composer, IOInterface $inputOutput)
-    {
-        $path = $composer->getConfig()->get('home') . DIRECTORY_SEPARATOR . 'packages';
-        // @codingStandardsIgnoreStart - silencing the error is ok here.
-        if (!is_dir($path) && !@mkdir($path, 0777, true)) {
-            throw new \RuntimeException(
-                'could not create directory "' . $path . '" for artifact repository',
-                1
-            );
-        }
-        // @codingStandardsIgnoreEnd
-
-        return new ArtifactRepository(
-            array('url' => $path),
-            $inputOutput
-        );
-    }
-
-    /**
-     * Create the legacy Contao packages repository.
-     *
-     * @param Composer    $composer    The composer instance.
-     *
-     * @param IOInterface $inputOutput The input output interface.
-     *
-     * @return ComposerRepository
-     */
-    public function createLegacyPackagesRepository(Composer $composer, IOInterface $inputOutput)
-    {
-        return new ComposerRepository(
-            array('url' => 'http://legacy-packages-via.contao-community-alliance.org/'),
-            $inputOutput,
-            $composer->getConfig(),
-            $composer->getEventDispatcher()
-        );
-    }
-
-    /**
      * Handle command events.
      *
      * @param CommandEvent $event The event being raised.
@@ -370,6 +313,17 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         switch ($event->getCommandName()) {
             case 'update':
+                // ensure the artifact repository exists
+                $path = $this->composer->getConfig()->get('home') . DIRECTORY_SEPARATOR . 'packages';
+                // @codingStandardsIgnoreStart - silencing the error is ok here.
+                if (!is_dir($path) && !@mkdir($path, 0777, true)) {
+                    throw new \RuntimeException(
+                        'could not create directory "' . $path . '" for artifact repository',
+                        1
+                    );
+                }
+                // @codingStandardsIgnoreEnd
+
                 ConfigManipulator::run();
                 break;
 

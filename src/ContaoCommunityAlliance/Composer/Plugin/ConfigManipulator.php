@@ -71,10 +71,10 @@ class ConfigManipulator
 
         $jsonModified = static::removeObsoleteScripts($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteConfigEntries($configJson, $messages) || $jsonModified;
-        $jsonModified = static::removeObsoleteRepositories($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteRequires($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteProvides($configJson, $messages) || $jsonModified;
         $jsonModified = static::removeObsoleteContaoVersion($configJson, $messages) || $jsonModified;
+        $jsonModified = static::restoreRepositories($configJson, $messages) || $jsonModified;
         $jsonModified = static::restoreNeededConfigKeys($configJson, $messages) || $jsonModified;
 
         // @codingStandardsIgnoreStart
@@ -205,58 +205,6 @@ class ConfigManipulator
     }
 
     /**
-     * Remove obsolete repositories from the root composer.json.
-     *
-     * Returns true when the config has been manipulated, false otherwise.
-     *
-     * @param array $configJson The json config (composer.json).
-     *
-     * @param array $messages   The destination buffer for messages raised by the update process.
-     *
-     * @return bool
-     */
-    public static function removeObsoleteRepositories(&$configJson, &$messages)
-    {
-        if (!isset($configJson['repositories'])) {
-            return false;
-        }
-
-        $jsonModified = false;
-
-        // filter the artifact and legacy packagist repositories
-        foreach ($configJson['repositories'] as $index => $repository) {
-            if (
-                $repository['type'] == 'artifact' &&
-                preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
-            ) {
-                unset($configJson['repositories'][$index]);
-
-                $jsonModified = true;
-                $messages[]   = 'obsolete artifact repository was removed from root composer.json';
-            }
-
-            if (
-                $repository['type'] == 'composer' &&
-                (
-                    $repository['url'] == 'http://legacy-packages-via.contao-community-alliance.org/' ||
-                    $repository['url'] == 'https://legacy-packages-via.contao-community-alliance.org/'
-                )
-            ) {
-                unset($configJson['repositories'][$index]);
-
-                $jsonModified = true;
-                $messages[]   = 'obsolete legacy packages repository was removed from root composer.json';
-            }
-        }
-
-        if ($jsonModified) {
-            $configJson['repositories'] = array_values($configJson['repositories']);
-        }
-
-        return $jsonModified;
-    }
-
-    /**
      * Remove obsolete requires from the root composer.json.
      *
      * Returns true when the config has been manipulated, false otherwise.
@@ -323,6 +271,98 @@ class ConfigManipulator
         }
 
         return $jsonModified;
+    }
+
+    /**
+     * Restore repositories in the root composer.json.
+     *
+     * Returns true when the config has been manipulated, false otherwise.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @param array $messages   The destination buffer for messages raised by the update process.
+     *
+     * @return bool
+     */
+    public static function restoreRepositories(&$configJson, &$messages)
+    {
+        if (!isset($configJson['repositories']) || !is_array($configJson['repositories'])) {
+            $configJson['repositories'] = array();
+        }
+
+        $jsonModified = false;
+
+        list($artifactRepositoryExists, $legacyRepositoryExists) = static::repositoriesExists($configJson);
+
+        if (!$artifactRepositoryExists) {
+            $configJson['repositories'] = array_merge(
+                array(
+                    array(
+                        'type' => 'artifact',
+                        'url'  => 'packages',
+                    )
+                ),
+                $configJson['repositories']
+            );
+
+            $jsonModified = true;
+            $messages[]   = 'artifact repository was added to root composer.json';
+        }
+
+        if (!$legacyRepositoryExists) {
+            $configJson['repositories'] = array_merge(
+                array(
+                    array(
+                        'type' => 'composer',
+                        'url'  => 'https://legacy-packages-via.contao-community-alliance.org/',
+                    )
+                ),
+                $configJson['repositories']
+            );
+
+            $jsonModified = true;
+            $messages[]   = 'legacy packages repository was added to root composer.json';
+        }
+
+        if ($jsonModified) {
+            $configJson['repositories'] = array_values($configJson['repositories']);
+        }
+
+        return $jsonModified;
+    }
+
+    /**
+     * Determine if the artifact and legacy repository exist in the root composer.json.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @return array An array with two boolean items.
+     */
+    public static function repositoriesExists(&$configJson)
+    {
+        $artifactRepositoryExists = false;
+        $legacyRepositoryExists   = false;
+
+        foreach ($configJson['repositories'] as $repository) {
+            if (
+                $repository['type'] == 'artifact' &&
+                preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
+            ) {
+                $artifactRepositoryExists = true;
+            }
+
+            if (
+                $repository['type'] == 'composer' &&
+                (
+                    $repository['url'] == 'http://legacy-packages-via.contao-community-alliance.org/' ||
+                    $repository['url'] == 'https://legacy-packages-via.contao-community-alliance.org/'
+                )
+            ) {
+                $legacyRepositoryExists = true;
+            }
+        }
+
+        return array($artifactRepositoryExists, $legacyRepositoryExists);
     }
 
     /**
