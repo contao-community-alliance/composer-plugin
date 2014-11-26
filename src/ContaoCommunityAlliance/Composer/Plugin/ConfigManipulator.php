@@ -16,6 +16,7 @@
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Json\JsonFile;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Manipulate the root composer.json on the fly.
@@ -319,6 +320,21 @@ class ConfigManipulator
             $jsonModified = true;
             $messages[]   = 'require contao-community-alliance/composer-client ' .
                 'was added to root composer.json';
+        }
+
+        // upgrade version
+        if ('dev-' !== substr($configJson['require']['contao-community-alliance/composer-client'], 0, 4)) {
+            $versionParser   = new VersionParser();
+            $requiredVersion = $versionParser->parseConstraints(
+                $configJson['require']['contao-community-alliance/composer-client']
+            );
+            if (!$requiredVersion->matches($versionParser->parseConstraints('0.14'))) {
+                $configJson['require']['contao-community-alliance/composer-client'] = '~0.14';
+
+                $jsonModified = true;
+                $messages[]   = 'require contao-community-alliance/composer-client ' .
+                                'was changed to ~0.14 in root composer.json';
+            }
         }
 
         return $jsonModified;
