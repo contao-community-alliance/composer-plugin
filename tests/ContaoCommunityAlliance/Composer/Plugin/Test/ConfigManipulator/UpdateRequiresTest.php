@@ -128,6 +128,56 @@ class UpdateRequiresTest extends TestCase
         );
     }
 
+    public function testUpgradeToClientWithVersion()
+    {
+        $configJson = array(
+            'require' => array
+            (
+                'contao-community-alliance/composer' => '>=0.13,<0.14-dev'
+            )
+        );
+
+        $messages = array();
+
+        self::assertTrue(ConfigManipulator::updateRequirements($configJson, $messages));
+        self::assertEquals(2, count($messages));
+
+        self::assertEquals(
+            array(
+                'require' => array
+                (
+                    'contao-community-alliance/composer-client' => '~0.14'
+                )
+            ),
+            $configJson
+        );
+    }
+
+    public function testUpgradeVersion()
+    {
+        $configJson = array(
+            'require' => array
+            (
+                'contao-community-alliance/composer-client' => '>=0.13,<0.14-dev'
+            )
+        );
+
+        $messages = array();
+
+        self::assertTrue(ConfigManipulator::updateRequirements($configJson, $messages));
+        self::assertEquals(1, count($messages));
+
+        self::assertEquals(
+            array(
+                'require' => array
+                (
+                    'contao-community-alliance/composer-client' => '~0.14'
+                )
+            ),
+            $configJson
+        );
+    }
+
     public function testDoNothingForContaoModule()
     {
         $configJson = array(
