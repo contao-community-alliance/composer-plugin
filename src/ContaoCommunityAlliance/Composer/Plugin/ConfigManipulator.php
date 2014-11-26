@@ -328,7 +328,7 @@ class ConfigManipulator
             $requiredVersion = $versionParser->parseConstraints(
                 $configJson['require']['contao-community-alliance/composer-client']
             );
-            if (!$requiredVersion->matches($versionParser->parseConstraints('0.14'))) {
+            if (!$requiredVersion->matches($versionParser->parseConstraints('>=0.14-dev'))) {
                 $configJson['require']['contao-community-alliance/composer-client'] = '~0.14';
 
                 $jsonModified = true;
