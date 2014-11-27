@@ -128,6 +128,25 @@ abstract class AbstractInstaller extends LibraryInstaller
     }
 
     /**
+     * check if the given path is a symbolic link
+     *
+     * @param string $target     Path of the symbolic link.
+     *
+     * @param string $linkTarget The absolute path of the symbolic link.
+     *
+     * @return bool
+     */
+    public static function isSymbolicLink($target, $linkTarget)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD') && file_exists($target) && readlink($target) == $linkTarget) {
+            return true;
+        } else if (is_link($target)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function installCode(PackageInterface $package)
@@ -311,15 +330,18 @@ abstract class AbstractInstaller extends LibraryInstaller
      */
     protected function mapSources(PackageInterface $package)
     {
-        $root    = $this->plugin->getContaoRoot($this->composer->getPackage());
-        $sources = $this->getSourcesSpec($package);
-        $map     = array(
+        $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
+        $installPath = $this->getInstallPath($package);
+        $sources     = $this->getSourcesSpec($package);
+        $map         = array(
             'copies' => array(),
             'links'  => array(),
         );
 
         foreach ($sources as $source => $target) {
-            if (is_link($root . DIRECTORY_SEPARATOR . $target)) {
+            $target = self::getNativePath($target);
+            $linkTarget = self::getNativePath($installPath . DIRECTORY_SEPARATOR . $source);
+            if (self::isSymbolicLink($root . DIRECTORY_SEPARATOR . $target, $linkTarget)) {
                 $map['links'][$target] = readlink($root . DIRECTORY_SEPARATOR . $target);
             } elseif (is_dir($root . DIRECTORY_SEPARATOR . $target)) {
                 $iterator = new \RecursiveIteratorIterator(

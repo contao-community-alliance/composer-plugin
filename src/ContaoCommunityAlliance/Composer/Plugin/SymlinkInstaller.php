@@ -116,7 +116,7 @@ class SymlinkInstaller extends AbstractInstaller
                 // an empty directory was left...
                 if (is_dir($linkReal) && count(scandir($linkReal)) == 2) {
                     rmdir($linkReal);
-                } elseif (!is_link($linkReal)) {
+                } elseif (!self::isSymbolicLink($linkReal, $targetReal)) {
                     throw new \Exception('Cannot create symlink ' . $target . ', file exists and is not a link');
                 }
             }
@@ -125,9 +125,9 @@ class SymlinkInstaller extends AbstractInstaller
 
             $links[] = $linkRel;
 
-            if (is_link($linkReal)) {
+            if (self::isSymbolicLink($linkReal, $targetReal)) {
                 // link target has changed
-                if (readlink($linkReal) != $linkTarget) {
+                if ((readlink($linkReal) != $linkTarget && !defined('PHP_WINDOWS_VERSION_BUILD')) || (defined('PHP_WINDOWS_VERSION_BUILD') && readlink($linkReal) != $targetReal)) {
                     $this->removeSymlink($linkReal);
                 } else {
                     // link exists and has the correct target.
