@@ -128,7 +128,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     }
 
     /**
-     * check if the given path is a symbolic link
+     * Check if the given path is a symbolic link.
      *
      * @param string $target     Path of the symbolic link.
      *
@@ -140,7 +140,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         if (defined('PHP_WINDOWS_VERSION_BUILD') && file_exists($target) && readlink($target) == $linkTarget) {
             return true;
-        } else if (is_link($target)) {
+        } elseif (is_link($target)) {
             return true;
         }
         return false;
@@ -339,7 +339,7 @@ abstract class AbstractInstaller extends LibraryInstaller
         );
 
         foreach ($sources as $source => $target) {
-            $target = self::getNativePath($target);
+            $target     = self::getNativePath($target);
             $linkTarget = self::getNativePath($installPath . DIRECTORY_SEPARATOR . $source);
             if (self::isSymbolicLink($root . DIRECTORY_SEPARATOR . $target, $linkTarget)) {
                 $map['links'][$target] = readlink($root . DIRECTORY_SEPARATOR . $target);

@@ -127,7 +127,7 @@ class SymlinkInstaller extends AbstractInstaller
 
             if (self::isSymbolicLink($linkReal, $targetReal)) {
                 // link target has changed
-                if ((readlink($linkReal) != $linkTarget && !defined('PHP_WINDOWS_VERSION_BUILD')) || (defined('PHP_WINDOWS_VERSION_BUILD') && readlink($linkReal) != $targetReal)) {
+                if ($this->checkLinkTarget($linkReal, $linkTarget, $targetReal)) {
                     $this->removeSymlink($linkReal);
                 } else {
                     // link exists and has the correct target.
@@ -260,6 +260,26 @@ class SymlinkInstaller extends AbstractInstaller
             rmdir($linkReal);
         } else {
             unlink($linkReal);
+        }
+    }
+
+    /**
+     * Check link target.
+     *
+     * @param string $linkReal   Real link path.
+     *
+     * @param string $linkTarget Relative Link target.
+     *
+     * @param string $targetReal Absolute link target.
+     *
+     * @return bool
+     */
+    protected function checkLinkTarget($linkReal, $linkTarget, $targetReal)
+    {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            return readlink($linkReal) != $targetReal;
+        } else {
+            return readlink($linkReal) != $linkTarget;
         }
     }
 }
