@@ -167,7 +167,11 @@ class CopyInstaller extends AbstractInstaller
             $map['copies'] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $map['copies']);
             $copies        = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $copies);
         }
-        
+
+        // allow deletions only in the modules folder
+        $allowedRoot = 'system/modules';
+        $hasRejects = false;
+
         $obsoleteCopies = array_diff($map['copies'], $copies);
         foreach ($obsoleteCopies as $obsoleteCopy) {
             $this->writeVerbose(
@@ -177,8 +181,17 @@ class CopyInstaller extends AbstractInstaller
                 )
             );
 
+            if (substr(substr(realpath($root . DIRECTORY_SEPARATOR . $obsoleteCopy), strlen($root)+1), strlen($allowedRoot)) != $allowedRoot) {
+                $hasRejects = true;
+                continue;
+            }
+            
             $this->filesystem->remove($root . DIRECTORY_SEPARATOR . $obsoleteCopy);
             $deleteCount++;
+        }
+
+        if ($hasRejects) {
+            $this->write('<warning>Rejecting deletion of files outside of the allowed root folder: ' . $allowedRoot . '</warning>');
         }
     }
 }
