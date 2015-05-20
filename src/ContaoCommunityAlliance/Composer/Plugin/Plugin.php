@@ -485,7 +485,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         // FIXME: why do we need that? see checkContaoPackage() version check
         $this->contaoVersion = $this->environment->getVersion();
 
-        return $this->environment->getRoot();
+        return $this->environment->getVersion();
     }
 
     /**
