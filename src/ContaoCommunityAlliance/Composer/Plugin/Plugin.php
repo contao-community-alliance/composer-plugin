@@ -33,6 +33,8 @@ use Composer\Script\ScriptEvents;
 use Composer\Script\PackageEvent;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
+use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentFactory;
+use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentInterface;
 use RuntimeException;
 
 /**
@@ -53,6 +55,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     );
 
     /**
+     * @var ContaoEnvironmentInterface
+     */
+    private $environment;
+
+    /**
      * The composer instance.
      *
      * @var Composer
@@ -65,13 +72,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      * @var IOInterface
      */
     protected $inputOutput;
-
-    /**
-     * Path to Contao root.
-     *
-     * @var string
-     */
-    protected $contaoRoot;
 
     /**
      * The Contao version.
@@ -427,7 +427,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 // Silently ignore the fact that the constants are not found.
             }
 
-            $this->contaoRoot       = null;
             $this->contaoVersion    = null;
             $this->contaoBuild      = null;
             $this->contaoUploadPath = null;
@@ -461,90 +460,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function getContaoRoot(RootPackageInterface $package)
     {
-        if (!isset($this->contaoRoot)) {
-            $cwd = getcwd();
-
-            if (!$cwd) {
-                throw new RuntimeException('Could not determine current working directory.');
-            }
-
-            // Check if we have a Contao installation in the current working dir. See #15.
-            if (is_dir($cwd . DIRECTORY_SEPARATOR . 'system')) {
-                $root = $cwd;
-            } else {
-                // Fallback - We assume we are in TL_ROOT/composer.
-                $root = dirname($cwd);
-            }
-            $extra = $package->getExtra();
-
-            if (!empty($extra['contao']['root'])) {
-                $root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
-            } else {
-                // test, do we have the core within vendor/contao/core.
-                $vendorRoot = $cwd . DIRECTORY_SEPARATOR .
-                    'vendor' . DIRECTORY_SEPARATOR .
-                    'contao' . DIRECTORY_SEPARATOR .
-                    'core';
-
-                if (is_dir($vendorRoot)) {
-                    $root = $vendorRoot;
-                }
-            }
-
-            $this->contaoRoot = realpath($root);
+        if (null === $this->environment) {
+            $factory = new ContaoEnvironmentFactory();
+            $this->environment = $factory->create($package);
         }
 
-        $systemDir = $this->contaoRoot . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
-        $configDir = $systemDir . 'config' . DIRECTORY_SEPARATOR;
-
-        $this->detectVersion($systemDir, $configDir, $this->contaoRoot);
-        $this->loadConfig($configDir);
-
-        return $this->contaoRoot;
-    }
-
-    /**
-     * Detect the installed Contao version.
-     *
-     * @param string $systemDir The system directory.
-     *
-     * @param string $configDir The configuration directory.
-     *
-     * @param string $root      The root directory.
-     *
-     * @return void
-     *
-     * @throws ConstantsNotFoundException When the constants file could not be found.
-     */
-    protected function detectVersion($systemDir, $configDir, $root)
-    {
-        if (isset($this->contaoVersion) && isset($this->contaoBuild)) {
-            return;
-        }
-
-        foreach (array(
-            $configDir . 'constants.php',
-            $systemDir . 'constants.php'
-        ) as $checkConstants) {
-            if (file_exists($checkConstants)) {
-                $constantsFile = $checkConstants;
-                break;
-            }
-        }
-
-        if (!isset($constantsFile)) {
-            throw new ConstantsNotFoundException('Could not find constants.php in ' . $root);
-        }
-
-        $contents = file_get_contents($constantsFile);
-
-        if (preg_match('#define\(\'VERSION\', \'([^\']+)\'\);#', $contents, $match)) {
-            $this->contaoVersion = $match[1];
-        }
-
-        if (preg_match('#define\(\'BUILD\', \'([^\']+)\'\);#', $contents, $match)) {
-            $this->contaoBuild = $match[1];
-        }
+        return $this->environment->getRoot();
     }
 
     /**
@@ -556,13 +477,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function getContaoVersion()
     {
-        if (!isset($this->contaoVersion)) {
+        if (null === $this->environment) {
             throw new RuntimeException(
-                'Contao version is not set. Has getContaoRoot() been called before?'
+                'Contao environment is not set. Has getContaoRoot() been called before?'
             );
         }
 
-        return $this->contaoVersion;
+        // FIXME: why do we need that? see checkContaoPackage() version check
+        $this->contaoVersion = $this->environment->getVersion();
+
+        return $this->environment->getRoot();
     }
 
     /**
@@ -574,13 +498,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function getContaoBuild()
     {
-        if (!isset($this->contaoBuild)) {
+        if (null === $this->environment) {
             throw new RuntimeException(
-                'Contao build is not set. Has getContaoRoot() been called before?'
+                'Contao environment is not set. Has getContaoRoot() been called before?'
             );
         }
 
-        return $this->contaoBuild;
+        return $this->environment->getBuild();
     }
 
     /**
@@ -592,108 +516,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function getContaoUploadPath()
     {
-        if (!isset($this->contaoUploadPath)) {
+        if (null === $this->environment) {
             throw new RuntimeException(
-                'Contao upload path is not set. Has getContaoRoot() been called before?'
+                'Contao environment is not set. Has getContaoRoot() been called before?'
             );
         }
 
-        return $this->contaoUploadPath;
-    }
-
-    /**
-     * Retrieve a config value from the given config file.
-     *
-     * This is a very rudimentary parser for the Contao config files.
-     * It does only support on line assignments and primitive types but this is enough for this
-     * plugin to retrieve the data it needs to retrieve.
-     *
-     * @param string $configFile The filename.
-     *
-     * @param string $key        The config key to retrieve.
-     *
-     * @return mixed
-     */
-    protected function extractKeyFromConfigFile($configFile, $key)
-    {
-        if (!file_exists($configFile)) {
-            return null;
-        }
-
-        $value  = null;
-        $lines  = file($configFile);
-        $search = '$GLOBALS[\'TL_CONFIG\'][\'' . $key . '\']';
-        $length = strlen($search);
-        foreach ($lines as $line) {
-            $tline = trim($line);
-            if (strncmp($search, $tline, $length) === 0) {
-                $parts = explode('=', $tline, 2);
-                $tline = trim($parts[1]);
-
-                if ($tline === 'true;') {
-                    $value = true;
-                } elseif ($tline === 'false;') {
-                    $value = false;
-                } elseif ($tline === 'null;') {
-                    $value = null;
-                } elseif ($tline === 'array();') {
-                    $value = array();
-                } elseif ($tline[0] === '\'') {
-                    $value = substr($tline, 1, -2);
-                } else {
-                    $value = substr($tline, 0, -1);
-                }
-            }
-        }
-
-        return $value;
-    }
-
-    /**
-     * Retrieve a config value from the given config path.
-     *
-     * @param string $configPath The path where the config files are located.
-     *
-     * @param string $key        The config key to retrieve.
-     *
-     * @return mixed
-     */
-    protected function extractKeyFromConfigPath($configPath, $key)
-    {
-        // load default config
-        if (version_compare($this->getContaoVersion(), '3', '>=')) {
-            $value = $this->extractKeyFromConfigFile(
-                $configPath . 'default.php',
-                $key
-            );
-        } else {
-            $value = $this->extractKeyFromConfigFile(
-                $configPath . 'config.php',
-                $key
-            );
-        }
-
-        if ($override = $this->extractKeyFromConfigFile(
-            $configPath . 'localconfig.php',
-            $key
-        )) {
-            $value = $override;
-        }
-
-        return $value;
-    }
-
-    /**
-     * Load the configuration.
-     *
-     * @param string $configDir The path where the config files are located.
-     *
-     * @return void
-     */
-    protected function loadConfig($configDir)
-    {
-        if (!isset($this->contaoUploadPath)) {
-            $this->contaoUploadPath = $this->extractKeyFromConfigPath($configDir, 'uploadPath');
-        }
+        return $this->environment->getUploadPath();
     }
 }
