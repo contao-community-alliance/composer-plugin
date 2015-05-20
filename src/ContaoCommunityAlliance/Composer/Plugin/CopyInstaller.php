@@ -32,7 +32,7 @@ class CopyInstaller extends AbstractInstaller
         $deleteCount = 0;
         $copyCount   = 0;
 
-        $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
+        $root        = $this->plugin->getContaoRoot($this->composer);
         $installPath = $this->getInstallPath($package);
         $sources     = $this->getSourcesSpec($package);
 

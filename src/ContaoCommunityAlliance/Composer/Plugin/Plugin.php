@@ -233,7 +233,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function injectContaoCore()
     {
         try {
-            $root              = $this->getContaoRoot($this->composer->getPackage());
+            $root              = $this->getContaoRoot($this->composer);
             $repositoryManager = $this->composer->getRepositoryManager();
             $localRepository   = $repositoryManager->getLocalRepository();
 
@@ -305,7 +305,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         if (!isset($requires['contao/core'])) {
             // load here to make sure the version information is present.
-            $this->getContaoRoot($this->composer->getPackage());
+            $this->getContaoRoot($this->composer);
 
             $versionParser = new VersionParser();
             $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
@@ -376,7 +376,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         Housekeeper::cleanLocalConfig(
             $this->inputOutput,
-            $this->getContaoRoot($this->composer->getPackage())
+            $this->getContaoRoot($this->composer)
         );
     }
 
@@ -413,7 +413,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         if ($package->getName() == 'contao/core') {
             try {
                 $composer = $event->getComposer();
-                $this->getContaoRoot($composer->getPackage());
+                $this->getContaoRoot($composer);
 
                 // contao is already installed in parent directory,
                 // prevent installing contao/core in vendor!
@@ -458,11 +458,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @throws RuntimeException If the current working directory can not be determined.
      */
-    public function getContaoRoot(RootPackageInterface $package)
+    public function getContaoRoot(Composer $composer)
     {
         if (null === $this->environment) {
             $factory = new ContaoEnvironmentFactory();
-            $this->environment = $factory->create($package);
+            $this->environment = $factory->create($composer);
         }
 
         return $this->environment->getRoot();

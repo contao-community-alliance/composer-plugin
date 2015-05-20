@@ -27,7 +27,7 @@ class SymlinkInstaller extends AbstractInstaller
      */
     protected function updateSources($map, PackageInterface $package)
     {
-        $root        = $this->plugin->getContaoRoot($this->composer->getPackage());
+        $root        = $this->plugin->getContaoRoot($this->composer);
         $installPath = $this->getInstallPath($package);
         $sources     = $this->getSourcesSpec($package);
 
