@@ -39,7 +39,7 @@ class Contao4Environment implements ContaoEnvironmentInterface
     public function getBuild()
     {
         if (null === $this->build) {
-            $this->version = $this->parseVersion('/\d\.\d\.(\d)/');
+            $this->build = $this->parseVersion('/\d\.\d\.(\d)/');
         }
 
         return $this->build;
@@ -77,7 +77,7 @@ class Contao4Environment implements ContaoEnvironmentInterface
     private function parseVersion($pattern)
     {
         $match   = null;
-        $version = $this->getPackageVersion('contao/core');
+        $version = $this->getPackageVersion('contao/core-bundle');
 
         if (null === $version || !preg_match($pattern, $version, $match)) {
             throw new \RuntimeException('Contao Core version not found.');
