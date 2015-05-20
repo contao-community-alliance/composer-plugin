@@ -59,6 +59,8 @@ class Contao3Environment implements ContaoEnvironmentInterface
 
             $this->build = $match[1];
         }
+
+        return $this->build;
     }
 
     public function getFullVersion()
