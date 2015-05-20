@@ -246,29 +246,45 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
-        $contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
-        $contaoCore->setType('metapackage');
-        $contaoCore->setDistType('zip');
-        $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-        $contaoCore->setDistReference($contaoVersion);
-        $contaoCore->setDistSha1Checksum($contaoVersion);
-        $contaoCore->setInstallationSource('dist');
-        $contaoCore->setAutoload(array());
-
-        $this->injectSwiftMailer($root, $contaoCore);
-
-        $clientConstraint = new EmptyConstraint();
-        $clientConstraint->setPrettyString('*');
-        $clientLink = new Link(
+        $packages = array(
             'contao/core',
-            'contao-community-alliance/composer',
-            $clientConstraint,
-            'requires',
-            '*'
+            'contao/calendar-bundle',
+            'contao/comments-bundle',
+            'contao/core-bundle',
+            'contao/faq-bundle',
+            'contao/listing-bundle',
+            'contao/news-bundle',
+            'contao/newsletter-bundle'
         );
-        $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
 
-        $localRepository->addPackage($contaoCore);
+        foreach ($packages as $package) {
+            $contaoCore = new CompletePackage($package, $version, $prettyVersion);
+            $contaoCore->setType('metapackage');
+            $contaoCore->setDistType('zip');
+            $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
+            $contaoCore->setDistReference($contaoVersion);
+            $contaoCore->setDistSha1Checksum($contaoVersion);
+            $contaoCore->setInstallationSource('dist');
+            $contaoCore->setAutoload(array());
+
+            // Only run this once
+            if ('contao/core' === $package) {
+                $this->injectSwiftMailer($root, $contaoCore);
+            }
+
+            $clientConstraint = new EmptyConstraint();
+            $clientConstraint->setPrettyString('*');
+            $clientLink = new Link(
+                'contao/core',
+                'contao-community-alliance/composer',
+                $clientConstraint,
+                'requires',
+                '*'
+            );
+            $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+            $localRepository->addPackage($contaoCore);
+        }
     }
 
     /**
