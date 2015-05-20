@@ -41,6 +41,17 @@ use RuntimeException;
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
+    static $provides = array(
+        'contao/core',
+        'contao/calendar-bundle',
+        'contao/comments-bundle',
+        'contao/core-bundle',
+        'contao/faq-bundle',
+        'contao/listing-bundle',
+        'contao/news-bundle',
+        'contao/newsletter-bundle'
+    );
+
     /**
      * The composer instance.
      *
@@ -229,37 +240,26 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $versionParser = new VersionParser();
             $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
             $version       = $versionParser->normalize($prettyVersion);
+            $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
 
-            /** @var PackageInterface $localPackage */
-            foreach ($localRepository->getPackages() as $localPackage) {
-                if ($localPackage->getName() == 'contao/core') {
-                    if ($localPackage->getType() != 'metapackage') {
-                        // stop if the contao package is required somehow
-                        // and must not be injected
-                        return;
-                    } elseif ($localPackage->getVersion() == $version) {
-                        // stop if the virtual contao package is already injected
-                        return;
-                    } else {
-                        $localRepository->removePackage($localPackage);
+            foreach (static::$provides as $packageName) {
+                /** @var PackageInterface $localPackage */
+                foreach ($localRepository->getPackages() as $localPackage) {
+                    if ($localPackage->getName() == $packageName) {
+                        if ($localPackage->getType() != 'metapackage') {
+                            // stop if the contao package is required somehow
+                            // and must not be injected
+                            return;
+                        } elseif ($localPackage->getVersion() == $version) {
+                            // stop if the virtual contao package is already injected
+                            return;
+                        } else {
+                            $localRepository->removePackage($localPackage);
+                        }
                     }
                 }
-            }
 
-            $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
-            $packages      = array(
-                'contao/core',
-                'contao/calendar-bundle',
-                'contao/comments-bundle',
-                'contao/core-bundle',
-                'contao/faq-bundle',
-                'contao/listing-bundle',
-                'contao/news-bundle',
-                'contao/newsletter-bundle'
-            );
-
-            foreach ($packages as $package) {
-                $contaoCore = new CompletePackage($package, $version, $prettyVersion);
+                $contaoCore = new CompletePackage($packageName, $version, $prettyVersion);
                 $contaoCore->setType('metapackage');
                 $contaoCore->setDistType('zip');
                 $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
@@ -269,14 +269,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 $contaoCore->setAutoload(array());
 
                 // Only run this once
-                if ('contao/core' === $package) {
+                if ('contao/core' === $packageName) {
                     $this->injectSwiftMailer($root, $contaoCore);
                 }
 
                 $clientConstraint = new EmptyConstraint();
                 $clientConstraint->setPrettyString('*');
                 $clientLink = new Link(
-                    'contao/core',
+                    $packageName,
                     'contao-community-alliance/composer',
                     $clientConstraint,
                     'requires',
@@ -286,6 +286,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
                 $localRepository->addPackage($contaoCore);
             }
+
         } catch (\Exception $e) {
             // If we end up here, we're probably Contao 4 and could not find a version.
             // No need to inject any package then.
