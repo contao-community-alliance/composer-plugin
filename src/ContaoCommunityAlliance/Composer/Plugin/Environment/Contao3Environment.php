@@ -32,7 +32,7 @@ class Contao3Environment implements ContaoEnvironmentInterface
 
             $contents = file_get_contents($constantsFile);
 
-            if (preg_match('#define\(\'VERSION\', \'([^\']+)\'\);#', $contents, $match)) {
+            if (!preg_match('#define\(\'VERSION\', \'([^\']+)\'\);#', $contents, $match)) {
                 throw new ConstantsNotFoundException('Could not find the Contao build.');
             }
 
@@ -53,7 +53,7 @@ class Contao3Environment implements ContaoEnvironmentInterface
 
             $contents = file_get_contents($constantsFile);
 
-            if (preg_match('#define\(\'BUILD\', \'([^\']+)\'\);#', $contents, $match)) {
+            if (!preg_match('#define\(\'BUILD\', \'([^\']+)\'\);#', $contents, $match)) {
                 throw new ConstantsNotFoundException('Could not find the Contao build.');
             }
 
