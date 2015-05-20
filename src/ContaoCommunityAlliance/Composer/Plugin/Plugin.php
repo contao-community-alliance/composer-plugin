@@ -360,8 +360,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function handlePostUpdateCmd()
     {
-        $package = $this->composer->getPackage();
-        $root    = $this->getContaoRoot($package);
+        $root    = $this->getContaoRoot($this->composer);
 
         $this->createRunonce($this->inputOutput, $root);
         Housekeeper::cleanCache($this->inputOutput, $root);
