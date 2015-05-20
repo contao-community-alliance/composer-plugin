@@ -315,8 +315,7 @@ class ConfigManipulator
 
         // add contao-community-alliance/composer-client dependency
         if (!isset($configJson['require']['contao-community-alliance/composer-client'])) {
-            $configJson['require']['contao-community-alliance/composer-client'] = 'dev-develop';
-            // FIXME: change back to a "stable" version
+            $configJson['require']['contao-community-alliance/composer-client'] = '~0.14';
 
             $jsonModified = true;
             $messages[]   = 'require contao-community-alliance/composer-client ' .

@@ -35,5 +35,7 @@
             "dev-master": "2.3.x-dev",
             "dev-develop": "2.4.x-dev"
         }
-    }
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }
