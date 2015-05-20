@@ -221,69 +221,74 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function injectContaoCore()
     {
-        $root              = $this->getContaoRoot($this->composer->getPackage());
-        $repositoryManager = $this->composer->getRepositoryManager();
-        $localRepository   = $repositoryManager->getLocalRepository();
+        try {
+            $root              = $this->getContaoRoot($this->composer->getPackage());
+            $repositoryManager = $this->composer->getRepositoryManager();
+            $localRepository   = $repositoryManager->getLocalRepository();
 
-        $versionParser = new VersionParser();
-        $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
-        $version       = $versionParser->normalize($prettyVersion);
+            $versionParser = new VersionParser();
+            $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
+            $version       = $versionParser->normalize($prettyVersion);
 
-        /** @var PackageInterface $localPackage */
-        foreach ($localRepository->getPackages() as $localPackage) {
-            if ($localPackage->getName() == 'contao/core') {
-                if ($localPackage->getType() != 'metapackage') {
-                    // stop if the contao package is required somehow
-                    // and must not be injected
-                    return;
-                } elseif ($localPackage->getVersion() == $version) {
-                    // stop if the virtual contao package is already injected
-                    return;
-                } else {
-                    $localRepository->removePackage($localPackage);
+            /** @var PackageInterface $localPackage */
+            foreach ($localRepository->getPackages() as $localPackage) {
+                if ($localPackage->getName() == 'contao/core') {
+                    if ($localPackage->getType() != 'metapackage') {
+                        // stop if the contao package is required somehow
+                        // and must not be injected
+                        return;
+                    } elseif ($localPackage->getVersion() == $version) {
+                        // stop if the virtual contao package is already injected
+                        return;
+                    } else {
+                        $localRepository->removePackage($localPackage);
+                    }
                 }
             }
-        }
 
-        $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
-        $packages = array(
-            'contao/core',
-            'contao/calendar-bundle',
-            'contao/comments-bundle',
-            'contao/core-bundle',
-            'contao/faq-bundle',
-            'contao/listing-bundle',
-            'contao/news-bundle',
-            'contao/newsletter-bundle'
-        );
-
-        foreach ($packages as $package) {
-            $contaoCore = new CompletePackage($package, $version, $prettyVersion);
-            $contaoCore->setType('metapackage');
-            $contaoCore->setDistType('zip');
-            $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-            $contaoCore->setDistReference($contaoVersion);
-            $contaoCore->setDistSha1Checksum($contaoVersion);
-            $contaoCore->setInstallationSource('dist');
-            $contaoCore->setAutoload(array());
-
-            // Only run this once
-            if ('contao/core' === $package) {
-                $this->injectSwiftMailer($root, $contaoCore);
-            }
-
-            $clientConstraint = new EmptyConstraint();
-            $clientConstraint->setPrettyString('*');
-            $clientLink = new Link(
+            $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
+            $packages      = array(
                 'contao/core',
-                'contao-community-alliance/composer',
-                $clientConstraint,
-                'requires',
-                '*'
+                'contao/calendar-bundle',
+                'contao/comments-bundle',
+                'contao/core-bundle',
+                'contao/faq-bundle',
+                'contao/listing-bundle',
+                'contao/news-bundle',
+                'contao/newsletter-bundle'
             );
-            $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
 
-            $localRepository->addPackage($contaoCore);
+            foreach ($packages as $package) {
+                $contaoCore = new CompletePackage($package, $version, $prettyVersion);
+                $contaoCore->setType('metapackage');
+                $contaoCore->setDistType('zip');
+                $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
+                $contaoCore->setDistReference($contaoVersion);
+                $contaoCore->setDistSha1Checksum($contaoVersion);
+                $contaoCore->setInstallationSource('dist');
+                $contaoCore->setAutoload(array());
+
+                // Only run this once
+                if ('contao/core' === $package) {
+                    $this->injectSwiftMailer($root, $contaoCore);
+                }
+
+                $clientConstraint = new EmptyConstraint();
+                $clientConstraint->setPrettyString('*');
+                $clientLink = new Link(
+                    'contao/core',
+                    'contao-community-alliance/composer',
+                    $clientConstraint,
+                    'requires',
+                    '*'
+                );
+                $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+                $localRepository->addPackage($contaoCore);
+            }
+        } catch (\Exception $e) {
+            // If we end up here, we're probably Contao 4 and could not find a version.
+            // No need to inject any package then.
         }
     }
 
