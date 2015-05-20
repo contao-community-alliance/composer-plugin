@@ -294,7 +294,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Inject the contao/core as permanent requirement into the root package.
+     * Inject the contao/core-bundle as permanent requirement into the root package.
      *
      * @return void
      */
@@ -303,7 +303,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $package  = $this->composer->getPackage();
         $requires = $package->getRequires();
 
-        if (!isset($requires['contao/core'])) {
+        if (!isset($requires['contao/core-bundle'])) {
             // load here to make sure the version information is present.
             $this->getContaoRoot($this->composer);
 
@@ -313,9 +313,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
             $constraint = new VersionConstraint('==', $version);
             $constraint->setPrettyString($prettyVersion);
-            $requires['contao/core'] = new Link(
-                'contao/core',
-                'contao/core',
+            $requires['contao/core-bundle'] = new Link(
+                'contao/core-bundle',
+                'contao/core-bundle',
                 $constraint,
                 'requires',
                 $prettyVersion
@@ -409,13 +409,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        if ($package->getName() == 'contao/core') {
+        if ($package->getName() == 'contao/core-bundle') {
             try {
                 $composer = $event->getComposer();
                 $this->getContaoRoot($composer);
 
                 // contao is already installed in parent directory,
-                // prevent installing contao/core in vendor!
+                // prevent installing contao/core-bundle in vendor!
                 if (isset($this->contaoVersion)) {
                     throw new DuplicateContaoException(
                         'Warning: Contao core was about to get installed but has been found in project root, ' .
