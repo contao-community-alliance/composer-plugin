@@ -232,64 +232,64 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function injectContaoCore()
     {
-        try {
-            $root              = $this->getContaoRoot($this->composer);
-            $repositoryManager = $this->composer->getRepositoryManager();
-            $localRepository   = $repositoryManager->getLocalRepository();
+        $root = $this->getContaoRoot($this->composer);
 
-            $versionParser = new VersionParser();
-            $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
-            $version       = $versionParser->normalize($prettyVersion);
-            $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
+        // Do not inject anything in Contao 4
+        if (version_compare($this->getContaoVersion(), '4.0', '>=')) {
+            return;
+        }
 
-            foreach (static::$provides as $packageName) {
-                /** @var PackageInterface $localPackage */
-                foreach ($localRepository->getPackages() as $localPackage) {
-                    if ($localPackage->getName() == $packageName) {
-                        if ($localPackage->getType() != 'metapackage') {
-                            // stop if the contao package is required somehow
-                            // and must not be injected
-                            return;
-                        } elseif ($localPackage->getVersion() == $version) {
-                            // stop if the virtual contao package is already injected
-                            return;
-                        } else {
-                            $localRepository->removePackage($localPackage);
-                        }
+        $repositoryManager = $this->composer->getRepositoryManager();
+        $localRepository   = $repositoryManager->getLocalRepository();
+
+        $versionParser = new VersionParser();
+        $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
+        $version       = $versionParser->normalize($prettyVersion);
+        $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
+
+        foreach (static::$provides as $packageName) {
+            /** @var PackageInterface $localPackage */
+            foreach ($localRepository->getPackages() as $localPackage) {
+                if ($localPackage->getName() == $packageName) {
+                    if ($localPackage->getType() != 'metapackage') {
+                        // stop if the contao package is required somehow
+                        // and must not be injected
+                        return;
+                    } elseif ($localPackage->getVersion() == $version) {
+                        // stop if the virtual contao package is already injected
+                        return;
+                    } else {
+                        $localRepository->removePackage($localPackage);
                     }
                 }
-
-                $contaoCore = new CompletePackage($packageName, $version, $prettyVersion);
-                $contaoCore->setType('metapackage');
-                $contaoCore->setDistType('zip');
-                $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-                $contaoCore->setDistReference($contaoVersion);
-                $contaoCore->setDistSha1Checksum($contaoVersion);
-                $contaoCore->setInstallationSource('dist');
-                $contaoCore->setAutoload(array());
-
-                // Only run this once
-                if ('contao/core' === $packageName) {
-                    $this->injectSwiftMailer($root, $contaoCore);
-                }
-
-                $clientConstraint = new EmptyConstraint();
-                $clientConstraint->setPrettyString('*');
-                $clientLink = new Link(
-                    $packageName,
-                    'contao-community-alliance/composer',
-                    $clientConstraint,
-                    'requires',
-                    '*'
-                );
-                $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
-
-                $localRepository->addPackage($contaoCore);
             }
 
-        } catch (\Exception $e) {
-            // If we end up here, we're probably Contao 4 and could not find a version.
-            // No need to inject any package then.
+            $contaoCore = new CompletePackage($packageName, $version, $prettyVersion);
+            $contaoCore->setType('metapackage');
+            $contaoCore->setDistType('zip');
+            $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
+            $contaoCore->setDistReference($contaoVersion);
+            $contaoCore->setDistSha1Checksum($contaoVersion);
+            $contaoCore->setInstallationSource('dist');
+            $contaoCore->setAutoload(array());
+
+            // Only run this once
+            if ('contao/core' === $packageName) {
+                $this->injectSwiftMailer($root, $contaoCore);
+            }
+
+            $clientConstraint = new EmptyConstraint();
+            $clientConstraint->setPrettyString('*');
+            $clientLink = new Link(
+                $packageName,
+                'contao-community-alliance/composer',
+                $clientConstraint,
+                'requires',
+                '*'
+            );
+            $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+            $localRepository->addPackage($contaoCore);
         }
     }
 
