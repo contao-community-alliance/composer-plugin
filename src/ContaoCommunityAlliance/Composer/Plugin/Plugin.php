@@ -35,6 +35,8 @@ use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentFactory;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentInterface;
+use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
+use ContaoCommunityAlliance\Composer\Plugin\Exception\DuplicateContaoException;
 use RuntimeException;
 
 /**

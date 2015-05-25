@@ -2,7 +2,7 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin\Environment;
 
-use ContaoCommunityAlliance\Composer\Plugin\ConstantsNotFoundException;
+use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
 
 class Contao3Environment implements ContaoEnvironmentInterface
 {

@@ -17,6 +17,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionParser;
+use ContaoCommunityAlliance\Composer\Plugin\Exception\ConfigUpdateException;
 
 /**
  * Manipulate the root composer.json on the fly.

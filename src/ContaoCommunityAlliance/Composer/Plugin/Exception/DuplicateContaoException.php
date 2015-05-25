@@ -13,11 +13,12 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Exception;
 
 /**
- * Exception when the configuration was updated through the pre-update scripts.
+ * Exception when composer try to install contao/core in vendor,
+ * even if it's installed in parent directory.
  */
-class ConfigUpdateException extends \RuntimeException
+class DuplicateContaoException extends \RuntimeException
 {
 }

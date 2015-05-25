@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Exception;
 
 /**
  * This exception is raised when the constants file of Contao could not be found.
