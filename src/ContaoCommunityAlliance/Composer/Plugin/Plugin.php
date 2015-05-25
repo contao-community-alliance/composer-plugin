@@ -47,7 +47,7 @@ use RuntimeException;
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
-    static $provides = array(
+    static $bundles = array(
         'contao/calendar-bundle',
         'contao/comments-bundle',
         'contao/core-bundle',
@@ -210,7 +210,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        if ($package->getName() == 'contao/core' || in_array($package->getName(), static::$provides)) {
+        if ($package->getName() == 'contao/core' || in_array($package->getName(), static::$bundles)) {
             // contao is already installed in parent directory,
             // prevent installing contao/core in vendor!
             if (null !== $this->environment) {
@@ -278,7 +278,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
-            if ($localPackage->getName() == 'contao/core' || in_array($localPackage->getName(), static::$provides)) {
+            if ($localPackage->getName() == 'contao/core' || in_array($localPackage->getName(), static::$bundles)) {
                 if ($localPackage->getType() != 'metapackage') {
                     // stop if the contao package is required somehow
                     // and must not be injected
@@ -307,8 +307,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             // Probably a version already supporting SwiftMailer
         }
 
-        foreach (static::$provides as $package) {
-            $this->addProvides($contaoCore, $package, $contaoVersion);
+        foreach (static::$bundles as $package) {
+            $this->addReplaces($contaoCore, $package, $contaoVersion);
         }
 
         $clientConstraint = new EmptyConstraint();
@@ -343,6 +343,25 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $provides[$name] = $link;
 
         $package->setProvides($provides);
+    }
+
+    private function addReplaces(CompletePackage $package, $name, $version)
+    {
+        $constraint = new VersionConstraint('==', $version);
+        $constraint->setPrettyString($version);
+
+        $link = new Link(
+            $package->getName(),
+            $name,
+            $constraint,
+            'provides',
+            $version
+        );
+
+        $replaces = $package->getReplaces();
+        $replaces[$name] = $link;
+
+        $package->setReplaces($replaces);
     }
 
     /**
