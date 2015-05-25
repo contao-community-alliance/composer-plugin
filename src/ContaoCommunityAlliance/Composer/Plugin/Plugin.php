@@ -106,13 +106,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $this->composer    = $composer;
         $this->inputOutput = $inputOutput;
 
+        $factory = new ContaoEnvironmentFactory();
+        $this->environment = $factory->create($composer);
+
         $installationManager = $composer->getInstallationManager();
 
         $config = $composer->getConfig();
         if ($config->get('preferred-install') == 'dist') {
-            $installer = new CopyInstaller($inputOutput, $composer, $this);
+            $installer = new CopyInstaller($inputOutput, $composer, $this->environment);
         } else {
-            $installer = new SymlinkInstaller($inputOutput, $composer, $this);
+            $installer = new SymlinkInstaller($inputOutput, $composer, $this->environment);
         }
         $installationManager->addInstaller($installer);
 
@@ -463,11 +466,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function getContaoRoot(Composer $composer)
     {
-        if (null === $this->environment) {
-            $factory = new ContaoEnvironmentFactory();
-            $this->environment = $factory->create($composer);
-        }
-
         return $this->environment->getRoot();
     }
 
