@@ -137,167 +137,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Inject the swiftMailer version into the Contao package.
-     *
-     * @param CompletePackage $package    The package being processed.
-     *
-     * @return void
-     */
-    protected function injectSwiftMailer(CompletePackage $package)
-    {
-        try {
-            $swiftVersion = $this->environment->getSwiftMailerVersion();
-
-            $swiftConstraint = new VersionConstraint('==', $swiftVersion);
-            $swiftConstraint->setPrettyString($swiftVersion);
-
-            $swiftLink = new Link(
-                'contao/core',
-                'swiftmailer/swiftmailer',
-                $swiftConstraint,
-                'provides',
-                $swiftVersion
-            );
-
-            $provides = $package->getProvides();
-            $provides['swiftmailer/swiftmailer'] = $swiftLink;
-
-            $package->setProvides($provides);
-
-        } catch (UnknownSwitfmailerException $e) {
-            // Probably a version already supporting SwiftMailer
-        }
-    }
-
-    /**
-     * Prepare a Contao version to be compatible with composer.
-     *
-     * @param string $version The version string.
-     *
-     * @param string $build   The version build portion.
-     *
-     * @return string
-     *
-     * @throws RuntimeException When an invalid version is encountered.
-     */
-    protected function prepareContaoVersion($version, $build)
-    {
-        // Regular stable build
-        if (is_numeric($build)) {
-            return $version . '.' . $build;
-        }
-
-        // Standard pre-release
-        if (preg_match('{^(alpha|beta|RC)?(\d+)?$}i', $build)) {
-            return $version . '.' . $build;
-        }
-
-        // Must be a custom patched release with - suffix.
-        if (preg_match('{^(\d+)[-]}i', $build, $matches)) {
-            return $version . '.' . $matches[1];
-        }
-
-        throw new RuntimeException('Invalid version: ' . $version . '.' . $build);
-    }
-
-    /**
-     * Inject the currently installed contao/core as meta package.
-     *
-     * @return void
-     */
-    public function injectContaoCore()
-    {
-        // Do not inject anything in Contao 4
-        if (version_compare($this->environment->getVersion(), '4.0', '>=')) {
-            return;
-        }
-
-        $repositoryManager = $this->composer->getRepositoryManager();
-        $localRepository   = $repositoryManager->getLocalRepository();
-
-        $versionParser = new VersionParser();
-        $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
-        $version       = $versionParser->normalize($prettyVersion);
-        $contaoVersion = $this->environment->getVersion() . '.' . $this->environment->getBuild();
-
-        foreach (static::$provides as $packageName) {
-            /** @var PackageInterface $localPackage */
-            foreach ($localRepository->getPackages() as $localPackage) {
-                if ($localPackage->getName() == $packageName) {
-                    if ($localPackage->getType() != 'metapackage') {
-                        // stop if the contao package is required somehow
-                        // and must not be injected
-                        return;
-                    } elseif ($localPackage->getVersion() == $version) {
-                        // stop if the virtual contao package is already injected
-                        return;
-                    } else {
-                        $localRepository->removePackage($localPackage);
-                    }
-                }
-            }
-
-            $contaoCore = new CompletePackage($packageName, $version, $prettyVersion);
-            $contaoCore->setType('metapackage');
-            $contaoCore->setDistType('zip');
-            $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-            $contaoCore->setDistReference($contaoVersion);
-            $contaoCore->setDistSha1Checksum($contaoVersion);
-            $contaoCore->setInstallationSource('dist');
-            $contaoCore->setAutoload(array());
-
-            // Only run this once
-            if ('contao/core' === $packageName) {
-                $this->injectSwiftMailer($contaoCore);
-            }
-
-            $clientConstraint = new EmptyConstraint();
-            $clientConstraint->setPrettyString('*');
-            $clientLink = new Link(
-                $packageName,
-                'contao-community-alliance/composer',
-                $clientConstraint,
-                'requires',
-                '*'
-            );
-            $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
-
-            $localRepository->addPackage($contaoCore);
-        }
-    }
-
-    /**
-     * Inject the contao/core-bundle as permanent requirement into the root package.
-     *
-     * @return void
-     */
-    public function injectRequires()
-    {
-        $package  = $this->composer->getPackage();
-        $requires = $package->getRequires();
-
-        if (!isset($requires['contao/core-bundle'])) {
-            // load here to make sure the version information is present.
-            $this->environment->getRoot();
-
-            $versionParser = new VersionParser();
-            $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
-            $version       = $versionParser->normalize($prettyVersion);
-
-            $constraint = new VersionConstraint('==', $version);
-            $constraint->setPrettyString($prettyVersion);
-            $requires['contao/core-bundle'] = new Link(
-                'contao/core-bundle',
-                'contao/core-bundle',
-                $constraint,
-                'requires',
-                $prettyVersion
-            );
-            $package->setRequires($requires);
-        }
-    }
-
-    /**
      * Handle command events.
      *
      * @param CommandEvent $event The event being raised.
@@ -375,6 +214,167 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                     'to recover from this problem please restart the operation'
                 );
             }
+        }
+    }
+
+    /**
+     * Inject the swiftMailer version into the Contao package.
+     *
+     * @param CompletePackage $package    The package being processed.
+     *
+     * @return void
+     */
+    private function injectSwiftMailer(CompletePackage $package)
+    {
+        try {
+            $swiftVersion = $this->environment->getSwiftMailerVersion();
+
+            $swiftConstraint = new VersionConstraint('==', $swiftVersion);
+            $swiftConstraint->setPrettyString($swiftVersion);
+
+            $swiftLink = new Link(
+                'contao/core',
+                'swiftmailer/swiftmailer',
+                $swiftConstraint,
+                'provides',
+                $swiftVersion
+            );
+
+            $provides = $package->getProvides();
+            $provides['swiftmailer/swiftmailer'] = $swiftLink;
+
+            $package->setProvides($provides);
+
+        } catch (UnknownSwitfmailerException $e) {
+            // Probably a version already supporting SwiftMailer
+        }
+    }
+
+    /**
+     * Prepare a Contao version to be compatible with composer.
+     *
+     * @param string $version The version string.
+     *
+     * @param string $build   The version build portion.
+     *
+     * @return string
+     *
+     * @throws RuntimeException When an invalid version is encountered.
+     */
+    private function prepareContaoVersion($version, $build)
+    {
+        // Regular stable build
+        if (is_numeric($build)) {
+            return $version . '.' . $build;
+        }
+
+        // Standard pre-release
+        if (preg_match('{^(alpha|beta|RC)?(\d+)?$}i', $build)) {
+            return $version . '.' . $build;
+        }
+
+        // Must be a custom patched release with - suffix.
+        if (preg_match('{^(\d+)[-]}i', $build, $matches)) {
+            return $version . '.' . $matches[1];
+        }
+
+        throw new RuntimeException('Invalid version: ' . $version . '.' . $build);
+    }
+
+    /**
+     * Inject the currently installed contao/core as meta package.
+     *
+     * @return void
+     */
+    private function injectContaoCore()
+    {
+        // Do not inject anything in Contao 4
+        if (version_compare($this->environment->getVersion(), '4.0', '>=')) {
+            return;
+        }
+
+        $repositoryManager = $this->composer->getRepositoryManager();
+        $localRepository   = $repositoryManager->getLocalRepository();
+
+        $versionParser = new VersionParser();
+        $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
+        $version       = $versionParser->normalize($prettyVersion);
+        $contaoVersion = $this->environment->getVersion() . '.' . $this->environment->getBuild();
+
+        foreach (static::$provides as $packageName) {
+            /** @var PackageInterface $localPackage */
+            foreach ($localRepository->getPackages() as $localPackage) {
+                if ($localPackage->getName() == $packageName) {
+                    if ($localPackage->getType() != 'metapackage') {
+                        // stop if the contao package is required somehow
+                        // and must not be injected
+                        return;
+                    } elseif ($localPackage->getVersion() == $version) {
+                        // stop if the virtual contao package is already injected
+                        return;
+                    } else {
+                        $localRepository->removePackage($localPackage);
+                    }
+                }
+            }
+
+            $contaoCore = new CompletePackage($packageName, $version, $prettyVersion);
+            $contaoCore->setType('metapackage');
+            $contaoCore->setDistType('zip');
+            $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
+            $contaoCore->setDistReference($contaoVersion);
+            $contaoCore->setDistSha1Checksum($contaoVersion);
+            $contaoCore->setInstallationSource('dist');
+            $contaoCore->setAutoload(array());
+
+            // Only run this once
+            if ('contao/core' === $packageName) {
+                $this->injectSwiftMailer($contaoCore);
+            }
+
+            $clientConstraint = new EmptyConstraint();
+            $clientConstraint->setPrettyString('*');
+            $clientLink = new Link(
+                $packageName,
+                'contao-community-alliance/composer',
+                $clientConstraint,
+                'requires',
+                '*'
+            );
+            $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+            $localRepository->addPackage($contaoCore);
+        }
+    }
+
+    /**
+     * Inject the contao/core-bundle as permanent requirement into the root package.
+     *
+     * @return void
+     */
+    private function injectRequires()
+    {
+        $package  = $this->composer->getPackage();
+        $requires = $package->getRequires();
+
+        if (!isset($requires['contao/core-bundle'])) {
+            // load here to make sure the version information is present.
+            $this->environment->getRoot();
+
+            $versionParser = new VersionParser();
+            $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
+            $version       = $versionParser->normalize($prettyVersion);
+
+            $constraint = new VersionConstraint('==', $version);
+            $constraint->setPrettyString($prettyVersion);
+            $requires['contao/core-bundle'] = new Link(
+                'contao/core-bundle',
+                'contao/core-bundle',
+                $constraint,
+                'requires',
+                $prettyVersion
+            );
+            $package->setRequires($requires);
         }
     }
 }
