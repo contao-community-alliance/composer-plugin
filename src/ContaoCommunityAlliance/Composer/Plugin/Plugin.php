@@ -79,13 +79,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     protected $inputOutput;
 
     /**
-     * The Contao upload path.
-     *
-     * @var string
-     */
-    protected $contaoUploadPath;
-
-    /**
      * @var bool
      */
     private $forceRestart = false;
