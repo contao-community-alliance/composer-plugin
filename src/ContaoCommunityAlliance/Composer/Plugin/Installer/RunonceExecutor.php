@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 /**
  * Execute a list of runonce files within the Contao system.

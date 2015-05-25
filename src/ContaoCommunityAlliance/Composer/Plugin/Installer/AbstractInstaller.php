@@ -13,10 +13,11 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use ContaoCommunityAlliance\Composer\Plugin\Plugin;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Composer\Installer\LibraryInstaller;

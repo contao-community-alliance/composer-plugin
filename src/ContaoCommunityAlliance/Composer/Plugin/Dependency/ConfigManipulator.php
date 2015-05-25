@@ -13,7 +13,7 @@
  * @license LGPL-3.0+
  */
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Dependency;
 
 use Composer\Json\JsonFile;
 use Composer\Package\Version\VersionParser;
