@@ -170,6 +170,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function handlePostUpdateCmd()
     {
+        // Does nothing if Contao is not yet installed
+        if (null === $this->environment) {
+            return;
+        }
+
         $root = $this->environment->getRoot();
 
         RunonceManager::createRunonce($this->inputOutput, $root);
@@ -183,6 +188,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function handlePostAutoloadDump()
     {
+        // Does nothing if Contao is not yet installed
+        if (null === $this->environment) {
+            return;
+        }
+
         Housekeeper::cleanLocalConfig(
             $this->inputOutput,
             $this->environment->getRoot()
