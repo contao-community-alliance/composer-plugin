@@ -2,6 +2,7 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin\Environment;
 
+use Composer\Package\Version\VersionParser;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
 
 class Contao3Environment implements ContaoEnvironmentInterface
@@ -147,5 +148,38 @@ class Contao3Environment implements ContaoEnvironmentInterface
         }
 
         return $value;
+    }
+
+    public function getSwiftMailerVersion()
+    {
+        switch ($this->getVersion()) {
+            // FIXME: drop support for Contao 2.11
+            case '2.11':
+                $file = $this->getRoot() . '/plugins/swiftmailer/VERSION';
+                break;
+
+            case '3.0':
+                $file = $this->getRoot() . '/system/vendor/swiftmailer/VERSION';
+                break;
+
+            case '3.1':
+            case '3.2':
+                $file = $this->getRoot() . '/system/modules/core/vendor/swiftmailer/VERSION';
+                break;
+
+            default:
+                throw new UnknownSwitfmailerException('Dunno how to find SwiftMailer for Contao ' . $this->getVersion());
+        }
+
+        if (!is_file($file)) {
+            throw new UnknownSwitfmailerException('SwiftMailer version not found at ' . $file);
+        }
+
+        $versionParser      = new VersionParser();
+        $prettySwiftVersion = file_get_contents($file);
+        $prettySwiftVersion = substr($prettySwiftVersion, 6);
+        $prettySwiftVersion = trim($prettySwiftVersion);
+
+        return $versionParser->normalize($prettySwiftVersion);
     }
 }

@@ -34,6 +34,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 use ContaoCommunityAlliance\Composer\Plugin\Dependency\ConfigManipulator;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentFactory;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentInterface;
+use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownSwitfmailerException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\DuplicateContaoException;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\CopyInstaller;
@@ -150,39 +151,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     /**
      * Inject the swiftMailer version into the Contao package.
      *
-     * @param string          $contaoRoot The Contao root dir.
-     *
      * @param CompletePackage $package    The package being processed.
      *
      * @return void
      */
-    protected function injectSwiftMailer($contaoRoot, CompletePackage $package)
+    protected function injectSwiftMailer(CompletePackage $package)
     {
-        $provides      = $package->getProvides();
-        $versionParser = new VersionParser();
-
-        // detect provided Swift Mailer version
-        switch ($this->environment->getVersion()) {
-            case '2.11':
-                $file = $contaoRoot . '/plugins/swiftmailer/VERSION';
-                break;
-            case '3.0':
-                $file = $contaoRoot . '/system/vendor/swiftmailer/VERSION';
-                break;
-            case '3.1':
-            case '3.2':
-                $file = $contaoRoot . '/system/modules/core/vendor/swiftmailer/VERSION';
-                break;
-            default:
-                $file = false;
-        }
-
-        if ($file && is_file($file)) {
-            $prettySwiftVersion = file_get_contents($file);
-            $prettySwiftVersion = substr($prettySwiftVersion, 6);
-            $prettySwiftVersion = trim($prettySwiftVersion);
-
-            $swiftVersion = $versionParser->normalize($prettySwiftVersion);
+        try {
+            $swiftVersion = $this->environment->getSwiftMailerVersion();
 
             $swiftConstraint = new VersionConstraint('==', $swiftVersion);
             $swiftConstraint->setPrettyString($swiftVersion);
@@ -195,10 +171,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 $swiftVersion
             );
 
+            $provides = $package->getProvides();
             $provides['swiftmailer/swiftmailer'] = $swiftLink;
-        }
 
-        $package->setProvides($provides);
+            $package->setProvides($provides);
+
+        } catch (UnknownSwitfmailerException $e) {
+            // Probably a version already supporting SwiftMailer
+        }
     }
 
     /**
@@ -282,7 +262,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
             // Only run this once
             if ('contao/core' === $packageName) {
-                $this->injectSwiftMailer($root, $contaoCore);
+                $this->injectSwiftMailer($contaoCore);
             }
 
             $clientConstraint = new EmptyConstraint();

@@ -59,6 +59,11 @@ class Contao4Environment implements ContaoEnvironmentInterface
         return $this->uploadPath;
     }
 
+    public function getSwiftMailerVersion()
+    {
+        throw new UnknownSwitfmailerException('SwiftMailer is included by Composer in Contao 4.');
+    }
+
     private function getPackageVersion($packageName)
     {
         $repositoryManager = $this->composer->getRepositoryManager();

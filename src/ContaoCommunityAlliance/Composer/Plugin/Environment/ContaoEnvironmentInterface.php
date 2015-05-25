@@ -13,4 +13,6 @@ interface ContaoEnvironmentInterface
     public function getFullVersion();
 
     public function getUploadPath();
+
+    public function getSwiftMailerVersion();
 }
