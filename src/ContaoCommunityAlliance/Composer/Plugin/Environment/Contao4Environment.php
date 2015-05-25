@@ -61,7 +61,7 @@ class Contao4Environment implements ContaoEnvironmentInterface
 
     public function getSwiftMailerVersion()
     {
-        throw new UnknownSwitfmailerException('SwiftMailer is included by Composer in Contao 4.');
+        throw new UnknownSwiftmailerException('SwiftMailer is included by Composer in Contao 4.');
     }
 
     private function getPackageVersion($packageName)

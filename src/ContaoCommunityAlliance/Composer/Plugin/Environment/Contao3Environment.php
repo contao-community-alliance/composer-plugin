@@ -168,11 +168,11 @@ class Contao3Environment implements ContaoEnvironmentInterface
                 break;
 
             default:
-                throw new UnknownSwitfmailerException('Dunno how to find SwiftMailer for Contao ' . $this->getVersion());
+                throw new UnknownSwiftmailerException('Dunno how to find SwiftMailer for Contao ' . $this->getVersion());
         }
 
         if (!is_file($file)) {
-            throw new UnknownSwitfmailerException('SwiftMailer version not found at ' . $file);
+            throw new UnknownSwiftmailerException('SwiftMailer version not found at ' . $file);
         }
 
         $versionParser      = new VersionParser();

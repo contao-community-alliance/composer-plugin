@@ -33,7 +33,7 @@ use ContaoCommunityAlliance\Composer\Plugin\Dependency\ConfigManipulator;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentFactory;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentInterface;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownEnvironmentException;
-use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownSwitfmailerException;
+use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownSwiftmailerException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\DuplicateContaoException;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\CopyInstaller;
