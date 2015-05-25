@@ -363,9 +363,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $requires = $package->getRequires();
 
         if (!isset($requires['contao/core-bundle'])) {
-            // load here to make sure the version information is present.
-            $this->environment->getRoot();
-
             $versionParser = new VersionParser();
             $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
             $version       = $versionParser->normalize($prettyVersion);
