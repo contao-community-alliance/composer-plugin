@@ -47,7 +47,8 @@ use RuntimeException;
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
-    static $bundles = array(
+    static $provides = array(
+        'contao/core',
         'contao/calendar-bundle',
         'contao/comments-bundle',
         'contao/core-bundle',
@@ -210,7 +211,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        if ($package->getName() == 'contao/core' || in_array($package->getName(), static::$bundles)) {
+        if (in_array($package->getName(), static::$provides)) {
             // contao is already installed in parent directory,
             // prevent installing contao/core in vendor!
             if (null !== $this->environment) {
@@ -278,7 +279,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
-            if ($localPackage->getName() == 'contao/core' || in_array($localPackage->getName(), static::$bundles)) {
+            if (in_array($localPackage->getName(), static::$provides)) {
                 if ($localPackage->getType() != 'metapackage') {
                     // stop if the contao package is required somehow
                     // and must not be injected
@@ -307,8 +308,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             // Probably a version already supporting SwiftMailer
         }
 
-        foreach (static::$bundles as $package) {
-            $this->addReplaces($contaoCore, $package, $contaoVersion);
+        foreach (static::$provides as $package) {
+            if ('contao/core' === $package) {
+                continue;
+            }
+
+            $this->addProvides($contaoCore, $package, $contaoVersion);
         }
 
         $clientConstraint = new EmptyConstraint();
@@ -345,50 +350,33 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $package->setProvides($provides);
     }
 
-    private function addReplaces(CompletePackage $package, $name, $version)
-    {
-        $constraint = new VersionConstraint('==', $version);
-        $constraint->setPrettyString($version);
-
-        $link = new Link(
-            $package->getName(),
-            $name,
-            $constraint,
-            'provides',
-            $version
-        );
-
-        $replaces = $package->getReplaces();
-        $replaces[$name] = $link;
-
-        $package->setReplaces($replaces);
-    }
-
     /**
      * Inject contao/core as permanent requirement into the root package.
-     *
-     * @return void
      */
     private function injectRequires()
     {
         $package  = $this->composer->getPackage();
         $requires = $package->getRequires();
 
-        if (!isset($requires['contao/core'])) {
-            $versionParser = new VersionParser();
-            $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
-            $version       = $versionParser->normalize($prettyVersion);
+        foreach (static::$provides as $name) {
+            if (!isset($requires[$name])) {
+                $versionParser = new VersionParser();
+                $prettyVersion = $this->prepareContaoVersion(
+                    $this->environment->getVersion(), $this->environment->getBuild()
+                );
+                $version       = $versionParser->normalize($prettyVersion);
 
-            $constraint = new VersionConstraint('==', $version);
-            $constraint->setPrettyString($prettyVersion);
-            $requires['contao/core'] = new Link(
-                'contao/core',
-                'contao/core',
-                $constraint,
-                'requires',
-                $prettyVersion
-            );
-            $package->setRequires($requires);
+                $constraint = new VersionConstraint('==', $version);
+                $constraint->setPrettyString($prettyVersion);
+                $requires[$name] = new Link(
+                    $name,
+                    $name,
+                    $constraint,
+                    'requires',
+                    $prettyVersion
+                );
+                $package->setRequires($requires);
+            }
         }
     }
 
