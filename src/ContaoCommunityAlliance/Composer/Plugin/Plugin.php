@@ -86,6 +86,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     protected $contaoUploadPath;
 
     /**
+     * @var bool
+     */
+    private $forceRestart = false;
+
+
+    /**
      * {@inheritdoc}
      */
     public function activate(Composer $composer, IOInterface $inputOutput)
@@ -209,6 +215,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function checkContaoPackage(PackageEvent $event)
     {
+        if ($this->forceRestart) {
+            throw new ConfigUpdateException(
+                'Warning: Contao core was found in project root, please restart the operation'
+            );
+        }
+
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
@@ -330,9 +342,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         $localRepository->addPackage($contaoCore);
 
-        throw new ConfigUpdateException(
-            'Warning: Contao core was found in project root, please restart the operation'
-        );
+        $this->forceRestart = true;
     }
 
 
