@@ -34,6 +34,7 @@ use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentFactory
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentInterface;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownEnvironmentException;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownSwiftmailerException;
+use ContaoCommunityAlliance\Composer\Plugin\Exception\ConfigUpdateException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\DuplicateContaoException;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\CopyInstaller;
@@ -279,7 +280,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
-            if (in_array($localPackage->getName(), static::$provides)) {
+            if ('contao/core' === $localPackage->getName()) {
                 if ($localPackage->getType() != 'metapackage') {
                     // stop if the contao package is required somehow
                     // and must not be injected
@@ -328,6 +329,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
 
         $localRepository->addPackage($contaoCore);
+
+        throw new ConfigUpdateException(
+            'Warning: Contao core was found in project root, please restart the operation'
+        );
     }
 
 
