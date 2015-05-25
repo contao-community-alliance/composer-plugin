@@ -21,12 +21,10 @@ use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
-use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Script\ScriptEvents;
 use Composer\Script\PackageEvent;
 use Composer\Package\LinkConstraint\EmptyConstraint;
@@ -34,6 +32,7 @@ use Composer\Package\LinkConstraint\VersionConstraint;
 use ContaoCommunityAlliance\Composer\Plugin\Dependency\ConfigManipulator;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentFactory;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\ContaoEnvironmentInterface;
+use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownEnvironmentException;
 use ContaoCommunityAlliance\Composer\Plugin\Environment\UnknownSwitfmailerException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\ConstantsNotFoundException;
 use ContaoCommunityAlliance\Composer\Plugin\Exception\DuplicateContaoException;
@@ -79,20 +78,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     protected $inputOutput;
 
     /**
-     * The Contao version.
-     *
-     * @var string
-     */
-    protected $contaoVersion;
-
-    /**
-     * The Contao build.
-     *
-     * @var string
-     */
-    protected $contaoBuild;
-
-    /**
      * The Contao upload path.
      *
      * @var string
@@ -107,8 +92,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $this->composer    = $composer;
         $this->inputOutput = $inputOutput;
 
-        $factory = new ContaoEnvironmentFactory();
-        $this->environment = $factory->create($composer);
+        try {
+            $factory = new ContaoEnvironmentFactory();
+            $this->environment = $factory->create($composer);
+        } catch (UnknownEnvironmentException $e) {
+            $this->environment = null;
+        }
 
         $installationManager = $composer->getInstallationManager();
 
@@ -144,7 +133,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             ScriptEvents::POST_UPDATE_CMD     => 'handlePostUpdateCmd',
             ScriptEvents::POST_AUTOLOAD_DUMP  => 'handlePostAutoloadDump',
             ScriptEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
-            PluginEvents::PRE_FILE_DOWNLOAD   => 'handlePreDownload',
         );
     }
 
@@ -219,8 +207,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function injectContaoCore()
     {
-        $root = $this->environment->getRoot();
-
         // Do not inject anything in Contao 4
         if (version_compare($this->environment->getVersion(), '4.0', '>=')) {
             return;
@@ -335,8 +321,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
                 ConfigManipulator::run();
                 break;
-
-            default:
         }
     }
 
@@ -347,9 +331,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function handlePostUpdateCmd()
     {
-        $root    = $this->environment->getRoot();
+        $root = $this->environment->getRoot();
 
-        $this->createRunonce($this->inputOutput, $root);
+        RunonceManager::createRunonce($this->inputOutput, $root);
         Housekeeper::cleanCache($this->inputOutput, $root);
     }
 
@@ -364,20 +348,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $this->inputOutput,
             $this->environment->getRoot()
         );
-    }
-
-    /**
-     * Create the global runonce.php after updates has been installed.
-     *
-     * @param IOInterface $inputOutput The input output interface.
-     *
-     * @param string      $root        The contao installation root.
-     *
-     * @return void
-     */
-    public function createRunonce(IOInterface $inputOutput, $root)
-    {
-        RunonceManager::createRunonce($inputOutput, $root);
     }
 
     /**
@@ -397,36 +367,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $package = $event->getOperation()->getPackage();
 
         if ($package->getName() == 'contao/core-bundle') {
-            try {
-                // contao is already installed in parent directory,
-                // prevent installing contao/core-bundle in vendor!
-                if (isset($this->contaoVersion)) {
-                    throw new DuplicateContaoException(
-                        'Warning: Contao core was about to get installed but has been found in project root, ' .
-                        'to recover from this problem please restart the operation'
-                    );
-                }
-            } catch (ConstantsNotFoundException $e) {
-                // Silently ignore the fact that the constants are not found.
+            // contao is already installed in parent directory,
+            // prevent installing contao/core-bundle in vendor!
+            if (null !== $this->environment) {
+                throw new DuplicateContaoException(
+                    'Warning: Contao core was about to get installed but has been found in project root, ' .
+                    'to recover from this problem please restart the operation'
+                );
             }
-
-            $this->contaoVersion    = null;
-            $this->contaoBuild      = null;
-            $this->contaoUploadPath = null;
         }
     }
-
-    // @codingStandardsIgnoreStart
-    /**
-     * Handle pre download events.
-     *
-     * @param PreFileDownloadEvent $event The event being raised.
-     *
-     * @return void
-     */
-    public function handlePreDownload()
-    {
-        // TODO: handle the pre download event.
-    }
-    // @codingStandardsIgnoreEnd
 }
