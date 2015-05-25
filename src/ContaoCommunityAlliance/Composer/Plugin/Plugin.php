@@ -27,8 +27,6 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\Repository\ArtifactRepository;
-use Composer\Repository\ComposerRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Script\PackageEvent;
 use Composer\Package\LinkConstraint\EmptyConstraint;
