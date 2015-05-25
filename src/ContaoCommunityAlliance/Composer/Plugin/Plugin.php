@@ -48,7 +48,6 @@ use RuntimeException;
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
     static $provides = array(
-        'contao/core',
         'contao/calendar-bundle',
         'contao/comments-bundle',
         'contao/core-bundle',
@@ -210,48 +209,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        if ($package->getName() == 'contao/core-bundle') {
+        if ($package->getName() == 'contao/core' || in_array($package->getName(), static::$provides)) {
             // contao is already installed in parent directory,
-            // prevent installing contao/core-bundle in vendor!
+            // prevent installing contao/core in vendor!
             if (null !== $this->environment) {
                 throw new DuplicateContaoException(
                     'Warning: Contao core was about to get installed but has been found in project root, ' .
                     'to recover from this problem please restart the operation'
                 );
             }
-        }
-    }
-
-    /**
-     * Inject the swiftMailer version into the Contao package.
-     *
-     * @param CompletePackage $package    The package being processed.
-     *
-     * @return void
-     */
-    private function injectSwiftMailer(CompletePackage $package)
-    {
-        try {
-            $swiftVersion = $this->environment->getSwiftMailerVersion();
-
-            $swiftConstraint = new VersionConstraint('==', $swiftVersion);
-            $swiftConstraint->setPrettyString($swiftVersion);
-
-            $swiftLink = new Link(
-                'contao/core',
-                'swiftmailer/swiftmailer',
-                $swiftConstraint,
-                'provides',
-                $swiftVersion
-            );
-
-            $provides = $package->getProvides();
-            $provides['swiftmailer/swiftmailer'] = $swiftLink;
-
-            $package->setProvides($provides);
-
-        } catch (UnknownSwitfmailerException $e) {
-            // Probably a version already supporting SwiftMailer
         }
     }
 
@@ -306,54 +272,77 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $version       = $versionParser->normalize($prettyVersion);
         $contaoVersion = $this->environment->getVersion() . '.' . $this->environment->getBuild();
 
-        foreach (static::$provides as $packageName) {
-            /** @var PackageInterface $localPackage */
-            foreach ($localRepository->getPackages() as $localPackage) {
-                if ($localPackage->getName() == $packageName) {
-                    if ($localPackage->getType() != 'metapackage') {
-                        // stop if the contao package is required somehow
-                        // and must not be injected
-                        return;
-                    } elseif ($localPackage->getVersion() == $version) {
-                        // stop if the virtual contao package is already injected
-                        return;
-                    } else {
-                        $localRepository->removePackage($localPackage);
-                    }
+        /** @var PackageInterface $localPackage */
+        foreach ($localRepository->getPackages() as $localPackage) {
+            if ($localPackage->getName() == 'contao/core' || in_array($localPackage->getName(), static::$provides)) {
+                if ($localPackage->getType() != 'metapackage') {
+                    // stop if the contao package is required somehow
+                    // and must not be injected
+                    return;
+                } elseif ($localPackage->getVersion() == $version) {
+                    // stop if the virtual contao package is already injected
+                    return;
+                } else {
+                    $localRepository->removePackage($localPackage);
                 }
             }
-
-            $contaoCore = new CompletePackage($packageName, $version, $prettyVersion);
-            $contaoCore->setType('metapackage');
-            $contaoCore->setDistType('zip');
-            $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-            $contaoCore->setDistReference($contaoVersion);
-            $contaoCore->setDistSha1Checksum($contaoVersion);
-            $contaoCore->setInstallationSource('dist');
-            $contaoCore->setAutoload(array());
-
-            // Only run this once
-            if ('contao/core' === $packageName) {
-                $this->injectSwiftMailer($contaoCore);
-            }
-
-            $clientConstraint = new EmptyConstraint();
-            $clientConstraint->setPrettyString('*');
-            $clientLink = new Link(
-                $packageName,
-                'contao-community-alliance/composer',
-                $clientConstraint,
-                'requires',
-                '*'
-            );
-            $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
-
-            $localRepository->addPackage($contaoCore);
         }
+
+        $contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
+        $contaoCore->setType('metapackage');
+        $contaoCore->setDistType('zip');
+        $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
+        $contaoCore->setDistReference($contaoVersion);
+        $contaoCore->setDistSha1Checksum($contaoVersion);
+        $contaoCore->setInstallationSource('dist');
+        $contaoCore->setAutoload(array());
+
+        try {
+            $this->addProvides($contaoCore, 'swiftmailer/swiftmailer', $this->environment->getSwiftMailerVersion());
+        } catch (UnknownSwiftmailerException $e) {
+            // Probably a version already supporting SwiftMailer
+        }
+
+        foreach (static::$provides as $package) {
+            $this->addProvides($contaoCore, $package, $contaoVersion);
+        }
+
+        $clientConstraint = new EmptyConstraint();
+        $clientConstraint->setPrettyString('*');
+        $clientLink = new Link(
+            'contao/core',
+            'contao-community-alliance/composer',
+            $clientConstraint,
+            'requires',
+            '*'
+        );
+        $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+        $localRepository->addPackage($contaoCore);
+    }
+
+
+    private function addProvides(CompletePackage $package, $name, $version)
+    {
+        $constraint = new VersionConstraint('==', $version);
+        $constraint->setPrettyString($version);
+
+        $link = new Link(
+            $package->getName(),
+            $name,
+            $constraint,
+            'provides',
+            $version
+        );
+
+        $provides = $package->getProvides();
+        $provides[$name] = $link;
+
+        $package->setProvides($provides);
     }
 
     /**
-     * Inject the contao/core-bundle as permanent requirement into the root package.
+     * Inject contao/core as permanent requirement into the root package.
      *
      * @return void
      */
@@ -362,16 +351,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $package  = $this->composer->getPackage();
         $requires = $package->getRequires();
 
-        if (!isset($requires['contao/core-bundle'])) {
+        if (!isset($requires['contao/core'])) {
             $versionParser = new VersionParser();
             $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
             $version       = $versionParser->normalize($prettyVersion);
 
             $constraint = new VersionConstraint('==', $version);
             $constraint->setPrettyString($prettyVersion);
-            $requires['contao/core-bundle'] = new Link(
-                'contao/core-bundle',
-                'contao/core-bundle',
+            $requires['contao/core'] = new Link(
+                'contao/core',
+                'contao/core',
                 $constraint,
                 'requires',
                 $prettyVersion
