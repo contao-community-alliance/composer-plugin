@@ -162,7 +162,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $versionParser = new VersionParser();
 
         // detect provided Swift Mailer version
-        switch ($this->getContaoVersion()) {
+        switch ($this->environment->getVersion()) {
             case '2.11':
                 $file = $contaoRoot . '/plugins/swiftmailer/VERSION';
                 break;
@@ -239,10 +239,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function injectContaoCore()
     {
-        $root = $this->getContaoRoot($this->composer);
+        $root = $this->environment->getRoot();
 
         // Do not inject anything in Contao 4
-        if (version_compare($this->getContaoVersion(), '4.0', '>=')) {
+        if (version_compare($this->environment->getVersion(), '4.0', '>=')) {
             return;
         }
 
@@ -250,9 +250,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $localRepository   = $repositoryManager->getLocalRepository();
 
         $versionParser = new VersionParser();
-        $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
+        $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
         $version       = $versionParser->normalize($prettyVersion);
-        $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
+        $contaoVersion = $this->environment->getVersion() . '.' . $this->environment->getBuild();
 
         foreach (static::$provides as $packageName) {
             /** @var PackageInterface $localPackage */
@@ -312,10 +312,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         if (!isset($requires['contao/core-bundle'])) {
             // load here to make sure the version information is present.
-            $this->getContaoRoot($this->composer);
+            $this->environment->getRoot();
 
             $versionParser = new VersionParser();
-            $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
+            $prettyVersion = $this->prepareContaoVersion($this->environment->getVersion(), $this->environment->getBuild());
             $version       = $versionParser->normalize($prettyVersion);
 
             $constraint = new VersionConstraint('==', $version);
@@ -367,7 +367,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function handlePostUpdateCmd()
     {
-        $root    = $this->getContaoRoot($this->composer);
+        $root    = $this->environment->getRoot();
 
         $this->createRunonce($this->inputOutput, $root);
         Housekeeper::cleanCache($this->inputOutput, $root);
@@ -382,7 +382,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         Housekeeper::cleanLocalConfig(
             $this->inputOutput,
-            $this->getContaoRoot($this->composer)
+            $this->environment->getRoot()
         );
     }
 
@@ -418,9 +418,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         if ($package->getName() == 'contao/core-bundle') {
             try {
-                $composer = $event->getComposer();
-                $this->getContaoRoot($composer);
-
                 // contao is already installed in parent directory,
                 // prevent installing contao/core-bundle in vendor!
                 if (isset($this->contaoVersion)) {
@@ -452,77 +449,4 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         // TODO: handle the pre download event.
     }
     // @codingStandardsIgnoreEnd
-
-    /**
-     * Detect the contao installation root, version and configuration and set the TL_ROOT constant if not already exist.
-     *
-     * Existing values could originate from previous run or when run within contao.
-     *
-     * @param RootPackageInterface $package The package being processed.
-     *
-     * @return string
-     *
-     * @throws RuntimeException If the current working directory can not be determined.
-     */
-    public function getContaoRoot(Composer $composer)
-    {
-        return $this->environment->getRoot();
-    }
-
-    /**
-     * Retrieve the Contao version.
-     *
-     * @return string
-     *
-     * @throws RuntimeException When getContaoRoot() has not been called prior.
-     */
-    public function getContaoVersion()
-    {
-        if (null === $this->environment) {
-            throw new RuntimeException(
-                'Contao environment is not set. Has getContaoRoot() been called before?'
-            );
-        }
-
-        // FIXME: why do we need that? see checkContaoPackage() version check
-        $this->contaoVersion = $this->environment->getVersion();
-
-        return $this->environment->getVersion();
-    }
-
-    /**
-     * Retrieve the Contao build number.
-     *
-     * @return string
-     *
-     * @throws RuntimeException When getContaoRoot() has not been called prior.
-     */
-    public function getContaoBuild()
-    {
-        if (null === $this->environment) {
-            throw new RuntimeException(
-                'Contao environment is not set. Has getContaoRoot() been called before?'
-            );
-        }
-
-        return $this->environment->getBuild();
-    }
-
-    /**
-     * Retrieve the Contao upload path.
-     *
-     * @return string
-     *
-     * @throws RuntimeException When getContaoRoot() has not been called prior.
-     */
-    public function getContaoUploadPath()
-    {
-        if (null === $this->environment) {
-            throw new RuntimeException(
-                'Contao environment is not set. Has getContaoRoot() been called before?'
-            );
-        }
-
-        return $this->environment->getUploadPath();
-    }
 }
