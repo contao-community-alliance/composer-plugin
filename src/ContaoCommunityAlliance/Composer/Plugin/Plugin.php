@@ -215,8 +215,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             // prevent installing contao/core in vendor!
             if (null !== $this->environment) {
                 throw new DuplicateContaoException(
-                    'Warning: Contao core was about to get installed but has been found in project root, ' .
-                    'to recover from this problem please restart the operation'
+                    sprintf(
+                        'Warning: %s was about to get installed but has been found in project root, ' .
+                        'to recover from this problem please restart the operation',
+                        $package->getName()
+                    )
                 );
             }
         }
