@@ -115,6 +115,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         class_exists('ContaoCommunityAlliance\Composer\Plugin\Housekeeper');
+        class_exists('ContaoCommunityAlliance\Composer\Plugin\Installer\RunonceInstaller');
     }
 
     /**
