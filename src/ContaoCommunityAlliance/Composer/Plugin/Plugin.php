@@ -304,7 +304,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $contaoCore->setAutoload(array());
 
         try {
-            $this->addProvides($contaoCore, 'swiftmailer/swiftmailer', $this->environment->getSwiftMailerVersion());
+            $this->addReplaces($contaoCore, 'swiftmailer/swiftmailer', $this->environment->getSwiftMailerVersion());
         } catch (UnknownSwiftmailerException $e) {
             // Probably a version already supporting SwiftMailer
         }
@@ -314,7 +314,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 continue;
             }
 
-            $this->addProvides($contaoCore, $package, $contaoVersion);
+            $this->addReplaces($contaoCore, $package, $contaoVersion);
         }
 
         $clientConstraint = new EmptyConstraint();
@@ -336,7 +336,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
 
-    private function addProvides(CompletePackage $package, $name, $version)
+    private function addReplaces(CompletePackage $package, $name, $version)
     {
         $constraint = new VersionConstraint('==', $version);
         $constraint->setPrettyString($version);
@@ -349,10 +349,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $version
         );
 
-        $provides = $package->getProvides();
+        $provides = $package->getReplaces();
         $provides[$name] = $link;
 
-        $package->setProvides($provides);
+        $package->setReplaces($provides);
     }
 
     /**
