@@ -34,7 +34,7 @@ class Contao3Environment implements ContaoEnvironmentInterface
             $contents = file_get_contents($constantsFile);
 
             if (!preg_match('#define\(\'VERSION\', \'([^\']+)\'\);#', $contents, $match)) {
-                throw new ConstantsNotFoundException('Could not find the Contao build.');
+                throw new ConstantsNotFoundException('Could not find the Contao version.');
             }
 
             $this->version = $match[1];
