@@ -41,7 +41,7 @@ class RunonceExecutor extends \System
     public function run(array $runonces)
     {
         // handle errors as exceptions
-        $previousErrorHandler = set_error_handler(array($this, 'handleError'), (E_ALL & ~E_NOTICE));
+        set_error_handler(array($this, 'handleError'), (E_ALL & ~E_NOTICE));
 
         foreach ($runonces as $runonce) {
             try {
@@ -60,7 +60,7 @@ class RunonceExecutor extends \System
         }
 
         // restore contao error handler
-        set_error_handler($previousErrorHandler);
+        restore_error_handler();
     }
 
     /**
