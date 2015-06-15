@@ -9,6 +9,7 @@
  * @author  Dominik Zogg <dominik.zogg@gmail.com>
  * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author  Tristan Lins <tristan.lins@bit3.de>
+ * @author  David Molineus <david.molineus@netzmacht.de>
  * @link    http://c-c-a.org
  * @license LGPL-3.0+
  */
@@ -40,7 +41,7 @@ class RunonceExecutor extends \System
     public function run(array $runonces)
     {
         // handle errors as exceptions
-        $previousErrorHandler = set_error_handler(array($this, 'handleError'), E_ALL);
+        $previousErrorHandler = set_error_handler(array($this, 'handleError'), (E_ALL & ~E_NOTICE));
 
         foreach ($runonces as $runonce) {
             try {
