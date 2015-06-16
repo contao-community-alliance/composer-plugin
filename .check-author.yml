@@ -1,0 +1,6 @@
+exclude:
+  - tests/ContaoCommunityAlliance/Composer/Plugin/Test/Fixtures
+
+mapping:
+  "Zeromax <zero@brothers-project.de>":
+    - "Andreas Nölke <zero@brothers-project.de>"

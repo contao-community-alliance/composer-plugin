@@ -6,9 +6,9 @@
  * Copyright (C) 2013 Contao Community Alliance
  *
  * @package contao-composer
- * @author  Dominik Zogg <dominik.zogg@gmail.com>
  * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author  Tristan Lins <tristan.lins@bit3.de>
+ * @author  Oliver Hoff <oliver@hofff.com>
  * @link    http://c-c-a.org
  * @license LGPL-3.0+
  */
@@ -17,6 +17,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
@@ -27,10 +28,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\Repository\ArtifactRepository;
-use Composer\Repository\ComposerRepository;
 use Composer\Script\ScriptEvents;
-use Composer\Script\PackageEvent;
 use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use RuntimeException;
@@ -308,6 +306,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      * @param CommandEvent $event The event being raised.
      *
      * @return void
+     *
+     * @throws \RuntimeException When the artifact directory could not be created.
      */
     public function handleCommand(CommandEvent $event)
     {
