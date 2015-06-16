@@ -12,9 +12,7 @@
     },
     "require-dev": {
         "composer/composer": "~1.0@dev",
-        "contao-community-alliance/coding-standard": "~1.0",
-        "contao-community-alliance/build-system": "~1.0",
-        "contao-community-alliance/build-system-all-tasks": "~1.0",
+        "phpcq/all-tasks": "~1.0",
         "contao/core": ">=2.11,<4.0"
     },
     "replace": {
