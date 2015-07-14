@@ -129,6 +129,16 @@ class CopyInstaller extends AbstractInstaller
 
             /** @var \SplFileInfo $sourceFile */
             foreach ($files as $targetPath => $sourceFile) {
+                if ($sourceFile->isLink()) {
+                    $this->write(
+                        sprintf(
+                            '<warning>Warning: %s is a symlink and will not get copied.</warning>',
+                            self::unprefixPath($root . DIRECTORY_SEPARATOR, $sourceFile->getPathname())
+                        )
+                    );
+                    continue;
+                }
+
                 $this->writeVerbose(
                     sprintf(
                         '  - cp <info>%s</info>',
