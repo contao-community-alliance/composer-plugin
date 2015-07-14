@@ -8,6 +8,7 @@
  * @package contao-composer
  * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author  Tristan Lins <tristan.lins@bit3.de>
+ * @author  Martin Auswöger <martin@auswoeger.com>
  * @link    http://c-c-a.org
  * @license LGPL-3.0+
  */
