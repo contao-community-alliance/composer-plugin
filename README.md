@@ -28,26 +28,26 @@ Installing repository root as module `my-module`:
 **Hint**: This is the implicit fallback (`system/modules/$packageName`), if no symlinks specified!
 ```json
 {
-	"extra": {
-		"contao": {
-			"sources": {
-				"": "system/modules/my-module"
-			}
-		}
-	}
+    "extra": {
+        "contao": {
+            "sources": {
+                "": "system/modules/my-module"
+            }
+        }
+    }
 }
 ```
 
 Installing repository sub-path `src/system/modules/my-module` as module `my-module`:
 ```json
 {
-	"extra": {
-		"contao": {
-			"sources": {
-				"src/system/modules/my-module": "system/modules/my-module"
-			}
-		}
-	}
+    "extra": {
+        "contao": {
+            "sources": {
+                "src/system/modules/my-module": "system/modules/my-module"
+            }
+        }
+    }
 }
 ```
 
@@ -64,13 +64,13 @@ The installer will **never** overwrite a user file.
 
 ```json
 {
-	"extra": {
-		"contao": {
-			"userfiles": {
-				"src/system/modules/my-module/files/images": "my-module/images"
-			}
-		}
-	}
+    "extra": {
+        "contao": {
+            "userfiles": {
+                "src/system/modules/my-module/files/images": "my-module/images"
+            }
+        }
+    }
 }
 ```
 
@@ -84,15 +84,15 @@ There is no need to name them `runonce.php`, feel free to use any other name.
 
 ```json
 {
-	"extra": {
-		"contao": {
-			"runonce": [
-				"src/system/modules/my-module/runonce/init_update.php",
-				"src/system/modules/my-module/runonce/do_db_update.php",
-				"src/system/modules/my-module/runonce/refresh_entities.php"
-			]
-		}
-	}
+    "extra": {
+        "contao": {
+            "runonce": [
+                "src/system/modules/my-module/runonce/init_update.php",
+                "src/system/modules/my-module/runonce/do_db_update.php",
+                "src/system/modules/my-module/runonce/refresh_entities.php"
+            ]
+        }
+    }
 }
 ```
 

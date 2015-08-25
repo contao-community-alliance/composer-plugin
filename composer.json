@@ -8,19 +8,16 @@
     "prefer-stable": true,
     "require": {
         "php": ">=5.3.2",
-        "composer-plugin-api": "^1.0"
+        "composer-plugin-api": "^1.0",
+        "contao/core": "4.*"
     },
     "require-dev": {
         "composer/composer": "~1.0@dev",
-        "phpcq/all-tasks": "~1.0",
-        "contao/core": ">=2.11,<4.0"
-    },
-    "replace": {
-        "contao-community-alliance/composer-installer": "1.7.1"
+        "phpcq/all-tasks": "~1.0"
     },
     "conflict": {
-        "contao/core": "3.0.*",
-        "contao-community-alliance/composer": "<0.9-dev"
+        "contao-community-alliance/composer": "*",
+        "contao-community-alliance/composer-installer": "*"
     },
     "autoload": {
         "psr-0": {
@@ -31,7 +28,7 @@
         "class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
         "branch-alias": {
             "dev-master": "2.3.x-dev",
-            "dev-develop": "2.4.x-dev"
+            "dev-develop": "3.0.x-dev"
         }
     }
 }
