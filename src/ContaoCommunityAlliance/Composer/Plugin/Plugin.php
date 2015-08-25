@@ -35,5 +35,8 @@ class Plugin implements PluginInterface
     {
         $this->composer = $composer;
         $this->io       = $io;
+
+        $installationManager = $composer->getInstallationManager();
+        $installationManager->addInstaller(new ContaoModuleInstaller($io, $composer, 'contao-module'));
     }
 }
