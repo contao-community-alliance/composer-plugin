@@ -20,8 +20,8 @@
         "contao-community-alliance/composer-installer": "*"
     },
     "autoload": {
-        "psr-0": {
-            "ContaoCommunityAlliance\\Composer\\Plugin": "src/"
+        "psr-4": {
+            "ContaoCommunityAlliance\\Composer\\Plugin\\": "src/"
         }
     },
     "extra": {
