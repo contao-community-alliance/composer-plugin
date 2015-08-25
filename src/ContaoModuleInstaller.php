@@ -2,12 +2,34 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
+use Composer\Composer;
 use Composer\Installer\LibraryInstaller;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Util\Filesystem;
 
 class ContaoModuleInstaller extends LibraryInstaller
 {
+    /**
+     * @var RunonceManager
+     */
+    protected $runonceManager;
+
+    /**
+     * Constructor.
+     *
+     * @param RunonceManager  $runonceManager
+     *
+     * {@inheritdoc}
+     */
+    public function __construct(RunonceManager $runonceManager, IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null)
+    {
+        parent::__construct($io, $composer, $type, $filesystem);
+
+        $this->runonceManager = $runonceManager;
+    }
+
     /**
      * Add symlinks for Contao sources after installing a package.
      *
@@ -18,6 +40,7 @@ class ContaoModuleInstaller extends LibraryInstaller
         parent::install($repo, $package);
 
         $this->addSymlinks($package, $this->getSources($package));
+        $this->addRunonces($package, $this->getRunonces($package));
     }
 
     /**
@@ -32,6 +55,7 @@ class ContaoModuleInstaller extends LibraryInstaller
         parent::update($repo, $initial, $target);
 
         $this->addSymlinks($target, $this->getSources($target));
+        $this->addRunonces($target, $this->getRunonces($target));
     }
 
     /**
@@ -106,11 +130,11 @@ class ContaoModuleInstaller extends LibraryInstaller
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package
-     * @param array            $map
+     * @param array            $sources
      */
-    private function addSymlinks(PackageInterface $package, array $map)
+    private function addSymlinks(PackageInterface $package, array $sources)
     {
-        if (empty($map)) {
+        if (empty($sources)) {
             return;
         }
 
@@ -118,12 +142,12 @@ class ContaoModuleInstaller extends LibraryInstaller
             $this->io->writeError(sprintf('Installing Contao sources for %s', $package->getName()));
         }
 
-        $packageRoot = $this->getPackageBasePath($package);
+        $packageRoot = $this->getInstallPath($package);
         $contaoRoot  = $this->getContaoRoot();
         $actions     = [];
 
         // Check the file map first and make sure nothing exists.
-        foreach ($map as $source => $target) {
+        foreach ($sources as $source => $target) {
             $sourcePath = $this->filesystem->normalizePath($packageRoot . ($source ? ('/'.$source) : ''));
             $targetPath = $this->filesystem->normalizePath($contaoRoot . '/' . $target);
 
@@ -166,11 +190,11 @@ class ContaoModuleInstaller extends LibraryInstaller
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package
-     * @param array            $map
+     * @param array            $sources
      */
-    private function removeSymlinks(PackageInterface $package, array $map)
+    private function removeSymlinks(PackageInterface $package, array $sources)
     {
-        if (empty($map)) {
+        if (empty($sources)) {
             return;
         }
 
@@ -178,12 +202,12 @@ class ContaoModuleInstaller extends LibraryInstaller
             $this->io->writeError(sprintf('Removing Contao sources for %s', $package->getName()));
         }
 
-        $packageRoot = $this->getPackageBasePath($package);
+        $packageRoot = $this->getInstallPath($package);
         $contaoRoot  = $this->getContaoRoot();
         $actions     = [];
 
         // Check the file map first and make sure we only remove our own symlinks.
-        foreach ($map as $source => $target) {
+        foreach ($sources as $source => $target) {
             $sourcePath = $this->filesystem->normalizePath($packageRoot . ($source ? ('/'.$source) : ''));
             $targetPath = $this->filesystem->normalizePath($contaoRoot . '/' . $target);
 
@@ -215,13 +239,28 @@ class ContaoModuleInstaller extends LibraryInstaller
     }
 
     /**
+     * Adds runonce files of a package to the RunonceManager instance.
+     *
+     * @param PackageInterface $package
+     * @param array            $files
+     */
+    private function addRunonces(PackageInterface $package, array $files)
+    {
+        $rootDir = $this->getInstallPath($package);
+
+        foreach ($files as $file) {
+            $this->runonceManager->addFile($this->filesystem->normalizePath($rootDir . '/' . $file));
+        }
+    }
+
+    /**
      * Clean up empty directories.
      *
      * @param string $pathname
      *
      * @return bool
      */
-    public function removeEmptyDirectories($pathname)
+    private function removeEmptyDirectories($pathname)
     {
         if (is_dir($pathname)
             && $pathname !== $this->getContaoRoot()
