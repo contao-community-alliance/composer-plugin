@@ -139,7 +139,7 @@ class ContaoModuleInstaller extends LibraryInstaller
 
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
-            link($source, $target);
+            symlink($source, $target);
         }
     }
 
