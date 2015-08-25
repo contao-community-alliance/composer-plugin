@@ -110,6 +110,14 @@ class ContaoModuleInstaller extends LibraryInstaller
      */
     private function addSymlinks(PackageInterface $package, array $map)
     {
+        if (empty($map)) {
+            return;
+        }
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('Installing Contao sources for %s', $package->getName()));
+        }
+
         $packageRoot = $this->getPackageBasePath($package);
         $contaoRoot  = $this->getContaoRoot();
         $actions     = [];
@@ -139,7 +147,17 @@ class ContaoModuleInstaller extends LibraryInstaller
 
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
+            if ($this->io->isVeryVerbose()) {
+                $this->io->writeError(sprintf('  - Linking "%s" to "%s"', $source, $target));
+            }
+
+            $this->filesystem->ensureDirectoryExists(dirname($target));
+
             symlink($source, $target);
+        }
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError('');
         }
     }
 
@@ -152,6 +170,14 @@ class ContaoModuleInstaller extends LibraryInstaller
      */
     private function removeSymlinks(PackageInterface $package, array $map)
     {
+        if (empty($map)) {
+            return;
+        }
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('Removing Contao sources for %s', $package->getName()));
+        }
+
         $packageRoot = $this->getPackageBasePath($package);
         $contaoRoot  = $this->getContaoRoot();
         $actions     = [];
@@ -174,10 +200,52 @@ class ContaoModuleInstaller extends LibraryInstaller
 
         // Remove the symlinks if everything is ok.
         foreach ($actions as $target) {
+            if ($this->io->isVeryVerbose()) {
+                $this->io->writeError(sprintf('  - Removing "%s"', $target));
+            }
+
             $this->filesystem->unlink($target);
+
+            $this->removeEmptyDirectories(dirname($target));
+        }
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError('');
         }
     }
 
+    /**
+     * Clean up empty directories.
+     *
+     * @param string $pathname
+     *
+     * @return bool
+     */
+    public function removeEmptyDirectories($pathname)
+    {
+        if (is_dir($pathname)
+            && $pathname !== $this->getContaoRoot()
+            && $this->filesystem->isDirEmpty($pathname)
+        ) {
+            if (!$this->removeEmptyDirectories(dirname($pathname))) {
+                if ($this->io->isVeryVerbose()) {
+                    $this->io->writeError(sprintf('  - Removing empty directory "%s"', $pathname));
+                }
+
+                $this->filesystem->removeDirectory($pathname);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the Contao root (parent folder of vendor dir).
+     *
+     * @return string
+     */
     private function getContaoRoot()
     {
         $this->initializeVendorDir();
