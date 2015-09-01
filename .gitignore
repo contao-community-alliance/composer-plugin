@@ -12,5 +12,6 @@ nbproject/
 
 # Composer
 /vendor/
+/components/
 /composer.phar
 
