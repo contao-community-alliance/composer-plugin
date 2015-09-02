@@ -2,26 +2,35 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
+use Composer\Util\Filesystem;
+
 class RunonceManager
 {
-    /**
-     * @var array
-     */
-    private $files;
-
     /**
      * @var string
      */
     private $targetFile;
 
     /**
+     * @var Filesystem
+     */
+    private $filesystem;
+
+    /**
+     * @var array
+     */
+    private $files;
+
+    /**
      * Constructor.
      *
-     * @param string      $targetFile
+     * @param string     $targetFile
+     * @param Filesystem $filesystem
      */
-    public function __construct($targetFile)
+    public function __construct($targetFile, Filesystem $filesystem = null)
     {
         $this->targetFile = $targetFile;
+        $this->filesystem = $filesystem ?: new Filesystem();
     }
 
     /**
@@ -49,73 +58,46 @@ class RunonceManager
             return;
         }
 
-        if (file_exists($this->targetFile) && (!is_writable($this->targetFile) || !is_file($this->targetFile))) {
-            throw new \RuntimeException(sprintf('Runonce file "%s" exists but is not readable.', $this->targetFile));
-        }
-
-        $this->readCurrentFile();
-
-        $files = array_unique(array_merge($this->readCurrentFile(), $this->files));
-        $data  = json_encode($files);
-        $dump  = var_export($files, true);
-
         $buffer = <<<PHP
 <?php
 
-/** files: $data */
-
-\$runonce = function() {
-    foreach ($dump as \$file) {
+\$runonce = function(array \$files, \$delete = false) {
+    foreach (\$files as \$file) {
         try {
             include \$file;
         } catch (\Exception \$e) {}
 
         \$relpath = str_replace(TL_ROOT . DIRECTORY_SEPARATOR, '', \$file);
 
-        if (!unlink(\$file)) {
+        if (\$delete && !unlink(\$file)) {
             throw new \Exception("The file \$relpath cannot be deleted. Please remove the file manually and correct the file permission settings on your server.");
         }
 
-        \System::log("File \$relpath ran once and has then been removed successfully", __METHOD__, TL_GENERAL);
+        if (!\$delete) {
+            \System::log("File \$relpath ran once successfully", __METHOD__, TL_GENERAL);
+        }
     }
 };
 
-\$runonce();
-
 PHP;
+
+        if (file_exists($this->targetFile)) {
+            if (!is_writable($this->targetFile) || !is_file($this->targetFile)) {
+                throw new \RuntimeException(sprintf('Runonce file "%s" exists but is not writable.', $this->targetFile));
+            }
+
+            $current = str_replace('.php', '_'.substr(md5(mt_rand()), 0, 8).'.php', $this->targetFile);
+            $this->filesystem->rename($this->targetFile, $current);
+
+            $buffer .= "\n\$runonce(array('" . $current . "'), true)\n";
+        }
+
+        $buffer .= "\n\$runonce(" . var_export(array_unique($this->files), true) . ")\n";
 
         if (false === file_put_contents($this->targetFile, $buffer)) {
             throw new \RuntimeException(sprintf('Could not write runonce file to "%s"', $this->targetFile));
         }
 
         $this->files = [];
-    }
-
-    /**
-     * Returns files in the current runonce script.
-     *
-     * @return array
-     *
-     * @todo we should probably better rename the file and call it again.
-     */
-    private function readCurrentFile()
-    {
-        if (!is_file($this->targetFile)) {
-            return [];
-        }
-
-        $content = file_get_contents($this->targetFile);
-        $matches = [];
-
-        if (preg_match('/\/\*\* files: ({.*}) \*\/\n/', $content, $matches)) {
-            $json = $matches[1];
-            $files = json_decode($json, true);
-
-            if (null !== $files) {
-                return $files;
-            }
-        }
-
-        return [];
     }
 }
