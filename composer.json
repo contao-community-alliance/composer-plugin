@@ -1,6 +1,6 @@
 {
     "name": "contao-community-alliance/composer-plugin",
-    "description": "Composer plugin that provide contao integration and installer.",
+    "description": "Composer plugin that provides installers for contao-module and legacy-contao-module.",
     "type": "composer-plugin",
     "homepage":"http://c-c-a.org/",
     "license": "LGPL-3.0+",
@@ -13,11 +13,7 @@
     },
     "require-dev": {
         "composer/composer": "~1.0@dev",
-        "phpcq/all-tasks": "~1.0"
-    },
-    "conflict": {
-        "contao-community-alliance/composer": "*",
-        "contao-community-alliance/composer-installer": "*"
+        "phpunit/phpunit": "4.*"
     },
     "autoload": {
         "psr-4": {
