@@ -23,8 +23,13 @@ class ContaoModuleInstaller extends LibraryInstaller
      *
      * {@inheritdoc}
      */
-    public function __construct(RunonceManager $runonceManager, IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null)
-    {
+    public function __construct(
+        RunonceManager $runonceManager,
+        IOInterface $io,
+        Composer $composer,
+        $type = 'contao-module',
+        Filesystem $filesystem = null
+    ) {
         parent::__construct($io, $composer, $type, $filesystem);
 
         $this->runonceManager = $runonceManager;

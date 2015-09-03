@@ -49,7 +49,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         $installationManager = $composer->getInstallationManager();
         $installationManager->addInstaller(
-            new ContaoModuleInstaller($this->runonceManager, $io, $composer, 'contao-module')
+            new ContaoModuleInstaller($this->runonceManager, $io, $composer)
         );
     }
 
