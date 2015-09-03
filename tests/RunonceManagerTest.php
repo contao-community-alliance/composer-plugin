@@ -22,7 +22,7 @@ class RunonceManagerTest extends \PHPUnit_Framework_TestCase
         $this->tempdir    = sys_get_temp_dir() . '/' . substr(md5(mt_rand()), 0, 8);
         $this->filesystem = new Filesystem();
 
-        $this->filesystem->emptyDirectory($this->tempdir);
+        $this->filesystem->ensureDirectoryExists($this->tempdir);
     }
 
     protected function tearDown()
