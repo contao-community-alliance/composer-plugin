@@ -33,6 +33,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     private $runonceManager;
 
     /**
+     * Constructor.
+     *
+     * @param RunonceManager $runonceManager
+     */
+    public function __construct(RunonceManager $runonceManager = null)
+    {
+        $this->runonceManager = $runonceManager;
+    }
+
+    /**
      * Activate the composer plugin. This methods is called by Composer to initialize plugins.
      *
      * @param Composer    $composer
@@ -43,9 +53,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $this->composer = $composer;
         $this->io       = $io;
 
-        $this->runonceManager = new RunonceManager(
-            dirname($composer->getConfig()->get('vendor-dir')) . '/app/Resources/contao/config/runonce.php'
-        );
+        if (null === $this->runonceManager) {
+            $this->runonceManager = new RunonceManager(
+                dirname($composer->getConfig()->get('vendor-dir')) . '/app/Resources/contao/config/runonce.php'
+            );
+        }
 
         $installationManager = $composer->getInstallationManager();
         $installationManager->addInstaller(

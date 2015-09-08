@@ -32,7 +32,7 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
         $this->tempdir = realpath($this->tempdir);
     }
 
-    protected function tearDown()
+    public function tearDown()
     {
         $this->filesystem->removeDirectory($this->tempdir);
     }
