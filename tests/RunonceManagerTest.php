@@ -65,26 +65,81 @@ class RunonceManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertNotFalse(strpos(file_get_contents($file), $this->tempdir . '/test.php'));
     }
 
+    /**
+     * @runInSeparateProcess
+     * @expectedException \RuntimeException
+     */
+    public function testDumpThrowsExceptionIfFileIsNotWritable()
+    {
+        include __DIR__ . '/fixtures/mock_is_writable.php';
+
+        $file    = $this->tempdir . '/runonce.php';
+        $runonce = $this->tempdir . '/test.php';
+
+        touch($file);
+        touch($runonce);
+
+        $manager = new RunonceManager($file);
+        $manager->addFile($runonce);
+        $manager->dump();
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @expectedException \RuntimeException
+     */
+    public function testDumpThrowsExceptionIfTargetExistsAndIsNotAFile()
+    {
+        $file    = $this->tempdir . '/runonce.php';
+        $runonce = $this->tempdir . '/test.php';
+
+        $this->filesystem->ensureDirectoryExists($file);
+        touch($runonce);
+
+        $manager = new RunonceManager($file);
+        $manager->addFile($runonce);
+        $manager->dump();
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @expectedException \RuntimeException
+     */
+    public function testDumpThrowsExceptionIfWriteFails()
+    {
+        include __DIR__ . '/fixtures/mock_file_put_contents.php';
+
+        $file    = $this->tempdir . '/runonce.php';
+        $runonce = $this->tempdir . '/test.php';
+
+        touch($runonce);
+
+        $manager = new RunonceManager($file);
+        $manager->addFile($runonce);
+        $manager->dump();
+    }
+
     public function testRenamedExisting()
     {
-        $file = $this->tempdir . '/runonce.php';
+        $file    = $this->tempdir . '/runonce.php';
+        $runonce = $this->tempdir . '/test.php';
 
-        touch($this->tempdir . '/runonce.php');
-        touch($this->tempdir . '/test.php');
+        touch($file);
+        touch($runonce);
 
         $fs = $this->getMock('Composer\\Util\\Filesystem', ['rename']);
         $fs
             ->expects($this->once())
             ->method('rename')
-            ->with($this->tempdir . '/runonce.php')
+            ->with($file)
         ;
 
         $manager = new RunonceManager($file, $fs);
-        $manager->addFile($this->tempdir . '/test.php');
+        $manager->addFile($runonce);
         $manager->dump();
 
         $this->assertTrue(is_file($file));
         $this->assertNotFalse(strpos(file_get_contents($file), $this->tempdir . '/runonce_'));
-        $this->assertNotFalse(strpos(file_get_contents($file), $this->tempdir . '/test.php'));
+        $this->assertNotFalse(strpos(file_get_contents($file), $runonce));
     }
 }
