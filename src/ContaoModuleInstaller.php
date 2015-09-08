@@ -55,6 +55,10 @@ class ContaoModuleInstaller extends LibraryInstaller
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
+        if (!$repo->hasPackage($initial)) {
+            throw new \InvalidArgumentException('Package is not installed: '.$initial);
+        }
+
         $this->removeSymlinks($initial, $this->getSources($initial));
 
         parent::update($repo, $initial, $target);
@@ -70,6 +74,10 @@ class ContaoModuleInstaller extends LibraryInstaller
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
+        if (!$repo->hasPackage($package)) {
+            throw new \InvalidArgumentException('Package is not installed: '.$package);
+        }
+
         $this->removeSymlinks($package, $this->getSources($package));
 
         parent::uninstall($repo, $package);
@@ -271,12 +279,12 @@ class ContaoModuleInstaller extends LibraryInstaller
             && $pathname !== $this->getContaoRoot()
             && $this->filesystem->isDirEmpty($pathname)
         ) {
+            $this->filesystem->removeDirectory($pathname);
+
             if (!$this->removeEmptyDirectories(dirname($pathname))) {
                 if ($this->io->isVeryVerbose()) {
                     $this->io->writeError(sprintf('  - Removing empty directory "%s"', $pathname));
                 }
-
-                $this->filesystem->removeDirectory($pathname);
             }
 
             return true;
