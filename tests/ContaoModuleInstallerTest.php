@@ -220,6 +220,156 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSourcesOnUpdateThrowsExceptionIfPackageIsNotInstalled()
+    {
+        $runonce    = $this->mockRunonce();
+        $installer  = $this->createInstaller($runonce);
+        $package    = $this->mockPackage();
+
+        /** @var \PHPUnit_Framework_MockObject_MockObject|InstalledRepositoryInterface $repo */
+        $repo = $this->getMock('Composer\\Repository\\InstalledRepositoryInterface');
+
+        $repo
+            ->expects($this->any())
+            ->method('hasPackage')
+            ->willReturn(false)
+        ;
+
+        $installer->update($repo, $package, $package);
+    }
+
+    public function testSourcesOnUninstall()
+    {
+        $runonce    = $this->mockRunonce();
+        $installer  = $this->createInstaller($runonce);
+        $repo       = $this->mockRepository();
+        $package    = $this->mockPackage(
+            [
+                'sources' => [
+                    'config/config.php' => 'system/modules/foobar/config/config.php'
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/config');
+        touch($basePath . '/config/config.php');
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/../../../system/modules/foobar/config');
+        symlink(
+            $basePath . '/config/config.php',
+            $this->filesystem->normalizePath($basePath . '/../../../system/modules/foobar/config/config.php')
+        );
+
+        $installer->uninstall($repo, $package);
+
+        $this->assertFalse(file_exists($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertFalse(is_dir($basePath . '/../../../system/modules/foobar'));
+    }
+
+    public function testSourcesOnUninstallIgnoresMissingTarget()
+    {
+        $runonce    = $this->mockRunonce();
+        $installer  = $this->createInstaller($runonce);
+        $repo       = $this->mockRepository();
+        $package    = $this->mockPackage(
+            [
+                'sources' => [
+                    'config/config.php' => 'system/modules/foobar/config/config.php'
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/config');
+        touch($basePath . '/config/config.php');
+
+        $installer->uninstall($repo, $package);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testSourcesOnUninstallThrowsExceptionIfTargetIsNotALink()
+    {
+        $runonce    = $this->mockRunonce();
+        $installer  = $this->createInstaller($runonce);
+        $repo       = $this->mockRepository();
+        $package    = $this->mockPackage(
+            [
+                'sources' => [
+                    'config/config.php' => 'system/modules/foobar/config/config.php'
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/config');
+        touch($basePath . '/config/config.php');
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/../../../system/modules/foobar/config');
+        touch($this->filesystem->normalizePath($basePath . '/../../../system/modules/foobar/config/config.php'));
+
+        $installer->uninstall($repo, $package);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testSourcesOnUninstallThrowsExceptionIfTargetLinkIsDifferent()
+    {
+        $runonce    = $this->mockRunonce();
+        $installer  = $this->createInstaller($runonce);
+        $repo       = $this->mockRepository();
+        $package    = $this->mockPackage(
+            [
+                'sources' => [
+                    'config/config.php' => 'system/modules/foobar/config/config.php'
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/config');
+        touch($basePath . '/config/config.php');
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/../../../system/modules/foobar/config');
+        symlink(
+            $basePath . '/config',
+            $this->filesystem->normalizePath($basePath . '/../../../system/modules/foobar/config/config.php')
+        );
+
+        $installer->uninstall($repo, $package);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSourcesOnUninstallThrowsExceptionIfPackageIsNotInstalled()
+    {
+        $runonce    = $this->mockRunonce();
+        $installer  = $this->createInstaller($runonce);
+        $package    = $this->mockPackage();
+
+        /** @var \PHPUnit_Framework_MockObject_MockObject|InstalledRepositoryInterface $repo */
+        $repo = $this->getMock('Composer\\Repository\\InstalledRepositoryInterface');
+
+        $repo
+            ->expects($this->any())
+            ->method('hasPackage')
+            ->willReturn(false)
+        ;
+
+        $installer->uninstall($repo, $package);
+    }
+
+    /**
      * @return \PHPUnit_Framework_MockObject_MockObject|RunonceManager
      */
     private function mockRunonce()
@@ -291,6 +441,12 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
             ->expects($this->any())
             ->method('getTargetDir')
             ->willReturn('')
+        ;
+
+        $package
+            ->expects($this->any())
+            ->method('getName')
+            ->willReturn('foo/bar')
         ;
 
         $package
