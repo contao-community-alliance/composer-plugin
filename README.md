@@ -1,101 +1,200 @@
-Contao Composer Plugin
-======================
+
+# Contao Composer Plugin
+
 [![Version](http://img.shields.io/packagist/v/contao-community-alliance/composer-plugin.svg?style=flat-square)](https://packagist.org/packages/contao-community-alliance/composer-plugin)
 [![Stable Build Status](http://img.shields.io/travis/contao-community-alliance/composer-plugin/master.svg?style=flat-square&label=stable build)](https://travis-ci.org/contao-community-alliance/composer-plugin)
 [![Upstream Build Status](http://img.shields.io/travis/contao-community-alliance/composer-plugin/develop.svg?style=flat-square&label=dev build)](https://travis-ci.org/contao-community-alliance/composer-plugin)
 [![License](http://img.shields.io/packagist/l/contao-community-alliance/composer-plugin.svg?style=flat-square)](http://spdx.org/licenses/LGPL-3.0+)
 [![Downloads](http://img.shields.io/packagist/dt/contao-community-alliance/composer-plugin.svg?style=flat-square)](https://packagist.org/packages/contao-community-alliance/composer-plugin)
 
-contao composer installer
+The Contao Composer plugin is responsible for correctly installing Contao 3 extensions in a Composer environment.
+Composer files are always located in the `vendor` folder, but they must be copied/symlinked to `system/modules`
+to be correctly detected by Contao.
 
-Sources
---------
+Be aware that this plugin is not necessary for Contao 4 / Symfony bundles. If you however do support both Contao 3
+and Contao 4, make sure to follow the *old* way which is still fully supported in Contao 4. You will obviously
+not be able to use new bundle features (like the DIC) though.
 
-Contao require a strict module structure.
-Composer install all dependencies into the `vendor` directory, using the complete repository structure.
-Both often not match each other.
 
-To solve this problem, without making a lot of shadow copies the `contao-module` installer create symlinks.
+## composer.json
 
-**Hint for users**: Symlinks require a *good* server setup. To work with Apache2 the `FollowSymLinks` option is mostly required.
+Follow the [Composer manual][composer_libraries] on how the basic `composer.json` in your library should look like.
 
-**Hint for developers**: PHP will follow symlinks by default, but using `__DIR__` or `__FILE__` will return the real path.
-You will get `composer/vendor/me/my-module/MyClass.php` instead of `system/modules/my-module/MyClass.php`.
+A few simple rules will make your package compatible with Contao 3:
 
-**Hint for Windows users**: Symlinks on Windows require PHP 5.3+, but this is no real problem, because composer require PHP 5.3+ ;-)
+ 1. Change the type of your package to `contao-module`
+ 2. Add a requirement for the correct Contao version
+ 3. Add a requirement to the Contao Composer plugin
+ 4. Add the sources to the `extras => contao` section
+ 5. If necessary, specify your runonce files
+ 
+**Example:**
 
-Installing repository root as module `my-module`:
-**Hint**: This is the implicit fallback (`system/modules/$packageName`), if no symlinks specified!
+```json
+{
+    "name": "vendor/package-name", 
+    "type": "contao-module",
+    "license": "LGPL-3.0+",
+    "require": {
+        "contao/core-bundle": "4.*",
+        "contao-community-alliance/composer-plugin": "3.*"
+    },
+    "extra": {
+        "contao": {
+            "sources": {
+                "": "system/modules/extension-name"
+            },
+            "runonce": [
+                "config/update.php"
+            ]
+        }
+    },
+    "replace": {
+        "contao-legacy/extension-name": "self.version"
+    }
+}
+```
+
+
+### Require Contao
+
+In Contao 4, the bundled modules were restructured so each module is a separate Symfony bundle. This means that
+ a user can decide not to install the news or calendar extension if it's not needed for their system.
+
+Your extension should always `require contao/core-bundle` in the appropriate version (see *About semantic versioning*).
+If your code is extending other modules like news or calendar, make sure to add correct requirements for the 
+respective Symfony bundles (e.g. `contao/news-bundle` or `contao/calendar-bundle`).
+
+Contao 4 was designed to be backwards-compatible with Contao 3. Therefore, it is very much possible to have an
+extension that does support both Contao 3 and Contao 4. If your extension works with Contao 3.5 and Contao 4, a correct
+requirement could look like this:
+
+```json
+{
+    "require": {
+        "contao/core-bundle": "^3.5 || ^4.1.0"
+    }
+}
+```
+
+
+### Require the Contao Composer Plugin
+
+There are two different versions of the Plugin currently actively supported.
+
+ - Version 2 of the plugin is made for Contao 3. It supports installing Composer packages in `TL_ROOT/composer`
+   instead of the root directory of your installation.
+   
+ - Version 3 of the plugin is made for Contao 4. In Contao 4, the `vendor` folder is located in your installation
+   root, and Contao is just another dependency of your installation.
+   
+Make sure to require the correct version of the plugin. If your module does support Contao 3 and Contao 4, the correct
+require statement looks like this:
+
+```json
+{
+    "require": {
+        "contao-community-alliance/composer-plugin": "^2.4.0 || 3.*"
+    }
+}
+```
+
+Versions older than 2.4 will not support `contao/core-bundle`, so make sure to set a correct dependency. If you only
+support Contao 4, the required version would simply be `3.*`. However, you should probably create a Symfony bundle
+and not require the Contao Composer Plugin at all…
+
+
+### Sources
+
+In the sources section, you can define which files should be copied where on installation. This is necessary
+for Contao 3 extensions to be installed in the `system/modules` folder.
+
+If your GIT repository contains only files that should be copied into the `system/modules/extension-name` folder,
+simply specify an empty source and the targe folder.
+
 ```json
 {
     "extra": {
         "contao": {
             "sources": {
-                "": "system/modules/my-module"
+                "": "system/modules/extension-name"
             }
         }
     }
 }
 ```
 
-Installing repository sub-path `src/system/modules/my-module` as module `my-module`:
+However, you could also restructure your GIT so that Contao files live in their own folder. In this case,
+you can use the Composer autoloader and follow [PSR-0][psr0] or [PSR-4][psr4] namespaces. However, your extension 
+is then incompatible with the old extension repository.
+
+You can define multiple files or folder to be copied/symlinked into the Contao installation. Your package
+can even install multiple Contao extensions at once.
+
 ```json
 {
     "extra": {
         "contao": {
             "sources": {
-                "src/system/modules/my-module": "system/modules/my-module"
+                "config": "system/modules/extension-name/config",
+                "dca": "system/modules/extension-name/dca",
+                "templates": "system/modules/extension-name/templates"
             }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "VendorName\\ExtensionName\\": "src/"
         }
     }
 }
 ```
 
-Userfiles
----------
 
-Sometimes you need to provide user files (files within the `(tl_)files` directory).
-There is a support to install these user files.
-Normally these files can be modified by users.
-To protect user changes, user files are only copied if they are not exists.
-The installer will **never** overwrite a user file.
+### Runonces
 
-**Hint**: User files are installed into the `$uploadPath` directory, not `TL_ROOT`.
-
-```json
-{
-    "extra": {
-        "contao": {
-            "userfiles": {
-                "src/system/modules/my-module/files/images": "my-module/images"
-            }
-        }
-    }
-}
-```
-
-Runonces
---------
-
-Putting your `runonce.php` into your modules `config` directory is not a good idea in combination with composer.
-After contao runs the `runonce.php` it get deleted. Next time you do an update, composer complains about this modification.
-To solve this, you can define your `runcone.php`'s, yes you are right, you can use multiple `runonce.php` files.
-There is no need to name them `runonce.php`, feel free to use any other name.
+Putting `runonce.php` files into your extension's `config` directory is a bad practice with Composer.
+The file will be deleted by Contao after it's executed, which means Composer will complain about modified files
+on the next update. To work around this, you can specify a list of runonce files in the `composer.json`. 
+They will be executed after each installation or update, but they won't be deleted. There is no need to name 
+them `runonce.php` either, feel free to use any other name.
 
 ```json
 {
     "extra": {
         "contao": {
             "runonce": [
-                "src/system/modules/my-module/runonce/init_update.php",
-                "src/system/modules/my-module/runonce/do_db_update.php",
-                "src/system/modules/my-module/runonce/refresh_entities.php"
+                "src/system/modules/extension-name/runonce/init_update.php",
+                "src/system/modules/extension-name/runonce/do_db_update.php",
+                "src/system/modules/extension-name/runonce/refresh_entities.php"
             ]
         }
     }
 }
 ```
 
-**Hint**: The order of the runonce files is taken into account.
+The runonce files will be executed in the order you specify them.
 
-**Hint**: No, the installer will **not** support directories. This is just to protect unexpected behavior.
+
+## About semantic versioning
+
+Following [Semanting Versioning][semver] is crucial to the success of Composer installation. If you (the developer)
+do not follow semantic versioning, it is very hard for others, (and the dependency manager) to install correct
+versions of your library. 
+
+You should also get familiar with the [Composer version constraints][composer_version] to correctly set your
+dependencies. Incorrect dependencies will lead to broken installations, and it's **always** the developer's fault!
+
+
+## Server requirements
+
+The Contao Composer Plugin requires an up-to-date server configuration. Contao 4 does no longer support the so-called
+"safe mode hack", and the plugin now requires symlink support.
+
+
+
+[composer_libraries]: https://getcomposer.org/doc/02-libraries.md
+[composer_versions]: https://getcomposer.org/doc/articles/versions.md
+[semver]: http://semver.org
+[psr0]: http://www.php-fig.org/psr/psr-0/
+[psr4]: http://www.php-fig.org/psr/psr-4/
