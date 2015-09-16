@@ -176,7 +176,7 @@ class ContaoModuleInstaller extends LibraryInstaller
                     continue;
                 }
 
-                throw new \RuntimeException(sprintf('Installation target "%s" already exists', $source));
+                throw new \RuntimeException(sprintf('Installation target "%s" already exists', $sourcePath));
             }
 
             $actions[$sourcePath] = $targetPath;
