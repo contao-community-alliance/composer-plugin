@@ -414,6 +414,10 @@ class ConfigManipulator
         $legacyRepositoryExists   = false;
 
         foreach ($configJson['repositories'] as $repository) {
+            if (!isset($repository['type'])) {
+                continue;    
+            }
+
             if (
                 $repository['type'] == 'artifact' &&
                 preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
