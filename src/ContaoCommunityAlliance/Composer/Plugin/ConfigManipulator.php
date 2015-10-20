@@ -8,6 +8,7 @@
  * @package contao-composer
  * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author  Tristan Lins <tristan.lins@bit3.de>
+ * @author  Oliver Hoff <oliver@hofff.com>
  * @link    http://c-c-a.org
  * @license LGPL-3.0+
  */
@@ -19,6 +20,8 @@ use Composer\Package\Version\VersionParser;
 
 /**
  * Manipulate the root composer.json on the fly.
+ *
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class ConfigManipulator
 {
@@ -28,6 +31,8 @@ class ConfigManipulator
      * @throws ConfigUpdateException When the upgrade process did perform any action. The process should be restarted.
      *
      * @return void
+     *
+     * @throws ConfigUpdateException For all performed actions.
      */
     public static function run()
     {
@@ -415,7 +420,7 @@ class ConfigManipulator
 
         foreach ($configJson['repositories'] as $repository) {
             if (!isset($repository['type'])) {
-                continue;    
+                continue;
             }
 
             if (

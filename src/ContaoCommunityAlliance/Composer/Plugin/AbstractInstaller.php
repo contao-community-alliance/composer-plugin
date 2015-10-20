@@ -26,6 +26,8 @@ use SplFileInfo;
 
 /**
  * Basic installer that install Contao extensions.
+ *
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 abstract class AbstractInstaller extends LibraryInstaller
 {
