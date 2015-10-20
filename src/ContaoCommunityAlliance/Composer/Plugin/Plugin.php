@@ -30,7 +30,7 @@ use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Script\ScriptEvents;
 use Composer\Package\LinkConstraint\EmptyConstraint;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use RuntimeException;
 
 /**
@@ -164,7 +164,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
             $swiftVersion = $versionParser->normalize($prettySwiftVersion);
 
-            $swiftConstraint = new VersionConstraint('==', $swiftVersion);
+            $swiftConstraint = $this->createConstraint('==', $swiftVersion);
             $swiftConstraint->setPrettyString($swiftVersion);
 
             $swiftLink = new Link(
@@ -287,7 +287,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
             $version       = $versionParser->normalize($prettyVersion);
 
-            $constraint = new VersionConstraint('==', $version);
+            $constraint = $this->createConstraint('==', $version);
             $constraint->setPrettyString($prettyVersion);
             $requires['contao/core'] = new Link(
                 'contao/core',
@@ -673,5 +673,24 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         if (!isset($this->contaoUploadPath)) {
             $this->contaoUploadPath = $this->extractKeyFromConfigPath($configDir, 'uploadPath');
         }
+    }
+
+    /**
+     * Create a constraint instance and set operator and version to compare a package with.
+     *
+     * @param string $operator A comparison operator.
+     * @param string $version  A version to compare to.
+     *
+     * @return Constraint|\Composer\Package\LinkConstraint\VersionConstraint
+     * @see    https://github.com/contao-community-alliance/composer-plugin/issues/44
+     * @see    https://github.com/composer/semver/issues/17
+     */
+    private function createConstraint($operator, $version)
+    {
+        if (!class_exists('Composer\Semver\Constraint\Constraint')) {
+            return new \Composer\Package\LinkConstraint\VersionConstraint($operator, $version);
+        }
+
+        return new Constraint($operator, $version);
     }
 }
