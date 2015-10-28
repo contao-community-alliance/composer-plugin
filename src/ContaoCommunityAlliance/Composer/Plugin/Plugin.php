@@ -29,8 +29,8 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Script\ScriptEvents;
-use Composer\Package\LinkConstraint\EmptyConstraint;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\EmptyConstraint;
 use RuntimeException;
 
 /**
@@ -255,7 +255,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         $this->injectSwiftMailer($root, $contaoCore);
 
-        $clientConstraint = new EmptyConstraint();
+        if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
+            $clientConstraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
+        } else {
+            $clientConstraint = new EmptyConstraint();
+        }
         $clientConstraint->setPrettyString('*');
         $clientLink = new Link(
             'contao/core',
