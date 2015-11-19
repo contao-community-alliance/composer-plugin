@@ -1,11 +1,12 @@
 <?php
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;

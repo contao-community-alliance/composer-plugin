@@ -1,6 +1,6 @@
 <?php
 
-namespace ContaoCommunityAlliance\Composer\Plugin;
+namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 use Composer\Composer;
 use Composer\Installer\LibraryInstaller;
@@ -8,6 +8,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
 abstract class AbstractModuleInstaller extends LibraryInstaller
 {
