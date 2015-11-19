@@ -11,6 +11,14 @@ use Composer\Util\Filesystem;
 
 class ContaoModuleInstaller extends LibraryInstaller
 {
+    const DUPLICATE_IGNORE = 1;
+    const DUPLICATE_OVERWRITE = 2;
+    const DUPLICATE_FAIL = 3;
+
+    const INVALID_IGNORE = 1;
+    const INVALID_OVERWRITE = 2;
+    const INVALID_FAIL = 3;
+
     /**
      * @var RunonceManager
      */
@@ -42,10 +50,20 @@ class ContaoModuleInstaller extends LibraryInstaller
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('Installing Contao sources for %s', $package->getName()));
+        }
+
         parent::install($repo, $package);
 
-        $this->addSymlinks($package, $this->getSources($package));
+        $targetRoot = $this->getContaoRoot();
+
+        $this->addSymlinks($package, $targetRoot, $this->getSources($package));
         $this->addRunonces($package, $this->getRunonces($package));
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError('');
+        }
     }
 
     /**
@@ -59,12 +77,22 @@ class ContaoModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $this->removeSymlinks($initial, $this->getSources($initial));
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('Updating Contao sources for %s', $initial->getName()));
+        }
+
+        $targetRoot = $this->getContaoRoot();
+
+        $this->removeSymlinks($initial, $targetRoot, $this->getSources($initial));
 
         parent::update($repo, $initial, $target);
 
-        $this->addSymlinks($target, $this->getSources($target));
+        $this->addSymlinks($target, $targetRoot, $this->getSources($target));
         $this->addRunonces($target, $this->getRunonces($target));
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError('');
+        }
     }
 
     /**
@@ -78,9 +106,19 @@ class ContaoModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $this->removeSymlinks($package, $this->getSources($package));
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('Removing Contao sources for %s', $package->getName()));
+        }
+
+        $targetRoot = $this->getContaoRoot();
+
+        $this->removeSymlinks($package, $targetRoot, $this->getSources($package));
 
         parent::uninstall($repo, $package);
+
+        if ($this->io->isVerbose()) {
+            $this->io->writeError('');
+        }
     }
 
     /**
@@ -127,7 +165,7 @@ class ContaoModuleInstaller extends LibraryInstaller
      *
      * @return mixed|null
      */
-    private function getContaoExtra(PackageInterface $package, $key)
+    protected function getContaoExtra(PackageInterface $package, $key)
     {
         $extras = $package->getExtra();
 
@@ -139,115 +177,199 @@ class ContaoModuleInstaller extends LibraryInstaller
     }
 
     /**
+     * Gets the Contao root (parent folder of vendor dir).
+     *
+     * @return string
+     */
+    protected function getContaoRoot()
+    {
+        $this->initializeVendorDir();
+
+        return dirname($this->vendorDir);
+    }
+
+    /**
      * Creates symlinks for a map of relative file paths.
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package
-     * @param array            $sources
+     * @param string           $targetRoot
+     * @param array            $pathMap
+     * @param int              $mode
      */
-    private function addSymlinks(PackageInterface $package, array $sources)
+    protected function addSymlinks(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::DUPLICATE_FAIL)
     {
-        if (empty($sources)) {
+        if (empty($pathMap)) {
             return;
         }
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('Installing Contao sources for %s', $package->getName()));
-        }
-
         $packageRoot = $this->getInstallPath($package);
-        $contaoRoot  = $this->getContaoRoot();
         $actions     = [];
 
         // Check the file map first and make sure nothing exists.
-        foreach ($sources as $source => $target) {
-            $sourcePath = $this->filesystem->normalizePath($packageRoot . ($source ? ('/'.$source) : ''));
-            $targetPath = $this->filesystem->normalizePath($contaoRoot . '/' . $target);
+        foreach ($pathMap as $sourcePath => $targetPath) {
+            $source = $this->filesystem->normalizePath($packageRoot . ($sourcePath ? ('/'.$sourcePath) : ''));
+            $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
 
-            if (!is_readable($sourcePath)) {
+            if (!is_readable($source)) {
                 throw new \RuntimeException(
-                    sprintf('Installation source "%s" does not exist or is not readable', $source)
+                    sprintf('Installation source "%s" does not exist or is not readable', $sourcePath)
                 );
             }
 
-            if (file_exists($targetPath)) {
+            if (file_exists($target)) {
                 // Target link already exists and is correct, do nothing
-                if (is_link($targetPath) && $sourcePath === readlink($targetPath)) {
+                if (is_link($target) && $source === readlink($target)) {
                     continue;
                 }
 
-                throw new \RuntimeException(sprintf('Installation target "%s" already exists', $targetPath));
+                if (!$this->canAddTarget($target, $mode)) {
+                    continue;
+                }
             }
 
-            $actions[$sourcePath] = $targetPath;
+            $actions[$source] = $target;
         }
 
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
-            if ($this->io->isVeryVerbose()) {
-                $this->io->writeError(sprintf('  - Linking "%s" to "%s"', $source, $target));
-            }
+            $this->logSymlink($source, $target);
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
             symlink($source, $target);
         }
-
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('');
-        }
     }
 
     /**
-     * Remove symlinks from a map of relative file paths.
+     * Removes symlinks from a map of relative file paths.
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package
-     * @param array            $sources
+     * @param string           $targetRoot
+     * @param array            $pathMap
+     * @param int              $mode
      */
-    private function removeSymlinks(PackageInterface $package, array $sources)
+    protected function removeSymlinks(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::INVALID_FAIL)
     {
-        if (empty($sources)) {
+        if (empty($pathMap)) {
             return;
         }
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('Removing Contao sources for %s', $package->getName()));
-        }
-
         $packageRoot = $this->getInstallPath($package);
-        $contaoRoot  = $this->getContaoRoot();
         $actions     = [];
 
         // Check the file map first and make sure we only remove our own symlinks.
-        foreach ($sources as $source => $target) {
-            $sourcePath = $this->filesystem->normalizePath($packageRoot . ($source ? ('/'.$source) : ''));
-            $targetPath = $this->filesystem->normalizePath($contaoRoot . '/' . $target);
+        foreach ($pathMap as $sourcePath => $targetPath) {
+            $source = $this->filesystem->normalizePath($packageRoot . ($sourcePath ? ('/'.$sourcePath) : ''));
+            $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
 
-            if (!file_exists($targetPath)) {
+            if (!file_exists($target)) {
                 continue;
             }
 
-            if (!is_link($targetPath) || $sourcePath !== readlink($targetPath)) {
-                throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $source, $target));
+            if (!is_link($target) || $source !== readlink($target)) {
+                if (self::INVALID_IGNORE === $mode) {
+                    continue;
+                }
+
+                if (self::INVALID_FAIL === $mode) {
+                    throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $sourcePath, $targetPath));
+                }
             }
 
-            $actions[] = $targetPath;
+            $actions[] = $target;
         }
 
         // Remove the symlinks if everything is ok.
         foreach ($actions as $target) {
-            if ($this->io->isVeryVerbose()) {
-                $this->io->writeError(sprintf('  - Removing "%s"', $target));
-            }
+            $this->logRemove($target);
 
             $this->filesystem->unlink($target);
 
             $this->removeEmptyDirectories(dirname($target));
         }
+    }
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('');
+    /**
+     * Creates copies for a map of relative file paths.
+     * Key is the relative path to composer package, whereas "value" is relative to Contao root.
+     *
+     * @param PackageInterface $package
+     * @param string           $targetRoot
+     * @param array            $pathMap
+     * @param int              $mode
+     */
+    protected function addCopies(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::DUPLICATE_FAIL)
+    {
+        if (empty($pathMap)) {
+            return;
+        }
+
+        $packageRoot = $this->getInstallPath($package);
+        $actions     = [];
+
+        // Check the file map first and make sure nothing exists.
+        foreach ($pathMap as $sourcePath => $targetPath) {
+            $source = $this->filesystem->normalizePath($packageRoot . (empty($sourcePath) ? '' : ('/'.$sourcePath)));
+            $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
+
+            if (!is_readable($source)) {
+                throw new \RuntimeException(
+                    sprintf('Installation source "%s" does not exist', $sourcePath)
+                );
+            }
+
+            if (file_exists($target) && !$this->canAddTarget($target, $mode)) {
+                continue;
+            }
+
+            $actions[$source] = $target;
+        }
+
+        // Only actually create the links if the checks are successful to prevent orphans.
+        foreach ($actions as $source => $target) {
+            $this->logCopy($source, $target);
+
+            $this->filesystem->ensureDirectoryExists(dirname($target));
+
+            copy($source, $target);
+        }
+    }
+
+    /**
+     * Removes copies from a map of relative file paths.
+     * Key is the relative path to composer package, whereas "value" is relative to Contao root.
+     *
+     * @param string           $targetRoot
+     * @param array            $pathMap
+     */
+    protected function removeCopies($targetRoot, array $pathMap)
+    {
+        if (empty($pathMap)) {
+            return;
+        }
+
+        $actions     = [];
+
+        // Check the file map first and make sure we only remove our own symlinks.
+        foreach ($pathMap as $sourcePath => $targetPath) {
+            $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
+
+            if (!file_exists($target)) {
+                continue;
+            }
+
+            $actions[] = $target;
+        }
+
+        // Remove the symlinks if everything is ok.
+        foreach ($actions as $target) {
+            $this->logRemove($target);
+
+            $this->filesystem->unlink($target);
+
+            $this->removeEmptyDirectories(dirname($target));
         }
     }
 
@@ -257,7 +379,7 @@ class ContaoModuleInstaller extends LibraryInstaller
      * @param PackageInterface $package
      * @param array            $files
      */
-    private function addRunonces(PackageInterface $package, array $files)
+    protected function addRunonces(PackageInterface $package, array $files)
     {
         $rootDir = $this->getInstallPath($package);
 
@@ -294,14 +416,48 @@ class ContaoModuleInstaller extends LibraryInstaller
     }
 
     /**
-     * Gets the Contao root (parent folder of vendor dir).
+     * Checks if the target file should be added based on the given mode.
      *
-     * @return string
+     * @param string $target
+     * @param int    $mode
+     *
+     * @return bool
+     *
+     * @throws \RuntimeException If target exists and can not or must not be removed.
      */
-    private function getContaoRoot()
+    private function canAddTarget($target, $mode)
     {
-        $this->initializeVendorDir();
+        // Mode is set to ignore existing targets
+        if ($mode === self::DUPLICATE_IGNORE) {
+            return false;
+        }
 
-        return dirname($this->vendorDir);
+        // Error if we're not allowed to overwrite or can't remove the existing target
+        if ($mode !== self::DUPLICATE_OVERWRITE || !$this->filesystem->remove($target)) {
+            throw new \RuntimeException(sprintf('Installation target "%s" already exists', $target));
+        }
+
+        return true;
+    }
+
+    private function logSymlink($source, $target)
+    {
+        if ($this->io->isVeryVerbose()) {
+            $this->io->writeError(sprintf('  - Linking "%s" to "%s"', $source, $target));
+        }
+    }
+
+    private function logCopy($source, $target)
+    {
+        if ($this->io->isVeryVerbose()) {
+            $this->io->writeError(sprintf('  - Copying "%s" to "%s"', $source, $target));
+        }
+    }
+
+    private function logRemove($target)
+    {
+        if ($this->io->isVeryVerbose()) {
+            $this->io->writeError(sprintf('  - Removing "%s"', $target));
+        }
     }
 }
