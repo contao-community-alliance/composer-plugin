@@ -10,7 +10,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-class LegacyContaoModuleInstaller extends ContaoModuleInstaller
+class LegacyContaoModuleInstaller extends AbstractModuleInstaller
 {
     public function __construct(
         RunonceManager $runonceManager,
