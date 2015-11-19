@@ -9,11 +9,16 @@
     "require": {
         "php": ">=5.4.0",
         "composer-plugin-api": "^1.0",
-        "contao/core-bundle": "^4.1"
+        "symfony/finder": "^2.7",
+        "symfony/process": "^2.7"
     },
     "require-dev": {
         "composer/composer": "~1.0@dev",
         "phpunit/phpunit": "4.*"
+    },
+    "conflict": {
+        "contao/core": "*",
+        "contao/core-bundle": "<4.1"
     },
     "autoload": {
         "psr-4": {
