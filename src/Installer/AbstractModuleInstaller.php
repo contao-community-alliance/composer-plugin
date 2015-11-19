@@ -9,6 +9,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
+use ContaoCommunityAlliance\Composer\Plugin\UserFilesLocator;
 
 abstract class AbstractModuleInstaller extends LibraryInstaller
 {
@@ -60,9 +61,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
         parent::install($repo, $package);
 
-        $contaoRoot = $this->getContaoRoot();
-
-        $this->addSymlinks($package, $contaoRoot, $this->getSources($package));
+        $this->addSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
+        $this->addCopies($package, $this->getFilesRoot(), $this->getUserFiles($package), self::DUPLICATE_IGNORE);
         $this->addRunonces($package, $this->getRunonces($package));
 
         if ($this->io->isVerbose()) {
@@ -92,6 +92,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         parent::update($repo, $initial, $target);
 
         $this->addSymlinks($target, $contaoRoot, $this->getSources($target));
+        $this->addCopies($target, $this->getFilesRoot(), $this->getUserFiles($target), self::DUPLICATE_IGNORE);
         $this->addRunonces($target, $this->getRunonces($target));
 
         if ($this->io->isVerbose()) {
@@ -102,7 +103,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Remove symlinks for Contao sources before uninstalling a package.
      *
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -114,9 +115,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->io->writeError(sprintf('Removing Contao sources for %s', $package->getName()));
         }
 
-        $contaoRoot = $this->getContaoRoot();
-
-        $this->removeSymlinks($package, $contaoRoot, $this->getSources($package));
+        $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
 
         parent::uninstall($repo, $package);
 
@@ -162,6 +161,18 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         $this->initializeVendorDir();
 
         return dirname($this->vendorDir);
+    }
+
+    /**
+     * Gets the user files root folder (e.g. TL_ROOT/files).
+     *
+     * @return string
+     */
+    protected function getFilesRoot()
+    {
+        $locator = new UserFilesLocator($this->getContaoRoot());
+
+        return $locator->locate();
     }
 
     /**
@@ -263,7 +274,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
             $this->filesystem->unlink($target);
 
-            $this->removeEmptyDirectories(dirname($target));
+            $this->removeEmptyDirectories(dirname($target), $targetRoot);
         }
     }
 
@@ -345,7 +356,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
             $this->filesystem->unlink($target);
 
-            $this->removeEmptyDirectories(dirname($target));
+            $this->removeEmptyDirectories(dirname($target), $targetRoot);
         }
     }
 
@@ -368,18 +379,19 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Clean up empty directories.
      *
      * @param string $pathname
+     * @param string $root
      *
      * @return bool
      */
-    private function removeEmptyDirectories($pathname)
+    private function removeEmptyDirectories($pathname, $root)
     {
         if (is_dir($pathname)
-            && $pathname !== $this->getContaoRoot()
+            && $pathname !== $root
             && $this->filesystem->isDirEmpty($pathname)
         ) {
             $this->filesystem->removeDirectory($pathname);
 
-            if (!$this->removeEmptyDirectories(dirname($pathname))) {
+            if (!$this->removeEmptyDirectories(dirname($pathname), $root)) {
                 if ($this->io->isVeryVerbose()) {
                     $this->io->writeError(sprintf('  - Removing empty directory "%s"', $pathname));
                 }
