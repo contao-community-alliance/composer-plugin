@@ -7,6 +7,7 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
+use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
 
 /**
  * @author Andreas Schempp <https://github.com/aschempp>
