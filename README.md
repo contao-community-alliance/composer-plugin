@@ -182,7 +182,7 @@ Following [Semanting Versioning][semver] is crucial to the success of Composer i
 do not follow semantic versioning, it is very hard for others, (and the dependency manager) to install correct
 versions of your library. 
 
-You should also get familiar with the [Composer version constraints][composer_version] to correctly set your
+You should also get familiar with the [Composer version constraints][composer_versions] to correctly set your
 dependencies. Incorrect dependencies will lead to broken installations, and it's **always** the developer's fault!
 
 
