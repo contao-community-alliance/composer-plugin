@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Contao Composer Plugin
+ *
+ * Copyright (C) 2013-2015 Contao Community Alliance
+ *
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 use Composer\Composer;
@@ -11,6 +20,12 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * LegacyContaoModuleInstaller installs Composer packages of type "legacy-contao-module".
+ * These are provided by the Packagist gateway to the old extension repository.
+ *
+ * @author Andreas Schempp <https://github.com/aschempp>
+ */
 class LegacyContaoModuleInstaller extends AbstractModuleInstaller
 {
     public function __construct(

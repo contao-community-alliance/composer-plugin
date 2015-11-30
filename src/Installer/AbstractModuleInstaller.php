@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Contao Composer Plugin
+ *
+ * Copyright (C) 2013-2015 Contao Community Alliance
+ *
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 use Composer\Composer;
@@ -11,6 +20,11 @@ use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 use ContaoCommunityAlliance\Composer\Plugin\UserFilesLocator;
 
+/**
+ * AbstractModuleInstaller is the parent class that handles file copying and symlinking.
+ *
+ * @author Andreas Schempp <https://github.com/aschempp>
+ */
 abstract class AbstractModuleInstaller extends LibraryInstaller
 {
     const DUPLICATE_IGNORE = 1;

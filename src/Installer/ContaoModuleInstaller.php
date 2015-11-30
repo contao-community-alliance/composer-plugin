@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Contao Composer Plugin
+ *
+ * Copyright (C) 2013-2015 Contao Community Alliance
+ *
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
 
 use Composer\Composer;
@@ -8,6 +17,12 @@ use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
+/**
+ * ContaoModuleInstaller installs Composer packages of type "contao-module".
+ * These are the Contao modules available on Packagist.
+ *
+ * @author Andreas Schempp <https://github.com/aschempp>
+ */
 class ContaoModuleInstaller extends AbstractModuleInstaller
 {
     /**

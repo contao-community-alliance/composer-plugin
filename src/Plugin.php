@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Contao Composer Plugin
+ *
+ * Copyright (C) 2013-2015 Contao Community Alliance
+ *
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Composer;
@@ -8,8 +17,11 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Installer\LegacyContaoModuleInstaller;
 
 /**
+ * The Composer plugin registers our installers for Contao modules.
+ *
  * @author Andreas Schempp <https://github.com/aschempp>
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
@@ -61,8 +73,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         $installationManager = $composer->getInstallationManager();
+
         $installationManager->addInstaller(
             new ContaoModuleInstaller($this->runonceManager, $io, $composer)
+        );
+
+        $installationManager->addInstaller(
+            new LegacyContaoModuleInstaller($this->runonceManager, $io, $composer)
         );
     }
 

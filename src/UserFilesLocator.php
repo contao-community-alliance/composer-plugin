@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Contao Composer Plugin
+ *
+ * Copyright (C) 2013-2015 Contao Community Alliance
+ *
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Symfony\Component\Finder\Finder;
@@ -7,6 +16,12 @@ use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+/**
+ * UserFilesLocator finds the path to the user upload folder.
+ * It tries to run the Symfony console and if unsuccessfull falls back to the default (/files).
+ *
+ * @author Andreas Schempp <https://github.com/aschempp>
+ */
 class UserFilesLocator
 {
     /**

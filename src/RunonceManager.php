@@ -1,9 +1,24 @@
 <?php
 
+/**
+ * Contao Composer Plugin
+ *
+ * Copyright (C) 2013-2015 Contao Community Alliance
+ *
+ * @link    http://c-c-a.org
+ * @license LGPL-3.0+
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Util\Filesystem;
 
+/**
+ * RunonceManager collects runonce files and dumps them into app/Resources
+ * to be executed after installation or update.
+ *
+ * @author Andreas Schempp <https://github.com/aschempp>
+ */
 class RunonceManager
 {
     /**
