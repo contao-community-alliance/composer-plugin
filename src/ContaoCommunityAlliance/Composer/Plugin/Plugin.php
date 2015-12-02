@@ -263,12 +263,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $clientConstraint->setPrettyString('*');
         $clientLink = new Link(
             'contao/core',
-            'contao-community-alliance/composer',
+            'contao-community-alliance/composer-client',
             $clientConstraint,
             'requires',
             '*'
         );
-        $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+        $contaoCore->setRequires(array('contao-community-alliance/composer-client' => $clientLink));
 
         $localRepository->addPackage($contaoCore);
     }
