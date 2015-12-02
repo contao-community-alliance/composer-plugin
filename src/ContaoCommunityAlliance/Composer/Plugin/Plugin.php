@@ -18,6 +18,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\PackageEvent;
+use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
@@ -119,11 +120,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            PluginEvents::COMMAND             => 'handleCommand',
-            ScriptEvents::POST_UPDATE_CMD     => 'handlePostUpdateCmd',
-            ScriptEvents::POST_AUTOLOAD_DUMP  => 'handlePostAutoloadDump',
-            ScriptEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
-            PluginEvents::PRE_FILE_DOWNLOAD   => 'handlePreDownload',
+            PluginEvents::COMMAND              => 'handleCommand',
+            ScriptEvents::POST_UPDATE_CMD      => 'handlePostUpdateCmd',
+            ScriptEvents::POST_AUTOLOAD_DUMP   => 'handlePostAutoloadDump',
+            PackageEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
+            PluginEvents::PRE_FILE_DOWNLOAD    => 'handlePreDownload',
         );
     }
 
