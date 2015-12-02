@@ -153,7 +153,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         $map = $this->mapSources($initial);
         parent::updateCode($initial, $target);
-        $this->updateSources($map, $target, $initial);
+        $this->updateSources($map, $target);
         $this->updateUserfiles($target);
         $this->updateRootFiles($target);
 
@@ -177,7 +177,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     public function updateContaoFiles(PackageInterface $package)
     {
         $map = $this->mapSources($package);
-        $this->updateSources($map, $package, $package);
+        $this->updateSources($map, $package);
         $this->updateUserfiles($package);
         $this->updateRootFiles($package);
 
