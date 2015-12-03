@@ -29,6 +29,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
+use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
@@ -40,6 +41,23 @@ use RuntimeException;
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
+    /**
+     * The bundle names the virtual core shall provide.
+     *
+     * NOTE: 'contao/installation-bundle' is a special case and will not get added here, as it is new code only.
+     *
+     * @var string[]
+     */
+    protected static $bundleNames = array(
+        'contao/calendar-bundle',
+        'contao/comments-bundle',
+        'contao/core-bundle',
+        'contao/faq-bundle',
+        'contao/listing-bundle',
+        'contao/news-bundle',
+        'contao/newsletter-bundle',
+    );
+
     /**
      * The composer instance.
      *
@@ -183,6 +201,36 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Inject the contao/*-bundle versions into the Contao package.
+     *
+     * @param WritableRepositoryInterface $repository    The repository where to add the packages.
+     *
+     * @param string                      $version       The version to use.
+     *
+     * @param string                      $prettyVersion The version to use.
+     */
+    protected function injectContaoBundles(WritableRepositoryInterface $repository, $version, $prettyVersion)
+    {
+        foreach (self::$bundleNames as $bundleName) {
+            if ($remove = $repository->findPackage($bundleName, '*')) {
+                if ($remove->getType() != 'metapackage') {
+                    // stop if the package is required somehow and must not be injected.
+                    continue;
+                } elseif ($remove->getVersion() == $version) {
+                    // stop if the virtual package is already injected.
+                    continue;
+                }
+                // Otherwise remove the package.
+                $repository->removePackage($remove);
+            }
+
+            $package = new CompletePackage($bundleName, $version, $prettyVersion);
+            $package->setType('metapackage');
+            $repository->addPackage($package);
+        }
+    }
+
+    /**
      * Prepare a Contao version to be compatible with composer.
      *
      * @param string $version The version string.
@@ -228,6 +276,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
         $version       = $versionParser->normalize($prettyVersion);
 
+        // Sadly we can not add the bundles as provided packages, as the Pool cleans them up.
+        // See also: https://github.com/composer/composer/blob/2d19cf/src/Composer/DependencyResolver/Pool.php#L174
+        // The skipping in there ignores any provided packages, even from already installed ones, and therefore makes
+        // this approach impossible.
+        $this->injectContaoBundles($localRepository, $version, $prettyVersion);
+
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
             if ($localPackage->getName() == 'contao/core') {
@@ -240,19 +294,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                     return;
                 } else {
                     $localRepository->removePackage($localPackage);
+                    break;
                 }
             }
         }
 
-        $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
-        $contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
+        $contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
         $contaoCore->setType('metapackage');
-        $contaoCore->setDistType('zip');
-        $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-        $contaoCore->setDistReference($contaoVersion);
-        $contaoCore->setDistSha1Checksum($contaoVersion);
-        $contaoCore->setInstallationSource('dist');
-        $contaoCore->setAutoload(array());
 
         $this->injectSwiftMailer($root, $contaoCore);
 
@@ -261,15 +309,33 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         } else {
             $clientConstraint = new EmptyConstraint();
         }
-        $clientConstraint->setPrettyString('*');
+        $clientConstraint->setPrettyString('~0.14');
         $clientLink = new Link(
             'contao/core',
             'contao-community-alliance/composer-client',
             $clientConstraint,
             'requires',
-            '*'
+            '~0.14'
         );
-        $contaoCore->setRequires(array('contao-community-alliance/composer-client' => $clientLink));
+
+        $requires = array('contao-community-alliance/composer-client' => $clientLink);
+
+        // Add the bundles now.
+        foreach (self::$bundleNames as $bundleName) {
+            if ($package = $localRepository->findPackage($bundleName, '*')) {
+                if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
+                    $constraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
+                } else {
+                    $constraint = new EmptyConstraint();
+                }
+                $constraint->setPrettyString($package->getVersion());
+                $requires[$bundleName] =
+                    new Link('contao/core', $bundleName, $constraint, 'requires', $package->getVersion());
+            }
+
+        }
+
+        $contaoCore->setRequires($requires);
 
         $localRepository->addPackage($contaoCore);
     }
@@ -393,7 +459,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        if ($package->getName() == 'contao/core') {
+        if (($package->getName() == 'contao/core') || in_array($package->getName(), self::$bundleNames)) {
             try {
                 $composer = $event->getComposer();
                 $this->getContaoRoot($composer->getPackage());
