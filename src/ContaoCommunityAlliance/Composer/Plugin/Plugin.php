@@ -1,16 +1,23 @@
 <?php
 
 /**
- * Contao Composer Installer
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @package contao-composer
- * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author  Tristan Lins <tristan.lins@bit3.de>
- * @author  Oliver Hoff <oliver@hofff.com>
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -208,6 +215,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      * @param string                      $version       The version to use.
      *
      * @param string                      $prettyVersion The version to use.
+     *
+     * @return void
      */
     protected function injectContaoBundles(WritableRepositoryInterface $repository, $version, $prettyVersion)
     {
@@ -276,10 +285,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
         $version       = $versionParser->normalize($prettyVersion);
 
+        // @codingStandardsIgnoreStart
         // Sadly we can not add the bundles as provided packages, as the Pool cleans them up.
         // See also: https://github.com/composer/composer/blob/2d19cf/src/Composer/DependencyResolver/Pool.php#L174
         // The skipping in there ignores any provided packages, even from already installed ones, and therefore makes
         // this approach impossible.
+        // We therefore register them all as meta packages in the local repository and require them in the same version
+        // below then.
+        // @codingStandardsIgnoreEnd
         $this->injectContaoBundles($localRepository, $version, $prettyVersion);
 
         /** @var PackageInterface $localPackage */
