@@ -294,7 +294,7 @@ class ConfigManipulator
      */
     public static function updateRequirements(&$configJson, &$messages)
     {
-        if (isset($configJson['type']) && $configJson['type'] === 'contao-module') {
+        if (self::isContaoModule($configJson)) {
             return false;
         }
 
@@ -361,7 +361,7 @@ class ConfigManipulator
      */
     public static function restoreRepositories(&$configJson, &$messages)
     {
-        if (isset($configJson['type']) && $configJson['type'] === 'contao-module') {
+        if (self::isContaoModule($configJson)) {
             return false;
         }
 
@@ -466,6 +466,10 @@ class ConfigManipulator
      */
     public static function restoreNeededConfigKeys(&$configJson, &$messages)
     {
+        if (self::isContaoModule($configJson)) {
+            return false;
+        }
+
         $jsonModified = false;
 
         if (!isset($configJson['name'])) {
@@ -504,5 +508,18 @@ class ConfigManipulator
         }
 
         return $jsonModified;
+    }
+
+    /**
+     * Check if the current root package is a contao package.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @return bool
+     */
+    public static function isContaoModule($configJson)
+    {
+        return isset($configJson['type'])
+            && in_array($configJson['type'], array('contao-module', 'legacy-contao-module'));
     }
 }
