@@ -304,16 +304,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         $this->injectSwiftMailer($root, $contaoCore);
 
-        if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
-            $clientConstraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
-        } else {
-            $clientConstraint = new EmptyConstraint();
-        }
-        $clientConstraint->setPrettyString('~0.14');
         $clientLink = new Link(
             'contao/core',
             'contao-community-alliance/composer-client',
-            $clientConstraint,
+            $this->createEmptyConstraint('~0.14'),
             'requires',
             '~0.14'
         );
@@ -323,16 +317,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         // Add the bundles now.
         foreach (self::$bundleNames as $bundleName) {
             if ($package = $localRepository->findPackage($bundleName, '*')) {
-                if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
-                    $constraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
-                } else {
-                    $constraint = new EmptyConstraint();
-                }
-                $constraint->setPrettyString($package->getVersion());
                 $requires[$bundleName] =
-                    new Link('contao/core', $bundleName, $constraint, 'requires', $package->getVersion());
+                    new Link(
+                        'contao/core',
+                        $bundleName,
+                        $this->createEmptyConstraint($package->getVersion()),
+                        'requires',
+                        $package->getVersion()
+                    );
             }
-
         }
 
         $contaoCore->setRequires($requires);
@@ -763,5 +756,26 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         return new Constraint($operator, $version);
+    }
+
+    /**
+     * Create an empty constraint instance and set pretty string.
+     *
+     * @param string $prettyString The pretty string for the constraint.
+     *
+     * @return EmptyConstraint|\Composer\Package\LinkConstraint\EmptyConstraint
+     * @see    https://github.com/contao-community-alliance/composer-plugin/issues/44
+     * @see    https://github.com/composer/semver/issues/17
+     */
+    private function createEmptyConstraint($prettyString)
+    {
+        if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
+            $constraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
+        } else {
+            $constraint = new EmptyConstraint();
+        }
+        $constraint->setPrettyString($prettyString);
+
+        return $constraint;
     }
 }
