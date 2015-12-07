@@ -390,17 +390,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         switch ($event->getCommandName()) {
             case 'update':
-                // ensure the artifact repository exists
-                $path = $this->composer->getConfig()->get('home') . DIRECTORY_SEPARATOR . 'packages';
-                // @codingStandardsIgnoreStart - silencing the error is ok here.
-                if (!is_dir($path) && !@mkdir($path, 0777, true)) {
-                    throw new \RuntimeException(
-                        'could not create directory "' . $path . '" for artifact repository',
-                        1
-                    );
-                }
-                // @codingStandardsIgnoreEnd
-
                 ConfigManipulator::run();
                 break;
 

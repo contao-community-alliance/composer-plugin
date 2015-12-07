@@ -356,6 +356,8 @@ class ConfigManipulator
      * @param array $messages   The destination buffer for messages raised by the update process.
      *
      * @return bool
+     *
+     * @throws \RuntimeException When the artifact repository directory could not be created.
      */
     public static function restoreRepositories(&$configJson, &$messages)
     {
@@ -381,6 +383,13 @@ class ConfigManipulator
                 ),
                 $configJson['repositories']
             );
+
+            // @codingStandardsIgnoreStart - silencing the error is ok here.
+            // Create the directory if it does not exist yet.
+            if (!is_dir('packages') && !@mkdir('packages', 0777, true)) {
+                throw new \RuntimeException('could not create directory "packages" for artifact repository', 1);
+            }
+            // @codingStandardsIgnoreEnd
 
             $jsonModified = true;
             $messages[]   = 'artifact repository was added to root composer.json';
