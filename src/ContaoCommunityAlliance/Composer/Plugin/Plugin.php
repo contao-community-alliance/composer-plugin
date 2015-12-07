@@ -292,10 +292,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 } elseif ($localPackage->getVersion() == $version) {
                     // stop if the virtual contao package is already injected
                     return;
-                } else {
-                    $localRepository->removePackage($localPackage);
-                    break;
                 }
+                // Remove package otherwise.
+                $localRepository->removePackage($localPackage);
+                break;
             }
         }
 
