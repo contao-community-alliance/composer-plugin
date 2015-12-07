@@ -407,7 +407,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $package = $this->composer->getPackage();
         $root    = $this->getContaoRoot($package);
 
-        $this->createRunonce($this->inputOutput, $root);
+        RunonceManager::createRunonce($this->inputOutput, $root);
         Housekeeper::cleanCache($this->inputOutput, $root);
     }
 
@@ -422,20 +422,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $this->inputOutput,
             $this->getContaoRoot($this->composer->getPackage())
         );
-    }
-
-    /**
-     * Create the global runonce.php after updates has been installed.
-     *
-     * @param IOInterface $inputOutput The input output interface.
-     *
-     * @param string      $root        The contao installation root.
-     *
-     * @return void
-     */
-    public function createRunonce(IOInterface $inputOutput, $root)
-    {
-        RunonceManager::createRunonce($inputOutput, $root);
     }
 
     /**
