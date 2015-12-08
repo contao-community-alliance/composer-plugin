@@ -263,8 +263,6 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * @param int              $mode       The mode how to handle duplicate files.
      *
      * @return void
-     *
-     * @throws \RuntimeException When a file entry is not a symlink to the expected target.
      */
     protected function removeSymlinks(
         PackageInterface $package,
@@ -284,21 +282,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $source = $this->filesystem->normalizePath($packageRoot . ($sourcePath ? ('/'.$sourcePath) : ''));
             $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
 
-            if (!file_exists($target)) {
-                continue;
+            if ($this->canRemoveSymlink($source, $target, $mode)) {
+                $actions[] = $target;
             }
-
-            if (!is_link($target) || $source !== readlink($target)) {
-                if (self::INVALID_IGNORE === $mode) {
-                    continue;
-                }
-
-                if (self::INVALID_FAIL === $mode) {
-                    throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $sourcePath, $targetPath));
-                }
-            }
-
-            $actions[] = $target;
         }
 
         // Remove the symlinks if everything is ok.
@@ -479,6 +465,38 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
             if (!$this->canAddTarget($target, $mode)) {
                 return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the target exists, is a symlink and the symlink points to the target and therefore shall get removed.
+     *
+     * @param string $source The source path.
+     *
+     * @param string $target The target path.
+     *
+     * @param int    $mode   The invalid file handling mode.
+     *
+     * @return bool
+     *
+     * @throws \RuntimeException When a file entry is not a symlink to the expected target and mode is INVALID_FAIL.
+     */
+    public function canRemoveSymlink($source, $target, $mode)
+    {
+        if (!file_exists($target)) {
+            return false;
+        }
+
+        if (!is_link($target) || $source !== readlink($target)) {
+            if (self::INVALID_IGNORE === $mode) {
+                return false;
+            }
+
+            if (self::INVALID_FAIL === $mode) {
+                throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $source, $target));
             }
         }
 
