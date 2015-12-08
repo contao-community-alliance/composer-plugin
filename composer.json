@@ -34,7 +34,8 @@
         "class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
         "branch-alias": {
             "dev-master": "2.3.x-dev",
-            "dev-develop": "3.0.x-dev"
+            "dev-develop": "3.0.x-dev",
+            "dev-release/3.0.0": "3.0.x-dev"
         }
     }
 }
