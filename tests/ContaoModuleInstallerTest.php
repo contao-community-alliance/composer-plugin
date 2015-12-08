@@ -28,10 +28,15 @@ use Composer\Repository\InstalledRepositoryInterface;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
+/**
+ * This tests the ContaoModuleInstaller.
+ */
 class ContaoModuleInstallerTest extends TestCase
 {
     /**
      * Tests that the installer supports packages of type "contao-module".
+     *
+     * @return void
      */
     public function testSupportsContaoModule()
     {
@@ -44,13 +49,15 @@ class ContaoModuleInstallerTest extends TestCase
 
     /**
      * Tests that runonce files are added to the RunonceManager on package installation.
+     *
+     * @return void
      */
     public function testRunonceOnInstall()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'runonce' => ['src/Resources/contao/config/update.php']
             ]
@@ -59,22 +66,23 @@ class ContaoModuleInstallerTest extends TestCase
         $runonce
             ->expects($this->once())
             ->method('addFile')
-            ->with($installer->getInstallPath($package) . '/src/Resources/contao/config/update.php')
-        ;
+            ->with($installer->getInstallPath($package) . '/src/Resources/contao/config/update.php');
 
         $installer->install($repo, $package);
     }
 
     /**
      * Tests that runonce files are added to the RunonceManager when updating a package.
+     *
+     * @return void
      */
     public function testRunonceOnUpdate()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $initial    = $this->mockPackage();
-        $target     = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $initial   = $this->mockPackage();
+        $target    = $this->mockPackage(
             [
                 'runonce' => ['src/Resources/contao/config/update.php']
             ]
@@ -83,21 +91,22 @@ class ContaoModuleInstallerTest extends TestCase
         $runonce
             ->expects($this->once())
             ->method('addFile')
-            ->with($installer->getInstallPath($target) . '/src/Resources/contao/config/update.php')
-        ;
+            ->with($installer->getInstallPath($target) . '/src/Resources/contao/config/update.php');
 
         $installer->update($repo, $initial, $target);
     }
 
     /**
      * Tests that sources are symlinked when installing a package.
+     *
+     * @return void
      */
     public function testSourcesOnInstall()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -122,13 +131,15 @@ class ContaoModuleInstallerTest extends TestCase
 
     /**
      * Tests that nothing happens if a symlink is already present and correct.
+     *
+     * @return void
      */
     public function testSourcesOnInstallIgnoresIfLinkIsAlreadyCorrect()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -158,13 +169,15 @@ class ContaoModuleInstallerTest extends TestCase
      * Tests that an exception is thrown if a target already exists.
      *
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testSourcesOnInstallThrowsExceptionIfFileExists()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -186,15 +199,16 @@ class ContaoModuleInstallerTest extends TestCase
     /**
      * Tests that an exception is thrown if a source is not readable.
      *
-     * @runInSeparateProcess
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testSourcesOnInstallThrowsExceptionIfFileIsUnreadable()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -210,13 +224,17 @@ class ContaoModuleInstallerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when the package is not installed.
+     *
      * @expectedException \InvalidArgumentException
+     *
+     * @return void
      */
     public function testSourcesOnUpdateThrowsExceptionIfPackageIsNotInstalled()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $package    = $this->mockPackage();
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $package   = $this->mockPackage();
 
         /** @var \PHPUnit_Framework_MockObject_MockObject|InstalledRepositoryInterface $repo */
         $repo = $this->getMock('Composer\\Repository\\InstalledRepositoryInterface');
@@ -224,18 +242,22 @@ class ContaoModuleInstallerTest extends TestCase
         $repo
             ->expects($this->any())
             ->method('hasPackage')
-            ->willReturn(false)
-        ;
+            ->willReturn(false);
 
         $installer->update($repo, $package, $package);
     }
 
+    /**
+     * Test that symlinks get removed on uninstall.
+     *
+     * @return void
+     */
     public function testSourcesOnUninstall()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -260,12 +282,17 @@ class ContaoModuleInstallerTest extends TestCase
         $this->assertFalse(is_dir($basePath . '/../../../system/modules/foobar'));
     }
 
+    /**
+     * Test that a missing target file is ignored when a package is uninstalled.
+     *
+     * @return void
+     */
     public function testSourcesOnUninstallIgnoresMissingTarget()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -282,14 +309,18 @@ class ContaoModuleInstallerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when uninstalling and the link target is not a link anymore.
+     *
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testSourcesOnUninstallThrowsExceptionIfTargetIsNotALink()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -309,14 +340,18 @@ class ContaoModuleInstallerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when uninstalling and the link target is now a link to a different file.
+     *
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testSourcesOnUninstallThrowsExceptionIfTargetLinkIsDifferent()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $repo       = $this->mockRepository();
-        $package    = $this->mockPackage(
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
             [
                 'sources' => [
                     'config/config.php' => 'system/modules/foobar/config/config.php'
@@ -339,13 +374,17 @@ class ContaoModuleInstallerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when attempting to uninstall an not installed package.
+     *
      * @expectedException \InvalidArgumentException
+     *
+     * @return void
      */
     public function testSourcesOnUninstallThrowsExceptionIfPackageIsNotInstalled()
     {
-        $runonce    = $this->mockRunonce();
-        $installer  = $this->createInstaller($runonce);
-        $package    = $this->mockPackage();
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $package   = $this->mockPackage();
 
         /** @var \PHPUnit_Framework_MockObject_MockObject|InstalledRepositoryInterface $repo */
         $repo = $this->getMock('Composer\\Repository\\InstalledRepositoryInterface');
@@ -353,25 +392,26 @@ class ContaoModuleInstallerTest extends TestCase
         $repo
             ->expects($this->any())
             ->method('hasPackage')
-            ->willReturn(false)
-        ;
+            ->willReturn(false);
 
         $installer->uninstall($repo, $package);
     }
 
     /**
+     * Create a mock of the runonce manager.
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject|RunonceManager
      */
     private function mockRunonce()
     {
-        return $this->getMock(
-            'ContaoCommunityAlliance\\Composer\\Plugin\\RunonceManager',
-            [],
-            [tmpfile(), $this->filesystem]
-        );
+        return $this->getMockBuilder('ContaoCommunityAlliance\\Composer\\Plugin\\RunonceManager')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 
     /**
+     * Mock a composer instance.
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject|Composer
      */
     private function mockComposer()
@@ -384,14 +424,12 @@ class ContaoModuleInstallerTest extends TestCase
         $composer
             ->expects($this->any())
             ->method('getConfig')
-            ->willReturn($config)
-        ;
+            ->willReturn($config);
 
         $composer
             ->expects($this->any())
             ->method('getDownloadManager')
-            ->willReturn($downloadManager)
-        ;
+            ->willReturn($downloadManager);
 
         $config
             ->expects($this->any())
@@ -412,18 +450,21 @@ class ContaoModuleInstallerTest extends TestCase
 
                         case 'bin-compat':
                             return 'auto';
+
+                        default:
                     }
 
                     return null;
                 }
-            )
-        ;
+            );
 
         return $composer;
     }
 
     /**
-     * @param array $contaoExtras
+     * Mock a package containing the passed extra section.
+     *
+     * @param array $contaoExtras The value to use as extra section.
      *
      * @return PackageInterface|\PHPUnit_Framework_MockObject_MockObject
      */
@@ -434,20 +475,17 @@ class ContaoModuleInstallerTest extends TestCase
         $package
             ->expects($this->any())
             ->method('getTargetDir')
-            ->willReturn('')
-        ;
+            ->willReturn('');
 
         $package
             ->expects($this->any())
             ->method('getName')
-            ->willReturn('foo/bar')
-        ;
+            ->willReturn('foo/bar');
 
         $package
             ->expects($this->any())
             ->method('getPrettyName')
-            ->willReturn('foo/bar')
-        ;
+            ->willReturn('foo/bar');
 
         $package
             ->expects(empty($contaoExtras) ? $this->any() : $this->atLeastOnce())
@@ -456,13 +494,14 @@ class ContaoModuleInstallerTest extends TestCase
                 [
                     'contao' => $contaoExtras
                 ]
-            )
-        ;
+            );
 
         return $package;
     }
 
     /**
+     * Mock a repository which will always respond with true to calls of "hasPackage".
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject|InstalledRepositoryInterface
      */
     private function mockRepository()
@@ -472,42 +511,42 @@ class ContaoModuleInstallerTest extends TestCase
         $repo
             ->expects($this->any())
             ->method('hasPackage')
-            ->willReturn(true)
-        ;
+            ->willReturn(true);
 
         return $repo;
     }
 
     /**
+     * Mock an input/output instance which is very verbose and ensures that only writeError is used (not write()).
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject|IOInterface
      */
     private function mockIO()
     {
-        $io = $this->getMock('Composer\\IO\\IOInterface');
+        $ioMock = $this->getMock('Composer\\IO\\IOInterface');
 
-        $io
+        $ioMock
             ->expects($this->any())
             ->method('isVerbose')
-            ->willReturn(true)
-        ;
+            ->willReturn(true);
 
-        $io
+        $ioMock
             ->expects($this->any())
             ->method('isVeryVerbose')
-            ->willReturn(true)
-        ;
+            ->willReturn(true);
 
         // Should always use writeError() and not write()
-        $io
+        $ioMock
             ->expects($this->never())
-            ->method('write')
-        ;
+            ->method('write');
 
-        return $io;
+        return $ioMock;
     }
 
     /**
-     * @param RunonceManager $runonce
+     * Create a ContaoModuleInstaller with mocked instances.
+     *
+     * @param RunonceManager $runonce The run once manager to use.
      *
      * @return ContaoModuleInstaller
      */

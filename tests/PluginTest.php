@@ -32,12 +32,22 @@ use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
 class PluginTest extends TestCase
 {
+    /**
+     * Test that the plugin implements the PluginInterface.
+     *
+     * @return void
+     */
     public function testImplementsPluginInterface()
     {
         $plugin = new Plugin();
         $this->assertTrue($plugin instanceof PluginInterface);
     }
 
+    /**
+     * Test that the activation registers both installers.
+     *
+     * @return void
+     */
     public function testAddsContaoModuleInstallerOnActivation()
     {
         $installationManager = $this->getMock('Composer\\Installer\\InstallationManager');
@@ -56,12 +66,22 @@ class PluginTest extends TestCase
         $plugin->activate($this->mockComposer($installationManager), $this->mockIO());
     }
 
+    /**
+     * Test that the plugin implements the EventSubscriberInterface.
+     *
+     * @return void
+     */
     public function testImplementsEventSubscriberInterface()
     {
         $plugin = new Plugin();
         $this->assertTrue($plugin instanceof EventSubscriberInterface);
     }
 
+    /**
+     * Test that the runonce file gets dumped on post install.
+     *
+     * @return void
+     */
     public function testDumpsRunonceOnPostInstallEvent()
     {
         $runonce = $this->mockRunonce();
@@ -72,12 +92,16 @@ class PluginTest extends TestCase
 
         $runonce
             ->expects($this->once())
-            ->method('dump')
-        ;
+            ->method('dump');
 
         call_user_func([$plugin, $events[ScriptEvents::POST_INSTALL_CMD]]);
     }
 
+    /**
+     * Test that the runonce file gets dumped on post update.
+     *
+     * @return void
+     */
     public function testDumpsRunonceOnPostUpdateEvent()
     {
         $runonce = $this->mockRunonce();
@@ -88,14 +112,15 @@ class PluginTest extends TestCase
 
         $runonce
             ->expects($this->once())
-            ->method('dump')
-        ;
+            ->method('dump');
 
         call_user_func([$plugin, $events[ScriptEvents::POST_UPDATE_CMD]]);
     }
 
     /**
-     * @param $installationManager
+     * Mock a composer instance.
+     *
+     * @param \Composer\Installer\InstallationManager $installationManager The installation manager.
      *
      * @return Composer|\PHPUnit_Framework_MockObject_MockObject
      */
@@ -112,20 +137,17 @@ class PluginTest extends TestCase
         $composer
             ->expects($this->any())
             ->method('getConfig')
-            ->willReturn($config)
-        ;
+            ->willReturn($config);
 
         $composer
             ->expects($this->any())
             ->method('getDownloadManager')
-            ->willReturn($downloadManager)
-        ;
+            ->willReturn($downloadManager);
 
         $composer
             ->expects($this->any())
             ->method('getInstallationManager')
-            ->willReturn($installationManager)
-        ;
+            ->willReturn($installationManager);
 
         $config
             ->expects($this->any())
@@ -146,53 +168,53 @@ class PluginTest extends TestCase
 
                         case 'bin-compat':
                             return 'auto';
+
+                        default:
                     }
 
                     return null;
                 }
-            )
-        ;
+            );
 
         return $composer;
     }
 
     /**
+     * Mock an input/output instance which is very verbose and ensures that only writeError is used (not write()).
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject|IOInterface
      */
     private function mockIO()
     {
-        $io = $this->getMock('Composer\\IO\\IOInterface');
+        $ioMock = $this->getMock('Composer\\IO\\IOInterface');
 
-        $io
+        $ioMock
             ->expects($this->any())
             ->method('isVerbose')
-            ->willReturn(true)
-        ;
+            ->willReturn(true);
 
-        $io
+        $ioMock
             ->expects($this->any())
             ->method('isVeryVerbose')
-            ->willReturn(true)
-        ;
+            ->willReturn(true);
 
         // Should always use writeError() and not write()
-        $io
+        $ioMock
             ->expects($this->never())
-            ->method('write')
-        ;
+            ->method('write');
 
-        return $io;
+        return $ioMock;
     }
 
     /**
+     * Create a mock of the runonce manager.
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject|RunonceManager
      */
     private function mockRunonce()
     {
-        return $this->getMock(
-            'ContaoCommunityAlliance\\Composer\\Plugin\\RunonceManager',
-            [],
-            [tmpfile(), $this->filesystem]
-        );
+        return $this->getMockBuilder('ContaoCommunityAlliance\\Composer\\Plugin\\RunonceManager')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

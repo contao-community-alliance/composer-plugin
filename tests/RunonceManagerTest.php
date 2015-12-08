@@ -23,8 +23,16 @@ namespace ContaoCommunityAlliance\Composer\Plugin\Test;
 
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
+/**
+ * This tests the RunonceManager.
+ */
 class RunonceManagerTest extends TestCase
 {
+    /**
+     * Test that nothing gets dumped when the file list is empty.
+     *
+     * @return void
+     */
     public function testDumpsNothingIfEmpty()
     {
         $file = $this->tempdir . '/runonce.php';
@@ -35,6 +43,11 @@ class RunonceManagerTest extends TestCase
         $this->assertFalse(file_exists($file));
     }
 
+    /**
+     * Test that nothing gets dumped when the source file does not exist.
+     *
+     * @return void
+     */
     public function testDumpsNothingIfFileDoesNotExist()
     {
         $file = $this->tempdir . '/runonce.php';
@@ -46,6 +59,11 @@ class RunonceManagerTest extends TestCase
         $this->assertFalse(is_file($file));
     }
 
+    /**
+     * Test that the runonce gets dumped correctly.
+     *
+     * @return void
+     */
     public function testDumpsToFile()
     {
         $file = $this->tempdir . '/runonce.php';
@@ -61,8 +79,13 @@ class RunonceManagerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when the source file is not readable.
+     *
      * @runInSeparateProcess
+     *
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testDumpThrowsExceptionIfFileIsNotWritable()
     {
@@ -80,8 +103,13 @@ class RunonceManagerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when the target path exists and is not a file.
+     *
      * @runInSeparateProcess
+     *
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testDumpThrowsExceptionIfTargetExistsAndIsNotAFile()
     {
@@ -97,8 +125,13 @@ class RunonceManagerTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when the target file can not be written to.
+     *
      * @runInSeparateProcess
+     *
      * @expectedException \RuntimeException
+     *
+     * @return void
      */
     public function testDumpThrowsExceptionIfWriteFails()
     {
@@ -114,6 +147,11 @@ class RunonceManagerTest extends TestCase
         $manager->dump();
     }
 
+    /**
+     * Test that an existing runonce file gets renamed.
+     *
+     * @return void
+     */
     public function testRenamedExisting()
     {
         $file    = $this->tempdir . '/runonce.php';
@@ -122,14 +160,13 @@ class RunonceManagerTest extends TestCase
         touch($file);
         touch($runonce);
 
-        $fs = $this->getMock('Composer\\Util\\Filesystem', ['rename']);
-        $fs
+        $fileSystem = $this->getMock('Composer\\Util\\Filesystem', ['rename']);
+        $fileSystem
             ->expects($this->once())
             ->method('rename')
-            ->with($file)
-        ;
+            ->with($file);
 
-        $manager = new RunonceManager($file, $fs);
+        $manager = new RunonceManager($file, $fileSystem);
         $manager->addFile($runonce);
         $manager->dump();
 
