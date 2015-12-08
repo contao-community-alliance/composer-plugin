@@ -49,7 +49,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
-        $this->tempdir    = sys_get_temp_dir() . '/' . substr(md5(mt_rand()), 0, 8);
+        $this->tempdir    = sys_get_temp_dir() . '/composer-plugin-test-' . substr(md5(mt_rand()), 0, 8);
         $this->filesystem = new Filesystem();
 
         $this->filesystem->ensureDirectoryExists($this->tempdir);
