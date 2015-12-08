@@ -26,7 +26,8 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
-use ContaoCommunityAlliance\Composer\Plugin\Installer\AbstractModuleInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Installer\LegacyContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Plugin;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
@@ -55,12 +56,20 @@ class PluginTest extends TestCase
         $installationManager
             ->expects($this->exactly(2))
             ->method('addInstaller')
-            ->with($this->callback(
-                function ($installer) {
-                    return $installer instanceof AbstractModuleInstaller;
-                }
-            ))
-        ;
+            ->with(
+                $this->logicalOr(
+                    $this->callback(
+                        function ($installer) {
+                            return $installer instanceof ContaoModuleInstaller;
+                        }
+                    ),
+                    $this->callback(
+                        function ($installer) {
+                            return $installer instanceof LegacyContaoModuleInstaller;
+                        }
+                    )
+                )
+            );
 
         $plugin = new Plugin();
         $plugin->activate($this->mockComposer($installationManager), $this->mockIO());
