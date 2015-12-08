@@ -83,9 +83,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('Installing Contao sources for %s', $package->getName()));
-        }
+        $this->logVerbose(sprintf('Installing Contao sources for %s', $package->getName()));
 
         parent::install($repo, $package);
 
@@ -93,9 +91,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         $this->addCopies($package, $this->getFilesRoot(), $this->getUserFiles($package), self::DUPLICATE_IGNORE);
         $this->addRunonces($package, $this->getRunonces($package));
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('');
-        }
+        $this->logVerbose('');
     }
 
     /**
@@ -111,9 +107,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('Updating Contao sources for %s', $initial->getName()));
-        }
+        $this->logVerbose(sprintf('Updating Contao sources for %s', $initial->getName()));
 
         $contaoRoot = $this->getContaoRoot();
 
@@ -125,9 +119,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         $this->addCopies($target, $this->getFilesRoot(), $this->getUserFiles($target), self::DUPLICATE_IGNORE);
         $this->addRunonces($target, $this->getRunonces($target));
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('');
-        }
+        $this->logVerbose('');
     }
 
     /**
@@ -143,17 +135,13 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('Removing Contao sources for %s', $package->getName()));
-        }
+        $this->logVerbose(sprintf('Removing Contao sources for %s', $package->getName()));
 
         $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
 
         parent::uninstall($repo, $package);
 
-        if ($this->io->isVerbose()) {
-            $this->io->writeError('');
-        }
+        $this->logVerbose('');
     }
 
     /**
@@ -544,9 +532,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      */
     private function logSymlink($source, $target)
     {
-        if ($this->io->isVeryVerbose()) {
-            $this->io->writeError(sprintf('  - Linking "%s" to "%s"', $source, $target));
-        }
+        $this->logVeryVerbose(sprintf('  - Linking "%s" to "%s"', $source, $target));
     }
 
     /**
@@ -560,9 +546,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      */
     private function logCopy($source, $target)
     {
-        if ($this->io->isVeryVerbose()) {
-            $this->io->writeError(sprintf('  - Copying "%s" to "%s"', $source, $target));
-        }
+        $this->logVeryVerbose(sprintf('  - Copying "%s" to "%s"', $source, $target));
     }
 
     /**
@@ -574,8 +558,34 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      */
     private function logRemove($target)
     {
+        $this->logVeryVerbose(sprintf('  - Removing "%s"', $target));
+    }
+
+    /**
+     * Log a message if verbose.
+     *
+     * @param string $message The message to log.
+     *
+     * @return void
+     */
+    private function logVerbose($message)
+    {
+        if ($this->io->isVerbose()) {
+            $this->io->writeError($message);
+        }
+    }
+
+    /**
+     * Log a message if very verbose.
+     *
+     * @param string $message The message to log.
+     *
+     * @return void
+     */
+    private function logVeryVerbose($message)
+    {
         if ($this->io->isVeryVerbose()) {
-            $this->io->writeError(sprintf('  - Removing "%s"', $target));
+            $this->io->writeError($message);
         }
     }
 }
