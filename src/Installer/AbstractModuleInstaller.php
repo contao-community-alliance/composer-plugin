@@ -220,8 +220,6 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * @param int              $mode       The mode how to handle duplicate files.
      *
      * @return void
-     *
-     * @throws \RuntimeException When a source path does not exist or is not readable.
      */
     protected function addSymlinks(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::DUPLICATE_FAIL)
     {
@@ -237,24 +235,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $source = $this->filesystem->normalizePath($packageRoot . ($sourcePath ? ('/'.$sourcePath) : ''));
             $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
 
-            if (!is_readable($source)) {
-                throw new \RuntimeException(
-                    sprintf('Installation source "%s" does not exist or is not readable', $sourcePath)
-                );
+            if ($this->canAddSymlink($source, $target, $mode)) {
+                $actions[$source] = $target;
             }
-
-            if (file_exists($target)) {
-                // Target link already exists and is correct, do nothing
-                if (is_link($target) && $source === readlink($target)) {
-                    continue;
-                }
-
-                if (!$this->canAddTarget($target, $mode)) {
-                    continue;
-                }
-            }
-
-            $actions[$source] = $target;
         }
 
         // Only actually create the links if the checks are successful to prevent orphans.
@@ -465,6 +448,41 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         }
 
         return false;
+    }
+
+    /**
+     * Check if the source exists, is readable and shall get symlink'ed to the target.
+     *
+     * @param string $source The source path.
+     *
+     * @param string $target The target path.
+     *
+     * @param int    $mode   The duplicate file handling mode.
+     *
+     * @return bool
+     *
+     * @throws \RuntimeException When the source is not readable.
+     */
+    public function canAddSymlink($source, $target, $mode)
+    {
+        if (!is_readable($source)) {
+            throw new \RuntimeException(
+                sprintf('Installation source "%s" does not exist or is not readable', $source)
+            );
+        }
+
+        if (file_exists($target)) {
+            // Target link already exists and is correct, do nothing
+            if (is_link($target) && $source === readlink($target)) {
+                return false;
+            }
+
+            if (!$this->canAddTarget($target, $mode)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
