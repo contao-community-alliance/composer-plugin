@@ -1,12 +1,22 @@
 <?php
 
 /**
- * Contao Composer Plugin
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013-2015 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -19,12 +29,12 @@ use Symfony\Component\Process\Process;
 /**
  * UserFilesLocator finds the path to the user upload folder.
  * It tries to run the Symfony console and if unsuccessfull falls back to the default (/files).
- *
- * @author Andreas Schempp <https://github.com/aschempp>
  */
 class UserFilesLocator
 {
     /**
+     * The root directory to scan within.
+     *
      * @var string
      */
     private $rootDir;
@@ -32,7 +42,7 @@ class UserFilesLocator
     /**
      * Constructor.
      *
-     * @param string $rootDir
+     * @param string $rootDir The root directory to scan within.
      */
     public function __construct($rootDir)
     {
@@ -57,7 +67,8 @@ class UserFilesLocator
      * Find path to console application
      *
      * @return string
-     * @throws \UnderflowException if console application was not found
+     *
+     * @throws \UnderflowException If console application was not found.
      */
     private function getConsolePath()
     {
@@ -66,7 +77,7 @@ class UserFilesLocator
         }
 
         $finder = new Finder();
-        $files = $finder->files()->depth(1)->name('console')->in($this->rootDir);
+        $files  = $finder->files()->depth(1)->name('console')->in($this->rootDir);
 
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
@@ -80,7 +91,8 @@ class UserFilesLocator
      * Dumps container information to get the upload path.
      *
      * @return string
-     * @throws ProcessFailedException if the console execution failed
+     *
+     * @throws ProcessFailedException If the console execution failed.
      */
     private function getPathFromConsole()
     {

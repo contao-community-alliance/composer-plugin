@@ -1,5 +1,5 @@
 exclude:
-  - tests/ContaoCommunityAlliance/Composer/Plugin/Test/Fixtures
+  - tests/fixtures
 
 mapping:
   "Zeromax <zero@brothers-project.de>":

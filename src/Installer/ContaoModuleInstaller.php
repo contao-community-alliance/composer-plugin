@@ -1,12 +1,22 @@
 <?php
 
 /**
- * Contao Composer Plugin
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013-2015 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
@@ -28,28 +38,24 @@ class ContaoModuleInstaller extends AbstractModuleInstaller
     /**
      * Constructor.
      *
-     * @param RunonceManager  $runonceManager
+     * @param RunonceManager $runonceManager The run once manager to use.
      *
      * {@inheritdoc}
      */
+    // @codingStandardsIgnoreStart - Overriding this method is not useless, we add a parameter default here.
     public function __construct(
+    // @codingStandardsIgnoreEnd
         RunonceManager $runonceManager,
-        IOInterface $io,
+        IOInterface $inputOutput,
         Composer $composer,
         $type = 'contao-module',
         Filesystem $filesystem = null
     ) {
-        parent::__construct($runonceManager, $io, $composer, $type, $filesystem);
-
-        $this->runonceManager = $runonceManager;
+        parent::__construct($runonceManager, $inputOutput, $composer, $type, $filesystem);
     }
 
     /**
-     * Gets installation files from the Contao package.
-     *
-     * @param PackageInterface $package
-     *
-     * @return array
+     * {@inheritDoc}
      */
     protected function getSources(PackageInterface $package)
     {
@@ -57,11 +63,7 @@ class ContaoModuleInstaller extends AbstractModuleInstaller
     }
 
     /**
-     * Gets user files (TL_FILES) from the Contao package.
-     *
-     * @param PackageInterface $package
-     *
-     * @return array
+     * {@inheritDoc}
      */
     protected function getUserFiles(PackageInterface $package)
     {
@@ -69,11 +71,7 @@ class ContaoModuleInstaller extends AbstractModuleInstaller
     }
 
     /**
-     * Gets runonce files from the Contao package.
-     *
-     * @param PackageInterface $package
-     *
-     * @return array
+     * {@inheritDoc}
      */
     protected function getRunonces(PackageInterface $package)
     {
@@ -83,8 +81,9 @@ class ContaoModuleInstaller extends AbstractModuleInstaller
     /**
      * Retrieves a value from the package extra "contao" section.
      *
-     * @param PackageInterface $package
-     * @param string           $key
+     * @param PackageInterface $package The package to extract the section from.
+     *
+     * @param string           $key     The key to obtain from the extra section.
      *
      * @return mixed|null
      */

@@ -1,12 +1,22 @@
 <?php
 
 /**
- * Contao Composer Plugin
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013-2015 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin\Installer;
@@ -22,20 +32,20 @@ use ContaoCommunityAlliance\Composer\Plugin\UserFilesLocator;
 
 /**
  * AbstractModuleInstaller is the parent class that handles file copying and symlinking.
- *
- * @author Andreas Schempp <https://github.com/aschempp>
  */
 abstract class AbstractModuleInstaller extends LibraryInstaller
 {
-    const DUPLICATE_IGNORE = 1;
+    const DUPLICATE_IGNORE    = 1;
     const DUPLICATE_OVERWRITE = 2;
-    const DUPLICATE_FAIL = 3;
+    const DUPLICATE_FAIL      = 3;
 
-    const INVALID_IGNORE = 1;
+    const INVALID_IGNORE    = 1;
     const INVALID_OVERWRITE = 2;
-    const INVALID_FAIL = 3;
+    const INVALID_FAIL      = 3;
 
     /**
+     * The run once manager in use.
+     *
      * @var RunonceManager
      */
     protected $runonceManager;
@@ -43,20 +53,24 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Constructor.
      *
-     * @param RunonceManager $runonceManager
-     * @param IOInterface    $io
-     * @param Composer       $composer
-     * @param string         $type
-     * @param Filesystem     $filesystem
+     * @param RunonceManager $runonceManager The run once manager to use.
+     *
+     * @param IOInterface    $inputOutput    The input/output abstraction to use.
+     *
+     * @param Composer       $composer       The composer instance.
+     *
+     * @param string         $type           The typename this installer is responsible for.
+     *
+     * @param Filesystem     $filesystem     The file system instance.
      */
     public function __construct(
         RunonceManager $runonceManager,
-        IOInterface $io,
+        IOInterface $inputOutput,
         Composer $composer,
         $type,
         Filesystem $filesystem = null
     ) {
-        parent::__construct($io, $composer, $type, $filesystem);
+        parent::__construct($inputOutput, $composer, $type, $filesystem);
 
         $this->runonceManager = $runonceManager;
     }
@@ -88,6 +102,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Remove symlinks for Contao sources before update, then add them again afterwards.
      *
      * {@inheritdoc}
+     *
+     * @throws \InvalidArgumentException When the requested package is not installed.
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
@@ -118,6 +134,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Remove symlinks for Contao sources before uninstalling a package.
      *
      * {@inheritdoc}
+     *
+     * @throws \InvalidArgumentException When the requested package is not installed.
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -141,7 +159,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Gets installation files from the Contao package.
      *
-     * @param PackageInterface $package
+     * @param PackageInterface $package The package to extract the sources from.
      *
      * @return array
      */
@@ -150,7 +168,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Gets user files (TL_FILES) from the Contao package.
      *
-     * @param PackageInterface $package
+     * @param PackageInterface $package The package to extract the user files from.
      *
      * @return array
      */
@@ -159,7 +177,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Gets runonce files from the Contao package.
      *
-     * @param PackageInterface $package
+     * @param PackageInterface $package The package to extract the run once files from.
      *
      * @return array
      */
@@ -193,10 +211,17 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Creates symlinks for a map of relative file paths.
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
-     * @param PackageInterface $package
-     * @param string           $targetRoot
-     * @param array            $pathMap
-     * @param int              $mode
+     * @param PackageInterface $package    The package being processed.
+     *
+     * @param string           $targetRoot The target directory.
+     *
+     * @param array            $pathMap    The path mapping.
+     *
+     * @param int              $mode       The mode how to handle duplicate files.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException When a source path does not exist or is not readable.
      */
     protected function addSymlinks(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::DUPLICATE_FAIL)
     {
@@ -246,13 +271,24 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Removes symlinks from a map of relative file paths.
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
-     * @param PackageInterface $package
-     * @param string           $targetRoot
-     * @param array            $pathMap
-     * @param int              $mode
+     * @param PackageInterface $package    The package being processed.
+     *
+     * @param string           $targetRoot The target directory.
+     *
+     * @param array            $pathMap    The path mapping.
+     *
+     * @param int              $mode       The mode how to handle duplicate files.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException When a file entry is not a symlink to the expected target.
      */
-    protected function removeSymlinks(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::INVALID_FAIL)
-    {
+    protected function removeSymlinks(
+        PackageInterface $package,
+        $targetRoot,
+        array $pathMap,
+        $mode = self::INVALID_FAIL
+    ) {
         if (empty($pathMap)) {
             return;
         }
@@ -296,10 +332,17 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Creates copies for a map of relative file paths.
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
-     * @param PackageInterface $package
-     * @param string           $targetRoot
-     * @param array            $pathMap
-     * @param int              $mode
+     * @param PackageInterface $package    The package being processed.
+     *
+     * @param string           $targetRoot The target directory.
+     *
+     * @param array            $pathMap    The path mapping.
+     *
+     * @param int              $mode       The mode how to handle duplicate files.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException When a source path does not exist or is not readable.
      */
     protected function addCopies(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::DUPLICATE_FAIL)
     {
@@ -342,8 +385,11 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Removes copies from a map of relative file paths.
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
-     * @param string           $targetRoot
-     * @param array            $pathMap
+     * @param string $targetRoot The target directory.
+     *
+     * @param array  $pathMap    The path mapping.
+     *
+     * @return void
      */
     protected function removeCopies($targetRoot, array $pathMap)
     {
@@ -351,10 +397,10 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             return;
         }
 
-        $actions     = [];
+        $actions = [];
 
         // Check the file map first and make sure we only remove our own symlinks.
-        foreach ($pathMap as $sourcePath => $targetPath) {
+        foreach ($pathMap as $targetPath) {
             $target = $this->filesystem->normalizePath($targetRoot . '/' . $targetPath);
 
             if (!file_exists($target)) {
@@ -377,8 +423,11 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Adds runonce files of a package to the RunonceManager instance.
      *
-     * @param PackageInterface $package
-     * @param array            $files
+     * @param PackageInterface $package The package being processed.
+     *
+     * @param array            $files   The file names of all runonce files.
+     *
+     * @return void
      */
     protected function addRunonces(PackageInterface $package, array $files)
     {
@@ -392,8 +441,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Clean up empty directories.
      *
-     * @param string $pathname
-     * @param string $root
+     * @param string $pathname The path to remove if empty.
+     *
+     * @param string $root     The path of the root installation.
      *
      * @return bool
      */
@@ -420,8 +470,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Checks if the target file should be added based on the given mode.
      *
-     * @param string $target
-     * @param int    $mode
+     * @param string $target The target path.
+     *
+     * @param int    $mode   The overwrite mode.
      *
      * @return bool
      *
@@ -442,6 +493,15 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         return true;
     }
 
+    /**
+     * Log the creation of a symlink.
+     *
+     * @param string $source The source path.
+     *
+     * @param string $target The target path.
+     *
+     * @return void
+     */
     private function logSymlink($source, $target)
     {
         if ($this->io->isVeryVerbose()) {
@@ -449,6 +509,15 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     * Log the copy'ing of a file.
+     *
+     * @param string $source The source path.
+     *
+     * @param string $target The target path.
+     *
+     * @return void
+     */
     private function logCopy($source, $target)
     {
         if ($this->io->isVeryVerbose()) {
@@ -456,6 +525,13 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     * Log the removal of a symlink or file.
+     *
+     * @param string $target The target path.
+     *
+     * @return void
+     */
     private function logRemove($target)
     {
         if ($this->io->isVeryVerbose()) {

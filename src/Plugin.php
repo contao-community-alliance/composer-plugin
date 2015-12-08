@@ -1,12 +1,24 @@
 <?php
 
 /**
- * Contao Composer Plugin
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013-2015 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -21,8 +33,6 @@ use ContaoCommunityAlliance\Composer\Plugin\Installer\LegacyContaoModuleInstalle
 
 /**
  * The Composer plugin registers our installers for Contao modules.
- *
- * @author Andreas Schempp <https://github.com/aschempp>
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
@@ -34,13 +44,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     protected $composer;
 
     /**
-     * The input output interface.
+     * The run once manager in use.
      *
-     * @var IOInterface
-     */
-    protected $io;
-
-    /**
      * @var RunonceManager
      */
     private $runonceManager;
@@ -48,7 +53,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     /**
      * Constructor.
      *
-     * @param RunonceManager $runonceManager
+     * @param RunonceManager $runonceManager The run once manager to use.
      */
     public function __construct(RunonceManager $runonceManager = null)
     {
@@ -56,15 +61,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
     /**
-     * Activate the composer plugin. This methods is called by Composer to initialize plugins.
-     *
-     * @param Composer    $composer
-     * @param IOInterface $io
+     * {@inheritDoc}
      */
-    public function activate(Composer $composer, IOInterface $io)
+    public function activate(Composer $composer, IOInterface $inputOutput)
     {
         $this->composer = $composer;
-        $this->io       = $io;
 
         if (null === $this->runonceManager) {
             $this->runonceManager = new RunonceManager(
@@ -75,11 +76,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $installationManager = $composer->getInstallationManager();
 
         $installationManager->addInstaller(
-            new ContaoModuleInstaller($this->runonceManager, $io, $composer)
+            new ContaoModuleInstaller($this->runonceManager, $inputOutput, $composer)
         );
 
         $installationManager->addInstaller(
-            new LegacyContaoModuleInstaller($this->runonceManager, $io, $composer)
+            new LegacyContaoModuleInstaller($this->runonceManager, $inputOutput, $composer)
         );
     }
 
@@ -107,6 +108,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     /**
      * Dump runonce file after install or update command.
+     *
+     * @return void
      */
     public function dumpRunonce()
     {
