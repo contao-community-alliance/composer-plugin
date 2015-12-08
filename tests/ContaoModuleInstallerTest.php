@@ -7,7 +7,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
-use ContaoCommunityAlliance\Composer\Plugin\ContaoModuleInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
 class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
