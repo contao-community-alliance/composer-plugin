@@ -427,7 +427,8 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
             ->method('get')
             ->with($this->logicalOr(
                 $this->equalTo('vendor-dir'),
-                $this->equalTo('bin-dir')
+                $this->equalTo('bin-dir'),
+                $this->equalTo('bin-compat')
             ))
             ->willReturnCallback(
                 function ($key) use ($tempdir) {
@@ -437,6 +438,9 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
 
                         case 'bin-dir':
                             return $tempdir . '/vendor/bin';
+
+                        case 'bin-compat':
+                            return 'auto';
                     }
 
                     return null;
