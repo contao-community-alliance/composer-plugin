@@ -6,21 +6,13 @@ php:
     - "5.6"
     - "7.0"
 
-env:
-    - CONTAO_VERSION=~4.1.0
-
 sudo: false
 
 install:
     - travis_retry composer self-update && composer --version
-    - travis_retry composer require contao/core $CONTAO_VERSION --no-update
-    - travis_retry composer update --prefer-dist --dev --no-interaction
+    - travis_retry composer install --prefer-dist --no-interaction
 
 script: ant -keep-going
-
-after_failure:
-    - find /tmp
-    - ls -al /tmp
 
 # Hack to make things work again - we can not use a shallow repository.
 git:
