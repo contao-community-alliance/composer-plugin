@@ -27,7 +27,7 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Filesystem;
-use ContaoCommunityAlliance\Composer\Plugin\ContaoModuleInstaller;
+use ContaoCommunityAlliance\Composer\Plugin\Installer\AbstractModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Plugin;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
@@ -74,11 +74,11 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $installationManager = $this->getMock('Composer\\Installer\\InstallationManager');
 
         $installationManager
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('addInstaller')
             ->with($this->callback(
                 function ($installer) {
-                    return $installer instanceof ContaoModuleInstaller;
+                    return $installer instanceof AbstractModuleInstaller;
                 }
             ))
         ;
