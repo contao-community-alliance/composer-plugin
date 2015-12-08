@@ -220,6 +220,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * @param int              $mode       The mode how to handle duplicate files.
      *
      * @return void
+     *
+     * @throws \RuntimeException When the symlink could not be created.
      */
     protected function addSymlinks(PackageInterface $package, $targetRoot, array $pathMap, $mode = self::DUPLICATE_FAIL)
     {
@@ -246,7 +248,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
-            symlink($source, $target);
+            if (!symlink($source, $target)) {
+                throw new \RuntimeException('Failed to create symlink ' . $target);
+            }
         }
     }
 
@@ -496,7 +500,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             }
 
             if (self::INVALID_FAIL === $mode) {
-                throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $source, $target));
+                throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $target, $source));
             }
         }
 
