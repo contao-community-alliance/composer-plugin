@@ -1,17 +1,5 @@
 <?php
 
-/**
- * Contao Composer Installer
- *
- * Copyright (C) 2013 Contao Community Alliance
- *
- * @package contao-composer
- * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author  Tristan Lins <tristan.lins@bit3.de>
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
- */
-
 error_reporting(E_ALL);
 
 function includeIfExists($file)
@@ -27,5 +15,3 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 }
 
 $loader->add('ContaoCommunityAlliance\Composer\Plugin', __DIR__);
-
-require __DIR__.'/ContaoCommunityAlliance/Composer/Plugin/Test/TestCase.php';

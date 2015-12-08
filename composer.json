@@ -1,37 +1,35 @@
 {
     "name": "contao-community-alliance/composer-plugin",
-    "description": "Composer plugin that provide contao integration and installer.",
+    "description": "Composer plugin that provides installers for contao-module and legacy-contao-module.",
     "type": "composer-plugin",
     "homepage":"http://c-c-a.org/",
     "license": "LGPL-3.0+",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=5.3.2",
-        "composer-plugin-api": "^1.0"
+        "php": ">=5.4.0",
+        "composer-plugin-api": "^1.0",
+        "symfony/finder": "^2.7",
+        "symfony/process": "^2.7"
     },
     "require-dev": {
         "composer/composer": "~1.0@dev",
-        "phpcq/all-tasks": "~1.1",
-        "contao/core": ">=2.11,<4.0"
-    },
-    "replace": {
-        "contao-community-alliance/composer-installer": "1.7.1"
+        "phpcq/all-tasks": "~1.1"
     },
     "conflict": {
-        "contao/core": "3.0.*",
-        "contao-community-alliance/composer": "<0.9-dev"
+        "contao/core": "*",
+        "contao/core-bundle": "<4.1"
     },
     "autoload": {
-        "psr-0": {
-            "ContaoCommunityAlliance\\Composer\\Plugin": "src/"
+        "psr-4": {
+            "ContaoCommunityAlliance\\Composer\\Plugin\\": "src/"
         }
     },
     "extra": {
         "class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
         "branch-alias": {
             "dev-master": "2.3.x-dev",
-            "dev-develop": "2.4.x-dev"
+            "dev-develop": "3.0.x-dev"
         }
     }
 }
