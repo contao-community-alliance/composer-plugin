@@ -21,34 +21,10 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin\Test;
 
-use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
-class RunonceManagerTest extends \PHPUnit_Framework_TestCase
+class RunonceManagerTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $tempdir;
-
-    /**
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    public function setUp()
-    {
-        $this->tempdir    = sys_get_temp_dir() . '/' . substr(md5(mt_rand()), 0, 8);
-        $this->filesystem = new Filesystem();
-
-        $this->filesystem->ensureDirectoryExists($this->tempdir);
-    }
-
-    protected function tearDown()
-    {
-        $this->filesystem->removeDirectory($this->tempdir);
-    }
-
     public function testDumpsNothingIfEmpty()
     {
         $file = $this->tempdir . '/runonce.php';

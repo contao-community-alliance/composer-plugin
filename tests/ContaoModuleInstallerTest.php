@@ -25,37 +25,11 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
-class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
+class ContaoModuleInstallerTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $tempdir;
-
-    /**
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    public function setUp()
-    {
-        $this->tempdir    = sys_get_temp_dir() . '/' . substr(md5(mt_rand()), 0, 8);
-        $this->filesystem = new Filesystem();
-
-        $this->filesystem->ensureDirectoryExists($this->tempdir);
-
-        $this->tempdir = realpath($this->tempdir);
-    }
-
-    public function tearDown()
-    {
-        $this->filesystem->removeDirectory($this->tempdir);
-    }
-
     /**
      * Tests that the installer supports packages of type "contao-module".
      */

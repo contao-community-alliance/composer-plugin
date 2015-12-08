@@ -26,47 +26,16 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
-use Composer\Util\Filesystem;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\AbstractModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Plugin;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
-class PluginTest extends \PHPUnit_Framework_TestCase
+class PluginTest extends TestCase
 {
-    /**
-     * @var Plugin
-     */
-    private $plugin;
-
-    /**
-     * @var string
-     */
-    private $tempdir;
-
-    /**
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    public function setUp()
-    {
-        $this->plugin     = new Plugin();
-        $this->tempdir    = sys_get_temp_dir() . '/' . substr(md5(mt_rand()), 0, 8);
-        $this->filesystem = new Filesystem();
-
-        $this->filesystem->ensureDirectoryExists($this->tempdir);
-
-        $this->tempdir = realpath($this->tempdir);
-    }
-
-    public function tearDown()
-    {
-        $this->filesystem->removeDirectory($this->tempdir);
-    }
-
     public function testImplementsPluginInterface()
     {
-        $this->assertTrue($this->plugin instanceof PluginInterface);
+        $plugin = new Plugin();
+        $this->assertTrue($plugin instanceof PluginInterface);
     }
 
     public function testAddsContaoModuleInstallerOnActivation()
@@ -83,12 +52,14 @@ class PluginTest extends \PHPUnit_Framework_TestCase
             ))
         ;
 
-        $this->plugin->activate($this->mockComposer($installationManager), $this->mockIO());
+        $plugin = new Plugin();
+        $plugin->activate($this->mockComposer($installationManager), $this->mockIO());
     }
 
     public function testImplementsEventSubscriberInterface()
     {
-        $this->assertTrue($this->plugin instanceof EventSubscriberInterface);
+        $plugin = new Plugin();
+        $this->assertTrue($plugin instanceof EventSubscriberInterface);
     }
 
     public function testDumpsRunonceOnPostInstallEvent()
