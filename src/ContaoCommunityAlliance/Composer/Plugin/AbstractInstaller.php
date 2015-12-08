@@ -1,17 +1,24 @@
 <?php
 
 /**
- * Contao Composer Installer
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @package contao-composer
- * @author  Dominik Zogg <dominik.zogg@gmail.com>
- * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author  Tristan Lins <tristan.lins@bit3.de>
- * @author  Oliver Hoff <oliver@hofff.com>
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Dominik Zogg <dominik.zogg@gmail.com>
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -153,7 +160,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     {
         $map = $this->mapSources($initial);
         parent::updateCode($initial, $target);
-        $this->updateSources($map, $target, $initial);
+        $this->updateSources($map, $target);
         $this->updateUserfiles($target);
         $this->updateRootFiles($target);
 
@@ -177,7 +184,7 @@ abstract class AbstractInstaller extends LibraryInstaller
     public function updateContaoFiles(PackageInterface $package)
     {
         $map = $this->mapSources($package);
-        $this->updateSources($map, $package, $package);
+        $this->updateSources($map, $package);
         $this->updateUserfiles($package);
         $this->updateRootFiles($package);
 

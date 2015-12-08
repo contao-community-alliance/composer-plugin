@@ -1,16 +1,23 @@
 <?php
 
 /**
- * Contao Composer Installer
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @package contao-composer
- * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author  Tristan Lins <tristan.lins@bit3.de>
- * @author  Oliver Hoff <oliver@hofff.com>
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -18,6 +25,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\PackageEvent;
+use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
@@ -28,6 +36,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
+use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
@@ -39,6 +48,23 @@ use RuntimeException;
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
+    /**
+     * The bundle names the virtual core shall provide.
+     *
+     * NOTE: 'contao/installation-bundle' is a special case and will not get added here, as it is new code only.
+     *
+     * @var string[]
+     */
+    protected static $bundleNames = array(
+        'contao/calendar-bundle',
+        'contao/comments-bundle',
+        'contao/core-bundle',
+        'contao/faq-bundle',
+        'contao/listing-bundle',
+        'contao/news-bundle',
+        'contao/newsletter-bundle',
+    );
+
     /**
      * The composer instance.
      *
@@ -119,11 +145,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            PluginEvents::COMMAND             => 'handleCommand',
-            ScriptEvents::POST_UPDATE_CMD     => 'handlePostUpdateCmd',
-            ScriptEvents::POST_AUTOLOAD_DUMP  => 'handlePostAutoloadDump',
-            ScriptEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
-            PluginEvents::PRE_FILE_DOWNLOAD   => 'handlePreDownload',
+            PluginEvents::COMMAND              => 'handleCommand',
+            ScriptEvents::POST_UPDATE_CMD      => 'handlePostUpdateCmd',
+            ScriptEvents::POST_AUTOLOAD_DUMP   => 'handlePostAutoloadDump',
+            PackageEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
+            PluginEvents::PRE_FILE_DOWNLOAD    => 'handlePreDownload',
         );
     }
 
@@ -182,6 +208,38 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     }
 
     /**
+     * Inject the contao/*-bundle versions into the Contao package.
+     *
+     * @param WritableRepositoryInterface $repository    The repository where to add the packages.
+     *
+     * @param string                      $version       The version to use.
+     *
+     * @param string                      $prettyVersion The version to use.
+     *
+     * @return void
+     */
+    protected function injectContaoBundles(WritableRepositoryInterface $repository, $version, $prettyVersion)
+    {
+        foreach (self::$bundleNames as $bundleName) {
+            if ($remove = $repository->findPackage($bundleName, '*')) {
+                if ($remove->getType() != 'metapackage') {
+                    // stop if the package is required somehow and must not be injected.
+                    continue;
+                } elseif ($remove->getVersion() == $version) {
+                    // stop if the virtual package is already injected.
+                    continue;
+                }
+                // Otherwise remove the package.
+                $repository->removePackage($remove);
+            }
+
+            $package = new CompletePackage($bundleName, $version, $prettyVersion);
+            $package->setType('metapackage');
+            $repository->addPackage($package);
+        }
+    }
+
+    /**
      * Prepare a Contao version to be compatible with composer.
      *
      * @param string $version The version string.
@@ -227,6 +285,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
         $version       = $versionParser->normalize($prettyVersion);
 
+        // @codingStandardsIgnoreStart
+        // Sadly we can not add the bundles as provided packages, as the Pool cleans them up.
+        // See also: https://github.com/composer/composer/blob/2d19cf/src/Composer/DependencyResolver/Pool.php#L174
+        // The skipping in there ignores any provided packages, even from already installed ones, and therefore makes
+        // this approach impossible.
+        // We therefore register them all as meta packages in the local repository and require them in the same version
+        // below then.
+        // @codingStandardsIgnoreEnd
+        $this->injectContaoBundles($localRepository, $version, $prettyVersion);
+
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
             if ($localPackage->getName() == 'contao/core') {
@@ -237,38 +305,43 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 } elseif ($localPackage->getVersion() == $version) {
                     // stop if the virtual contao package is already injected
                     return;
-                } else {
-                    $localRepository->removePackage($localPackage);
                 }
+                // Remove package otherwise.
+                $localRepository->removePackage($localPackage);
+                break;
             }
         }
 
-        $contaoVersion = $this->getContaoVersion() . '.' . $this->getContaoBuild();
-        $contaoCore    = new CompletePackage('contao/core', $version, $prettyVersion);
+        $contaoCore = new CompletePackage('contao/core', $version, $prettyVersion);
         $contaoCore->setType('metapackage');
-        $contaoCore->setDistType('zip');
-        $contaoCore->setDistUrl('https://github.com/contao/core/archive/' . $contaoVersion . '.zip');
-        $contaoCore->setDistReference($contaoVersion);
-        $contaoCore->setDistSha1Checksum($contaoVersion);
-        $contaoCore->setInstallationSource('dist');
-        $contaoCore->setAutoload(array());
 
         $this->injectSwiftMailer($root, $contaoCore);
 
-        if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
-            $clientConstraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
-        } else {
-            $clientConstraint = new EmptyConstraint();
-        }
-        $clientConstraint->setPrettyString('*');
         $clientLink = new Link(
             'contao/core',
-            'contao-community-alliance/composer',
-            $clientConstraint,
+            'contao-community-alliance/composer-client',
+            $this->createEmptyConstraint('~0.14'),
             'requires',
-            '*'
+            '~0.14'
         );
-        $contaoCore->setRequires(array('contao-community-alliance/composer' => $clientLink));
+
+        $requires = array('contao-community-alliance/composer-client' => $clientLink);
+
+        // Add the bundles now.
+        foreach (self::$bundleNames as $bundleName) {
+            if ($package = $localRepository->findPackage($bundleName, '*')) {
+                $requires[$bundleName] =
+                    new Link(
+                        'contao/core',
+                        $bundleName,
+                        $this->createEmptyConstraint($package->getVersion()),
+                        'requires',
+                        $package->getVersion()
+                    );
+            }
+        }
+
+        $contaoCore->setRequires($requires);
 
         $localRepository->addPackage($contaoCore);
     }
@@ -317,17 +390,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         switch ($event->getCommandName()) {
             case 'update':
-                // ensure the artifact repository exists
-                $path = $this->composer->getConfig()->get('home') . DIRECTORY_SEPARATOR . 'packages';
-                // @codingStandardsIgnoreStart - silencing the error is ok here.
-                if (!is_dir($path) && !@mkdir($path, 0777, true)) {
-                    throw new \RuntimeException(
-                        'could not create directory "' . $path . '" for artifact repository',
-                        1
-                    );
-                }
-                // @codingStandardsIgnoreEnd
-
                 ConfigManipulator::run();
                 break;
 
@@ -345,7 +407,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $package = $this->composer->getPackage();
         $root    = $this->getContaoRoot($package);
 
-        $this->createRunonce($this->inputOutput, $root);
+        RunonceManager::createRunonce($this->inputOutput, $root);
         Housekeeper::cleanCache($this->inputOutput, $root);
     }
 
@@ -360,20 +422,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $this->inputOutput,
             $this->getContaoRoot($this->composer->getPackage())
         );
-    }
-
-    /**
-     * Create the global runonce.php after updates has been installed.
-     *
-     * @param IOInterface $inputOutput The input output interface.
-     *
-     * @param string      $root        The contao installation root.
-     *
-     * @return void
-     */
-    public function createRunonce(IOInterface $inputOutput, $root)
-    {
-        RunonceManager::createRunonce($inputOutput, $root);
     }
 
     /**
@@ -392,7 +440,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $package */
         $package = $event->getOperation()->getPackage();
 
-        if ($package->getName() == 'contao/core') {
+        if (($package->getName() == 'contao/core') || in_array($package->getName(), self::$bundleNames)) {
             try {
                 $composer = $event->getComposer();
                 $this->getContaoRoot($composer->getPackage());
@@ -696,5 +744,26 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         return new Constraint($operator, $version);
+    }
+
+    /**
+     * Create an empty constraint instance and set pretty string.
+     *
+     * @param string $prettyString The pretty string for the constraint.
+     *
+     * @return EmptyConstraint|\Composer\Package\LinkConstraint\EmptyConstraint
+     * @see    https://github.com/contao-community-alliance/composer-plugin/issues/44
+     * @see    https://github.com/composer/semver/issues/17
+     */
+    private function createEmptyConstraint($prettyString)
+    {
+        if (!class_exists('Composer\Semver\Constraint\EmptyConstraint')) {
+            $constraint = new \Composer\Package\LinkConstraint\EmptyConstraint();
+        } else {
+            $constraint = new EmptyConstraint();
+        }
+        $constraint->setPrettyString($prettyString);
+
+        return $constraint;
     }
 }
