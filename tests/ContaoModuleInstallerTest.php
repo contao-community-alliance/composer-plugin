@@ -217,8 +217,6 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
      */
     public function testSourcesOnInstallThrowsExceptionIfFileIsUnreadable()
     {
-        include __DIR__ . '/fixtures/mock_is_readable.php';
-
         $runonce    = $this->mockRunonce();
         $installer  = $this->createInstaller($runonce);
         $repo       = $this->mockRepository();
@@ -233,7 +231,6 @@ class ContaoModuleInstallerTest extends \PHPUnit_Framework_TestCase
         $basePath = $installer->getInstallPath($package);
 
         $this->filesystem->ensureDirectoryExists($basePath . '/config');
-        touch($basePath . '/config/config.php');
 
         $installer->install($repo, $package);
     }
