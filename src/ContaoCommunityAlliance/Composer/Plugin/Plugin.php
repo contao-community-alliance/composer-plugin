@@ -23,6 +23,8 @@
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
@@ -148,6 +150,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             PluginEvents::COMMAND              => 'handleCommand',
             ScriptEvents::POST_UPDATE_CMD      => 'handlePostUpdateCmd',
             ScriptEvents::POST_AUTOLOAD_DUMP   => 'handlePostAutoloadDump',
+            PackageEvents::PRE_PACKAGE_UPDATE  => 'checkContaoPackage',
             PackageEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
             PluginEvents::PRE_FILE_DOWNLOAD    => 'handlePreDownload',
         );
@@ -437,8 +440,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function checkContaoPackage(PackageEvent $event)
     {
-        /** @var PackageInterface $package */
-        $package = $event->getOperation()->getPackage();
+        $op = $event->getOperation();
+
+        if ($op instanceof InstallOperation) {
+            $package = $op->getPackage();
+        } elseif ($op instanceof UpdateOperation) {
+            $package = $op->getTargetPackage();
+        } else {
+            return;
+        }
 
         if (($package->getName() == 'contao/core') || in_array($package->getName(), self::$bundleNames)) {
             try {
