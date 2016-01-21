@@ -25,6 +25,7 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
+use RuntimeException;
 
 /**
  * Remember runonce files that found while installing packages and
@@ -193,6 +194,8 @@ EOF;
      */
     public static function addRunonces(PackageInterface $package, $installPath)
     {
+        static::checkDuplicateInstallation($package);
+
         $extra = $package->getExtra();
         if (isset($extra['contao']['runonce'])) {
             $runonces = (array) $extra['contao']['runonce'];
@@ -246,5 +249,26 @@ EOF;
     public static function clearRunonces()
     {
         static::$runonces = array();
+    }
+
+    /**
+     * Ugly hack to check duplicate installation after plugin update.
+     *
+     * @param PackageInterface $package
+     *
+     * @throws DuplicateContaoException
+     */
+    private static function checkDuplicateInstallation(PackageInterface $package)
+    {
+        if ($package->getName() === 'contao/core' || in_array($package->getName(), Plugin::$bundleNames)) {
+            $roots = Plugin::findContaoRoots();
+
+            if (count($roots) > 1) {
+                throw new DuplicateContaoException(
+                    'Warning: Contao core was installed but has been found in project root, ' .
+                    'to recover from this problem please restart the operation'
+                );
+            }
+        }
     }
 }

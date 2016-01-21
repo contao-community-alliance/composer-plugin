@@ -58,7 +58,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @var string[]
      */
-    protected static $bundleNames = array(
+    public static $bundleNames = array(
         'contao/calendar-bundle',
         'contao/comments-bundle',
         'contao/core-bundle',
@@ -282,7 +282,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function injectContaoCore()
     {
         $removeVendor = false;
-        $roots        = $this->findContaoRoots($this->composer->getPackage());
+        $roots        = static::findContaoRoots($this->composer->getPackage());
 
         // Duplicate installation, remove from vendor folder
         if (count($roots) > 1 && isset($roots['vendor'])) {
@@ -517,7 +517,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function getContaoRoot(RootPackageInterface $package)
     {
         if (!isset($this->contaoRoot)) {
-            $roots = array_values($this->findContaoRoots($package));
+            $roots = array_values(static::findContaoRoots($package));
             $this->contaoRoot = $roots[0];
         }
 
@@ -772,7 +772,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @return array
      */
-    private function findContaoRoots(RootPackageInterface $package)
+    public static function findContaoRoots(RootPackageInterface $package = null)
     {
         $roots = array();
         $cwd   = getcwd();
@@ -782,18 +782,20 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         // Check if we have a Contao installation in the current working dir. See #15.
-        if ($this->isContao($cwd)) {
+        if (static::isContao($cwd)) {
             $roots['root'] = $cwd;
         }
 
-        if ($this->isContao(dirname($cwd))) {
+        if (static::isContao(dirname($cwd))) {
             $roots['parent'] = dirname($cwd);
         }
 
-        $extra = $package->getExtra();
+        if (null !== $package) {
+            $extra = $package->getExtra();
 
-        if (!empty($extra['contao']['root']) && $this->isContao($cwd)) {
-            $roots['extra'] = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
+            if (!empty($extra['contao']['root']) && static::isContao($cwd)) {
+                $roots['extra'] = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
+            }
         }
 
         // test, do we have the core within vendor/contao/core.
@@ -802,7 +804,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             'contao' . DIRECTORY_SEPARATOR .
             'core';
 
-        if ($this->isContao($vendorRoot)) {
+        if (static::isContao($vendorRoot)) {
             $roots['vendor'] = $vendorRoot;
         }
 
@@ -816,7 +818,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @return bool
      */
-    private function isContao($path)
+    public static function isContao($path)
     {
         return is_dir($path . DIRECTORY_SEPARATOR . 'system');
     }
