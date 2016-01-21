@@ -24,6 +24,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\PackageEvent;
@@ -280,6 +281,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function injectContaoCore()
     {
+        $removeVendor = false;
+        $roots        = $this->findContaoRoots($this->composer->getPackage());
+
+        // Duplicate installation, remove from vendor folder
+        if (count($roots) > 1 && isset($roots['vendor'])) {
+            $removeVendor = true;
+        }
+
         $root              = $this->getContaoRoot($this->composer->getPackage());
         $repositoryManager = $this->composer->getRepositoryManager();
         $localRepository   = $repositoryManager->getLocalRepository();
@@ -301,7 +310,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
             if ($localPackage->getName() == 'contao/core') {
-                if ($localPackage->getType() != 'metapackage') {
+
+                if ($removeVendor) {
+                    $this->composer->getInstallationManager()->uninstall(
+                        $localRepository,
+                        new UninstallOperation($localPackage)
+                    );
+                } elseif ($localPackage->getType() !== 'metapackage') {
                     // stop if the contao package is required somehow
                     // and must not be injected
                     return;
@@ -502,36 +517,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function getContaoRoot(RootPackageInterface $package)
     {
         if (!isset($this->contaoRoot)) {
-            $cwd = getcwd();
-
-            if (!$cwd) {
-                throw new RuntimeException('Could not determine current working directory.');
-            }
-
-            // Check if we have a Contao installation in the current working dir. See #15.
-            if (is_dir($cwd . DIRECTORY_SEPARATOR . 'system')) {
-                $root = $cwd;
-            } else {
-                // Fallback - We assume we are in TL_ROOT/composer.
-                $root = dirname($cwd);
-            }
-            $extra = $package->getExtra();
-
-            if (!empty($extra['contao']['root'])) {
-                $root = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
-            } else {
-                // test, do we have the core within vendor/contao/core.
-                $vendorRoot = $cwd . DIRECTORY_SEPARATOR .
-                    'vendor' . DIRECTORY_SEPARATOR .
-                    'contao' . DIRECTORY_SEPARATOR .
-                    'core';
-
-                if (is_dir($vendorRoot)) {
-                    $root = $vendorRoot;
-                }
-            }
-
-            $this->contaoRoot = realpath($root);
+            $roots = array_values($this->findContaoRoots($package));
+            $this->contaoRoot = $roots[0];
         }
 
         $systemDir = $this->contaoRoot . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR;
@@ -563,9 +550,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         foreach (array(
-            $configDir . 'constants.php',
-            $systemDir . 'constants.php'
-        ) as $checkConstants) {
+                     $configDir . 'constants.php',
+                     $systemDir . 'constants.php'
+                 ) as $checkConstants) {
             if (file_exists($checkConstants)) {
                 $constantsFile = $checkConstants;
                 break;
@@ -775,5 +762,62 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $constraint->setPrettyString($prettyString);
 
         return $constraint;
+    }
+
+    /**
+     * Returns a list of Contao paths.
+     * Multiple paths mean there's likely a problem with the installation (e.g. Contao in root and vendor folder).
+     *
+     * @param RootPackageInterface $package
+     *
+     * @return array
+     */
+    private function findContaoRoots(RootPackageInterface $package)
+    {
+        $roots = array();
+        $cwd   = getcwd();
+
+        if (!$cwd) {
+            throw new RuntimeException('Could not determine current working directory.');
+        }
+
+        // Check if we have a Contao installation in the current working dir. See #15.
+        if ($this->isContao($cwd)) {
+            $roots['root'] = $cwd;
+        }
+
+        if ($this->isContao(dirname($cwd))) {
+            $roots['parent'] = dirname($cwd);
+        }
+
+        $extra = $package->getExtra();
+
+        if (!empty($extra['contao']['root']) && $this->isContao($cwd)) {
+            $roots['extra'] = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
+        }
+
+        // test, do we have the core within vendor/contao/core.
+        $vendorRoot = $cwd . DIRECTORY_SEPARATOR .
+            'vendor' . DIRECTORY_SEPARATOR .
+            'contao' . DIRECTORY_SEPARATOR .
+            'core';
+
+        if ($this->isContao($vendorRoot)) {
+            $roots['vendor'] = $vendorRoot;
+        }
+
+        return $roots;
+    }
+
+    /**
+     * Returns wether the given folder contains a Contao installation.
+     *
+     * @param string $path
+     *
+     * @return bool
+     */
+    private function isContao($path)
+    {
+        return is_dir($path . DIRECTORY_SEPARATOR . 'system');
     }
 }
