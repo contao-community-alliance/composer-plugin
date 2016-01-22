@@ -257,7 +257,14 @@ abstract class AbstractInstaller extends LibraryInstaller
             }
         }
 
-        return $sources;
+        // prevents mixed up directory separator
+        // replace '/' read from composer.json[extra] with native directory separator
+        $nativeSources = array();
+        foreach ($sources as $key=>$value) {
+            $nativeSources[self::getNativePath($key)] = self::getNativePath($value);
+        }
+        
+        return $nativeSources;
     }
 
     /**
