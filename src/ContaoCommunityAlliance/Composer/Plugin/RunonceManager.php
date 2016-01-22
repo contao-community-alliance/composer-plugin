@@ -25,7 +25,6 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
-use RuntimeException;
 
 /**
  * Remember runonce files that found while installing packages and
@@ -260,8 +259,8 @@ EOF;
      */
     private static function checkDuplicateInstallation(PackageInterface $package)
     {
-        if ($package->getName() === 'contao/core' || in_array($package->getName(), Plugin::$bundleNames)) {
-            $roots = Plugin::findContaoRoots();
+        if ($package->getName() === 'contao/core' || in_array($package->getName(), Environment::$bundleNames)) {
+            $roots = Environment::findContaoRoots();
 
             if (count($roots) > 1) {
                 throw new DuplicateContaoException(
