@@ -439,12 +439,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function checkContaoPackage(PackageEvent $event)
     {
-        $op = $event->getOperation();
+        $operation = $event->getOperation();
 
-        if ($op instanceof InstallOperation) {
-            $package = $op->getPackage();
-        } elseif ($op instanceof UpdateOperation) {
-            $package = $op->getTargetPackage();
+        if ($operation instanceof InstallOperation) {
+            $package = $operation->getPackage();
+        } elseif ($operation instanceof UpdateOperation) {
+            $package = $operation->getTargetPackage();
         } else {
             return;
         }
