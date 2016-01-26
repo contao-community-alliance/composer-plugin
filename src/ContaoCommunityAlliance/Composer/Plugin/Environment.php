@@ -77,7 +77,9 @@ class Environment
         if (null !== $package) {
             $extra = $package->getExtra();
 
-            if (!empty($extra['contao']['root']) && static::isContao($cwd)) {
+            if (!empty($extra['contao']['root'])
+                && static::isContao($cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'])
+            ) {
                 $roots['extra'] = $cwd . DIRECTORY_SEPARATOR . $extra['contao']['root'];
             }
         }
