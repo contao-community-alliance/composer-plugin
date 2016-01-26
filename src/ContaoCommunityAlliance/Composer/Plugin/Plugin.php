@@ -265,21 +265,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function injectContaoCore()
     {
-        $removeVendor = false;
-        $roots        = Environment::findContaoRoots($this->composer->getPackage());
-
         // Duplicate installation, remove from vendor folder
-        if (count($roots) > 1 && isset($roots['vendor'])) {
-            $removeVendor = true;
-        }
-
+        $roots             = Environment::findContaoRoots($this->composer->getPackage());
+        $removeVendor      = (count($roots) > 1 && isset($roots['vendor']));
         $root              = $this->getContaoRoot($this->composer->getPackage());
         $repositoryManager = $this->composer->getRepositoryManager();
         $localRepository   = $repositoryManager->getLocalRepository();
-
-        $versionParser = new VersionParser();
-        $prettyVersion = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
-        $version       = $versionParser->normalize($prettyVersion);
+        $versionParser     = new VersionParser();
+        $prettyVersion     = $this->prepareContaoVersion($this->getContaoVersion(), $this->getContaoBuild());
+        $version           = $versionParser->normalize($prettyVersion);
 
         // @codingStandardsIgnoreStart
         // Sadly we can not add the bundles as provided packages, as the Pool cleans them up.
@@ -294,7 +288,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /** @var PackageInterface $localPackage */
         foreach ($localRepository->getPackages() as $localPackage) {
             if ($localPackage->getName() === 'contao/core') {
-
                 if ($removeVendor) {
                     $this->composer->getInstallationManager()->uninstall(
                         $localRepository,
