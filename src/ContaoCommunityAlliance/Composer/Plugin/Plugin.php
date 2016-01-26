@@ -14,6 +14,7 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Tristan Lins <tristan.lins@bit3.de>
  * @author     Oliver Hoff <oliver@hofff.com>
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @copyright  2013-2015 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -500,7 +501,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function getContaoRoot(RootPackageInterface $package)
     {
         if (!isset($this->contaoRoot)) {
-            $roots = array_values(Environment::findContaoRoots($package));
+            $roots            = array_values(Environment::findContaoRoots($package));
             $this->contaoRoot = $roots[0];
         }
 

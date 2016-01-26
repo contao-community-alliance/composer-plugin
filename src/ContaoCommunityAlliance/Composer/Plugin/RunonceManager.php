@@ -13,6 +13,7 @@
  * @package    contao-community-alliance/composer-plugin
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @copyright  2013-2015 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -253,9 +254,11 @@ EOF;
     /**
      * Ugly hack to check duplicate installation after plugin update.
      *
-     * @param PackageInterface $package
+     * @param PackageInterface $package The package to check.
      *
-     * @throws DuplicateContaoException
+     * @return void
+     *
+     * @throws DuplicateContaoException When the Contao core has been found.
      */
     private static function checkDuplicateInstallation(PackageInterface $package)
     {

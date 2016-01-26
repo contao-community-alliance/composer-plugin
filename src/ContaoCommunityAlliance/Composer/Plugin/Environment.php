@@ -1,10 +1,32 @@
 <?php
 
+/**
+ * This file is part of contao-community-alliance/composer-plugin.
+ *
+ * (c) 2013 Contao Community Alliance
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
+ */
+
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
 use Composer\Package\RootPackageInterface;
 use RuntimeException;
 
+/**
+ * This class provides static methods to check for the Contao installation root.
+ */
 class Environment
 {
     /**
@@ -28,9 +50,11 @@ class Environment
      * Returns a list of Contao paths.
      * Multiple paths mean there's likely a problem with the installation (e.g. Contao in root and vendor folder).
      *
-     * @param RootPackageInterface $package
+     * @param RootPackageInterface $package The package to check if a root has been specified in the extra section.
      *
      * @return array
+     *
+     * @throws RuntimeException When the current working directory could not be determined.
      */
     public static function findContaoRoots(RootPackageInterface $package = null)
     {
@@ -72,9 +96,9 @@ class Environment
     }
 
     /**
-     * Returns wether the given folder contains a Contao installation.
+     * Returns whether the given folder contains a Contao installation.
      *
-     * @param string $path
+     * @param string $path The path to check.
      *
      * @return bool
      */
