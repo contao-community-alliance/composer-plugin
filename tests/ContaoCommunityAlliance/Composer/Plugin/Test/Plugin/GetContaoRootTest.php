@@ -41,7 +41,7 @@ class GetContaoRootTest extends TestCase
     {
         $this->fs       = new Filesystem();
         $this->curDir   = getcwd();
-        $this->testRoot = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'composer-test-submodule/composer';
+        $this->testRoot = realpath(sys_get_temp_dir()) . '/composer-test-submodule/composer';
     }
 
     protected function tearDown()
@@ -80,7 +80,7 @@ class GetContaoRootTest extends TestCase
             $this->markTestIncomplete('Could not change to temp dir. Test incomplete!');
         }
 
-        return $this->mockPlugin($this->testRoot . $subDir. DIRECTORY_SEPARATOR . 'files');
+        return $this->mockPlugin();
     }
 
     /**
@@ -91,6 +91,7 @@ class GetContaoRootTest extends TestCase
     public function testOverrideViaExtra()
     {
         $plugin = $this->clearTest('/tmp/path');
+        $this->fs->ensureDirectoryExists($this->testRoot . '/tmp/path/system');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
         $package->setExtra(array('contao' => array('root' => 'tmp/path')));
@@ -104,6 +105,7 @@ class GetContaoRootTest extends TestCase
     public function testCoreAsSubModule()
     {
         $plugin = $this->clearTest('/vendor/contao/core');
+        $this->fs->ensureDirectoryExists($this->testRoot . '/vendor/contao/core/system');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
@@ -116,6 +118,7 @@ class GetContaoRootTest extends TestCase
     public function testCoreIsRoot()
     {
         $plugin = $this->clearTest();
+        $this->fs->ensureDirectoryExists(dirname($this->testRoot) . '/system');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
@@ -128,7 +131,7 @@ class GetContaoRootTest extends TestCase
     public function testCoreIsCwd()
     {
         $plugin = $this->clearTest();
-        mkdir($this->testRoot . DIRECTORY_SEPARATOR . 'system/modules', 0777, true);
+        $this->fs->ensureDirectoryExists($this->testRoot . '/system');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
