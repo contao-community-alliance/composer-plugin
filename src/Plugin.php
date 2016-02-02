@@ -51,6 +51,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     private $runonceManager;
 
     /**
+     * If root package is not a project, the plugin will not install files.
+     * @var bool
+     */
+    private static $isProject = true;
+
+    /**
      * Constructor.
      *
      * @param RunonceManager $runonceManager The run once manager to use.
@@ -65,6 +71,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $inputOutput)
     {
+        if ($composer->getPackage()->getType() !== 'project') {
+            static::$isProject = false;
+            $inputOutput->write('Root package is not of type "project", we will not installing Contao extensions.');
+            return;
+        }
+
         $this->composer = $composer;
 
         if (null === $this->runonceManager) {
@@ -100,6 +112,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public static function getSubscribedEvents()
     {
+        if (!static::$isProject) {
+            return [];
+        }
+
         return [
             ScriptEvents::POST_INSTALL_CMD => 'dumpRunonce',
             ScriptEvents::POST_UPDATE_CMD  => 'dumpRunonce',
