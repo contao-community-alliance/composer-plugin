@@ -110,7 +110,7 @@ In the sources section, you can define which files should be copied where on ins
 for Contao 3 extensions to be installed in the `system/modules` folder.
 
 If your GIT repository contains only files that should be copied into the `system/modules/extension-name` folder,
-simply specify an empty source and the targe folder.
+simply specify an empty source and the target folder.
 
 ```json
 {
