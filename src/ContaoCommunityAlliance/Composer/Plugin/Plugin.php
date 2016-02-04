@@ -487,14 +487,17 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @param RootPackageInterface $package The package being processed.
      *
-     * @return string
+     * @return string|null
      *
      * @throws RuntimeException If the current working directory can not be determined.
      */
     public function getContaoRoot(RootPackageInterface $package)
     {
         if (!isset($this->contaoRoot)) {
-            $roots            = array_values(Environment::findContaoRoots($package));
+            $roots = array_values(Environment::findContaoRoots($package));
+            if (!isset($roots[0])) {
+                return $this->contaoRoot = null;
+            }
             $this->contaoRoot = $roots[0];
         }
 
