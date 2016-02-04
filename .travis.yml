@@ -26,7 +26,7 @@ sudo: false
 install:
     # We have to supply the branch alias here again as travis checks out a commit hash and therefore destroys the
     # circular dependency composer-plugin -> contao/core -> composer-plugin.
-    - cp composer.json composer.tmp && sed '/"prefer-stable": true,/a"version": "2.4.x-dev",' composer.tmp > composer.json && rm composer.tmp
+    - "cp composer.json composer.tmp && sed '/\"prefer-stable\": true,/a\"version\": \"2.4.x-dev\",' composer.tmp > composer.json && rm composer.tmp"
     - travis_retry composer self-update && composer --version
     - travis_retry composer require contao/core $CONTAO_VERSION --no-update
     - travis_retry composer update --prefer-dist --dev --no-interaction
