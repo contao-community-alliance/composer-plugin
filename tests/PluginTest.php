@@ -78,6 +78,40 @@ class PluginTest extends TestCase
         $plugin = new Plugin();
         $plugin->activate($this->mockComposer($installationManager, 'project'), $this->mockIO());
     }
+
+    /**
+     * Provider function for testAddsNoInstallerOnActivation
+     *
+     * @return array
+     */
+    public function providerUnknownRootTypes()
+    {
+        return [
+            ['library'],
+            ['contao-module'],
+            ['legacy-contao-module']
+        ];
+    }
+
+    /**
+     * Test that the activation registers no installer when the type is not "project".
+     *
+     * @param string $rootType The root package type.
+     *
+     * @return void
+     *
+     * @dataProvider providerUnknownRootTypes
+     */
+    public function testAddsNoInstallerOnActivationForUnknownRootType($rootType)
+    {
+        $installationManager = $this->getMock('Composer\\Installer\\InstallationManager');
+
+        $installationManager
+            ->expects($this->never())
+            ->method('addInstaller');
+
+        $plugin = new Plugin();
+        $plugin->activate($this->mockComposer($installationManager, $rootType), $this->mockIO());
     }
 
     /**
