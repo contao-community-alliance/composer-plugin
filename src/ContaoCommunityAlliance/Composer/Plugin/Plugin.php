@@ -39,7 +39,6 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
-use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\Constraint;
@@ -137,7 +136,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             ScriptEvents::POST_AUTOLOAD_DUMP   => 'handlePostAutoloadDump',
             PackageEvents::PRE_PACKAGE_UPDATE  => 'checkContaoPackage',
             PackageEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
-            PluginEvents::PRE_FILE_DOWNLOAD    => 'handlePreDownload',
         );
     }
 
@@ -460,20 +458,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $this->contaoUploadPath = null;
         }
     }
-
-    // @codingStandardsIgnoreStart
-    /**
-     * Handle pre download events.
-     *
-     * @param PreFileDownloadEvent $event The event being raised.
-     *
-     * @return void
-     */
-    public function handlePreDownload()
-    {
-        // TODO: handle the pre download event.
-    }
-    // @codingStandardsIgnoreEnd
 
     /**
      * Detect the contao installation root, version and configuration and set the TL_ROOT constant if not already exist.
