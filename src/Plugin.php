@@ -52,9 +52,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     /**
      * If root package is not a project, the plugin will not install files.
+     *
      * @var bool
      */
-    private static $isProject = true;
+    private $isProject = true;
 
     /**
      * Constructor.
@@ -72,7 +73,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function activate(Composer $composer, IOInterface $inputOutput)
     {
         if ($composer->getPackage()->getType() !== 'project') {
-            static::$isProject = false;
+            $this->isProject = false;
             $inputOutput->writeError(
                 'Root package is not of type "project", we will not installing Contao extensions.'
             );
@@ -114,9 +115,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public static function getSubscribedEvents()
     {
-        if (!static::$isProject) {
-            return [];
-        }
 
         return [
             ScriptEvents::POST_INSTALL_CMD => 'dumpRunonce',
@@ -131,6 +129,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function dumpRunonce()
     {
+        if (!$this->isProject) {
+            return;
+        }
+
         $this->runonceManager->dump();
     }
 }
