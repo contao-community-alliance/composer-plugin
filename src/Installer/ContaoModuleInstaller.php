@@ -44,12 +44,12 @@ class ContaoModuleInstaller extends AbstractModuleInstaller
      */
     // @codingStandardsIgnoreStart - Overriding this method is not useless, we add a parameter default here.
     public function __construct(
-    // @codingStandardsIgnoreEnd
         RunonceManager $runonceManager,
         IOInterface $inputOutput,
         Composer $composer,
         $type = 'contao-module',
         Filesystem $filesystem = null
+    // @codingStandardsIgnoreEnd
     ) {
         parent::__construct($runonceManager, $inputOutput, $composer, $type, $filesystem);
     }
