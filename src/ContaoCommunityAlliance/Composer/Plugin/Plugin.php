@@ -210,11 +210,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         foreach (Environment::$bundleNames as $bundleName) {
             if ($remove = $repository->findPackage($bundleName, '*')) {
-                if ($remove->getType() !== 'metapackage') {
-                    // stop if the package is required somehow and must not be injected.
-                    continue;
-                } elseif ($remove->getVersion() == $version) {
-                    // stop if the virtual package is already injected.
+                if ($this->isNotMetaPackageOrHasSameVersion($remove, $version)) {
+                    // stop if the package is required somehow and must not be injected or if the virtual package is
+                    // already injected.
                     continue;
                 }
                 // Otherwise remove the package.
@@ -293,12 +291,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                         $localRepository,
                         new UninstallOperation($localPackage)
                     );
-                } elseif ($localPackage->getType() !== 'metapackage') {
-                    // stop if the contao package is required somehow
-                    // and must not be injected
-                    return;
-                } elseif ($localPackage->getVersion() == $version) {
-                    // stop if the virtual contao package is already injected
+                } elseif ($this->isNotMetaPackageOrHasSameVersion($localPackage, $version)) {
+                    // stop if the contao package is required somehow and must not be injected or
+                    // if the virtual contao package is already injected
                     return;
                 }
                 // Remove package otherwise.
@@ -742,5 +737,19 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $constraint->setPrettyString($prettyString);
 
         return $constraint;
+    }
+
+    /**
+     * Check if the passed package is not a meta package or has the same version.
+     *
+     * @param PackageInterface $package The package to check.
+     *
+     * @param string           $version The version to match against.
+     *
+     * @return bool
+     */
+    private function isNotMetaPackageOrHasSameVersion(PackageInterface $package, $version)
+    {
+        return ('metapackage' !== $package->getType()) || ($package->getVersion() == $version);
     }
 }
