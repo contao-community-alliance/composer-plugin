@@ -23,6 +23,7 @@ namespace ContaoCommunityAlliance\Composer\Plugin\Test;
 
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
@@ -31,6 +32,9 @@ use ContaoCommunityAlliance\Composer\Plugin\Installer\LegacyContaoModuleInstalle
 use ContaoCommunityAlliance\Composer\Plugin\Plugin;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 
+/**
+ * This tests the plugin class.
+ */
 class PluginTest extends TestCase
 {
     /**
@@ -72,7 +76,8 @@ class PluginTest extends TestCase
             );
 
         $plugin = new Plugin();
-        $plugin->activate($this->mockComposer($installationManager), $this->mockIO());
+        $plugin->activate($this->mockComposer($installationManager, 'project'), $this->mockIO());
+    }
     }
 
     /**
@@ -129,18 +134,20 @@ class PluginTest extends TestCase
     /**
      * Mock a composer instance.
      *
-     * @param \Composer\Installer\InstallationManager $installationManager The installation manager.
+     * @param InstallationManager $installationManager The installation manager.
+     *
+     * @param string              $rootType            The root package type.
      *
      * @return Composer|\PHPUnit_Framework_MockObject_MockObject
      */
-    private function mockComposer($installationManager)
+    private function mockComposer(InstallationManager $installationManager, $rootType)
     {
         $tempdir         = $this->tempdir;
         $config          = $this->getMock('Composer\\Config');
         $downloadManager = $this->getMock('Composer\\Downloader\\DownloadManager', [], [], '', false);
         $composer        = $this->getMock(
             'Composer\\Composer',
-            ['getConfig', 'getDownloadManager', 'getInstallationManager']
+            ['getConfig', 'getDownloadManager', 'getInstallationManager', 'getPackage']
         );
 
         $composer
@@ -157,6 +164,16 @@ class PluginTest extends TestCase
             ->expects($this->any())
             ->method('getInstallationManager')
             ->willReturn($installationManager);
+
+        $rootPackage = $this->getMockBuilder('\Composer\Package\RootPackageInterface')
+            ->getMockForAbstractClass();
+
+        $rootPackage->method('getType')->willReturn($rootType);
+
+        $composer
+            ->expects($this->any())
+            ->method('getPackage')
+            ->willReturn($rootPackage);
 
         $config
             ->expects($this->any())
