@@ -72,7 +72,7 @@ requirement could look like this:
 ```json
 {
     "require": {
-        "contao/core-bundle": "^3.5 || ^4.1.0"
+        "contao/core-bundle": "~3.5 || ~4.1"
     }
 }
 ```
@@ -94,7 +94,7 @@ require statement looks like this:
 ```json
 {
     "require": {
-        "contao-community-alliance/composer-plugin": "^2.4.0 || 3.*"
+        "contao-community-alliance/composer-plugin": "~2.4 || ~3.0"
     }
 }
 ```
@@ -102,6 +102,9 @@ require statement looks like this:
 Versions older than 2.4 will not support `contao/core-bundle`, so make sure to set a correct dependency. If you only
 support Contao 4, the required version would simply be `3.*`. However, you should probably create a Symfony bundle
 and not require the Contao Composer Plugin at all…
+
+Be aware that your root project (the `composer.json` in your root folder) should be of type *project*, otherwise
+the plugin will not install Contao sources.
 
 
 ### Sources
