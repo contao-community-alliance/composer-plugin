@@ -1,16 +1,23 @@
 <?php
 
 /**
- * Contao Composer Installer
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @package contao-composer
- * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author  Tristan Lins <tristan.lins@bit3.de>
- * @author  Oliver Hoff <oliver@hofff.com>
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -28,19 +35,15 @@ class ConfigManipulator
     /**
      * Run all configuration updates.
      *
-     * @throws ConfigUpdateException When the upgrade process did perform any action. The process should be restarted.
-     *
      * @return void
      *
-     * @throws ConfigUpdateException For all performed actions.
+     * @throws ConfigUpdateException When the upgrade process did perform any action. The process should be restarted.
      */
     public static function run()
     {
         $messages   = array();
         $configFile = new JsonFile('composer.json');
         $configJson = $configFile->read();
-
-        // NOTE: we do not need our hard-coded scripts anymore, since we have a plugin
 
         $jsonModified = static::runUpdates($configJson, $messages);
 
@@ -224,12 +227,12 @@ class ConfigManipulator
     {
         $jsonModified = false;
 
-        if (
-            isset($configJson['name']) &&
+        if (isset($configJson['name']) &&
             isset($configJson['type']) &&
             ($configJson['name'] == 'contao/core') &&
             ($configJson['type'] == 'metapackage') &&
-            isset($configJson['provide']['swiftmailer/swiftmailer'])) {
+            isset($configJson['provide']['swiftmailer/swiftmailer'])
+        ) {
             unset($configJson['provide']['swiftmailer/swiftmailer']);
 
             $messages[] = '"swiftmailer/swiftmailer" has been removed from provide section ' .
@@ -260,8 +263,7 @@ class ConfigManipulator
     {
         $jsonModified = false;
 
-        if (
-            isset($configJson['name']) &&
+        if (isset($configJson['name']) &&
             isset($configJson['type']) &&
             ($configJson['name'] == 'contao/core') &&
             ($configJson['type'] == 'metapackage')
@@ -292,7 +294,7 @@ class ConfigManipulator
      */
     public static function updateRequirements(&$configJson, &$messages)
     {
-        if (isset($configJson['type']) && $configJson['type'] === 'contao-module') {
+        if (self::isContaoModule($configJson)) {
             return false;
         }
 
@@ -354,10 +356,12 @@ class ConfigManipulator
      * @param array $messages   The destination buffer for messages raised by the update process.
      *
      * @return bool
+     *
+     * @throws \RuntimeException When the artifact repository directory could not be created.
      */
     public static function restoreRepositories(&$configJson, &$messages)
     {
-        if (isset($configJson['type']) && $configJson['type'] === 'contao-module') {
+        if (self::isContaoModule($configJson)) {
             return false;
         }
 
@@ -379,6 +383,13 @@ class ConfigManipulator
                 ),
                 $configJson['repositories']
             );
+
+            // @codingStandardsIgnoreStart - silencing the error is ok here.
+            // Create the directory if it does not exist yet.
+            if (!is_dir('packages') && !@mkdir('packages', 0777, true)) {
+                throw new \RuntimeException('could not create directory "packages" for artifact repository', 1);
+            }
+            // @codingStandardsIgnoreEnd
 
             $jsonModified = true;
             $messages[]   = 'artifact repository was added to root composer.json';
@@ -423,15 +434,13 @@ class ConfigManipulator
                 continue;
             }
 
-            if (
-                $repository['type'] == 'artifact' &&
+            if ($repository['type'] == 'artifact' &&
                 preg_match('~(^packages|/packages)$~', rtrim($repository['url'], '/'))
             ) {
                 $artifactRepositoryExists = true;
             }
 
-            if (
-                $repository['type'] == 'composer' &&
+            if ($repository['type'] == 'composer' &&
                 (
                     $repository['url'] == 'http://legacy-packages-via.contao-community-alliance.org/' ||
                     $repository['url'] == 'https://legacy-packages-via.contao-community-alliance.org/'
@@ -457,6 +466,10 @@ class ConfigManipulator
      */
     public static function restoreNeededConfigKeys(&$configJson, &$messages)
     {
+        if (self::isContaoModule($configJson)) {
+            return false;
+        }
+
         $jsonModified = false;
 
         if (!isset($configJson['name'])) {
@@ -495,5 +508,18 @@ class ConfigManipulator
         }
 
         return $jsonModified;
+    }
+
+    /**
+     * Check if the current root package is a contao package.
+     *
+     * @param array $configJson The json config (composer.json).
+     *
+     * @return bool
+     */
+    public static function isContaoModule($configJson)
+    {
+        return isset($configJson['type'])
+            && in_array($configJson['type'], array('contao-module', 'legacy-contao-module'));
     }
 }

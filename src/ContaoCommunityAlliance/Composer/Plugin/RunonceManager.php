@@ -1,15 +1,23 @@
 <?php
 
 /**
- * Contao Composer Installer
+ * This file is part of contao-community-alliance/composer-plugin.
  *
- * Copyright (C) 2013 Contao Community Alliance
+ * (c) 2013 Contao Community Alliance
  *
- * @package contao-composer
- * @author  Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author  Tristan Lins <tristan.lins@bit3.de>
- * @link    http://c-c-a.org
- * @license LGPL-3.0+
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * @package    contao-community-alliance/composer-plugin
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Tristan Lins <tristan.lins@bit3.de>
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @copyright  2013-2015 Contao Community Alliance
+ * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
+ * @link       http://c-c-a.org
+ * @filesource
  */
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
@@ -186,6 +194,8 @@ EOF;
      */
     public static function addRunonces(PackageInterface $package, $installPath)
     {
+        static::checkDuplicateInstallation($package);
+
         $extra = $package->getExtra();
         if (isset($extra['contao']['runonce'])) {
             $runonces = (array) $extra['contao']['runonce'];
@@ -239,5 +249,28 @@ EOF;
     public static function clearRunonces()
     {
         static::$runonces = array();
+    }
+
+    /**
+     * Ugly hack to check duplicate installation after plugin update.
+     *
+     * @param PackageInterface $package The package to check.
+     *
+     * @return void
+     *
+     * @throws DuplicateContaoException When the Contao core has been found.
+     */
+    private static function checkDuplicateInstallation(PackageInterface $package)
+    {
+        if ($package->getName() === 'contao/core' || in_array($package->getName(), Environment::$bundleNames)) {
+            $roots = Environment::findContaoRoots();
+
+            if (count($roots) > 1) {
+                throw new DuplicateContaoException(
+                    'Warning: Contao core was installed but has been found in project root, ' .
+                    'to recover from this problem please restart the operation'
+                );
+            }
+        }
     }
 }
