@@ -24,5 +24,5 @@ in `system/modules`. This is no longer supported, you **must** specify your sour
 ## Upgrade your "shadow-copies" and "symlinks" maps
 
 Older versions of the plugin supported file maps for `shadow-copies` and `symlinks` instead of just `sources`.
-This was meant to allow the developer to deciede the mode of installation. Support for this has been dropped in
+This was meant to allow the developer to decide the mode of installation. Support for this has been dropped in
 version 3, the plugin will decide how to install the files.
