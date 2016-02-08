@@ -4,9 +4,108 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3d3dcc1de35820b5f2e286eebb09f517",
-    "content-hash": "4d9a7046cad01dd98df1f5bbd0913c1e",
-    "packages": [],
+    "hash": "295c899a44a4509a7d763293b84f875f",
+    "content-hash": "ff537f888de59ac6d0b2549daad5704a",
+    "packages": [
+        {
+            "name": "symfony/finder",
+            "version": "v2.8.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/finder.git",
+                "reference": "c90fabdd97e431ee19b6383999cf35334dff27da"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/c90fabdd97e431ee19b6383999cf35334dff27da",
+                "reference": "c90fabdd97e431ee19b6383999cf35334dff27da",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Finder\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Finder Component",
+            "homepage": "https://symfony.com",
+            "time": "2016-01-14 08:26:52"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v2.8.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac",
+                "reference": "6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Process Component",
+            "homepage": "https://symfony.com",
+            "time": "2016-01-06 09:59:23"
+        }
+    ],
     "packages-dev": [
         {
             "name": "bit3/git-php",
@@ -294,95 +393,6 @@
             "time": "2015-10-05 11:27:42"
         },
         {
-            "name": "contao-components/compass",
-            "version": "0.12.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/contao-components/compass.git",
-                "reference": "a174266fa89c3c808a9c2c090bf64693dec237f2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/contao-components/compass/zipball/a174266fa89c3c808a9c2c090bf64693dec237f2",
-                "reference": "a174266fa89c3c808a9c2c090bf64693dec237f2",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Leo Feyer",
-                    "homepage": "https://github.com/leofeyer"
-                }
-            ],
-            "description": "Compass integration for Contao Open Source CMS",
-            "time": "2014-11-18 08:30:16"
-        },
-        {
-            "name": "contao/core",
-            "version": "3.5.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/contao-community-alliance/composerized-contao-core.git",
-                "reference": "7d7a730ee4d4ee72cdb665eeed1744c2cfbb8645"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/composerized-contao-core/zipball/7d7a730ee4d4ee72cdb665eeed1744c2cfbb8645",
-                "reference": "7d7a730ee4d4ee72cdb665eeed1744c2cfbb8645",
-                "shasum": ""
-            },
-            "require": {
-                "contao-community-alliance/composer-plugin": "~2.0",
-                "contao-components/compass": "~0.12",
-                "leafo/scssphp": "~0.1",
-                "michelf/php-markdown": "~1.4",
-                "oyejorge/less.php": "~1.7",
-                "php": ">=5.4.0",
-                "phpspec/php-diff": "~1.0",
-                "simplepie/simplepie": "~1.3",
-                "swiftmailer/swiftmailer": "~5.2",
-                "tecnick.com/tcpdf": "~6.0",
-                "true/punycode": "~1.0"
-            },
-            "replace": {
-                "contao/calendar-bundle": "self.version",
-                "contao/comments-bundle": "self.version",
-                "contao/core-bundle": "self.version",
-                "contao/faq-bundle": "self.version",
-                "contao/listing-bundle": "self.version",
-                "contao/news-bundle": "self.version",
-                "contao/newsletter-bundle": "self.version"
-            },
-            "type": "project",
-            "autoload": {
-                "classmap": [
-                    "system/modules",
-                    "system/helper/interface.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0+"
-            ],
-            "authors": [
-                {
-                    "name": "Leo Feyer",
-                    "homepage": "https://github.com/leofeyer"
-                }
-            ],
-            "description": "Contao Open Source CMS",
-            "homepage": "https://contao.org",
-            "keywords": [
-                "contao",
-                "core"
-            ],
-            "time": "2015-12-07 22:13:42"
-        },
-        {
             "name": "doctrine/instantiator",
             "version": "1.0.5",
             "source": {
@@ -501,172 +511,6 @@
                 "schema"
             ],
             "time": "2016-01-25 15:43:01"
-        },
-        {
-            "name": "leafo/scssphp",
-            "version": "v0.6.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/leafo/scssphp.git",
-                "reference": "a27edad3d16635a222d7204706572e24c338aa17"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/leafo/scssphp/zipball/a27edad3d16635a222d7204706572e24c338aa17",
-                "reference": "a27edad3d16635a222d7204706572e24c338aa17",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "kherge/box": "~2.5",
-                "phpunit/phpunit": "~3.7",
-                "squizlabs/php_codesniffer": "~2.5"
-            },
-            "bin": [
-                "bin/pscss"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Leafo\\ScssPhp\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Leaf Corcoran",
-                    "email": "leafot@gmail.com",
-                    "homepage": "http://leafo.net"
-                }
-            ],
-            "description": "scssphp is a compiler for SCSS written in PHP.",
-            "homepage": "http://leafo.github.io/scssphp/",
-            "keywords": [
-                "css",
-                "less",
-                "sass",
-                "scss",
-                "stylesheet"
-            ],
-            "time": "2016-01-15 02:50:06"
-        },
-        {
-            "name": "michelf/php-markdown",
-            "version": "1.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/michelf/php-markdown.git",
-                "reference": "156e56ee036505ec637d761ee62dc425d807183c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/michelf/php-markdown/zipball/156e56ee036505ec637d761ee62dc425d807183c",
-                "reference": "156e56ee036505ec637d761ee62dc425d807183c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-lib": "1.4.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Michelf": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Michel Fortin",
-                    "email": "michel.fortin@michelf.ca",
-                    "homepage": "https://michelf.ca/",
-                    "role": "Developer"
-                },
-                {
-                    "name": "John Gruber",
-                    "homepage": "https://daringfireball.net/"
-                }
-            ],
-            "description": "PHP Markdown",
-            "homepage": "https://michelf.ca/projects/php-markdown/",
-            "keywords": [
-                "markdown"
-            ],
-            "time": "2015-12-24 01:37:31"
-        },
-        {
-            "name": "oyejorge/less.php",
-            "version": "v1.7.0.10",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/oyejorge/less.php.git",
-                "reference": "a1e2d3c20794b37ac4d0baeb24613e579584033b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/oyejorge/less.php/zipball/a1e2d3c20794b37ac4d0baeb24613e579584033b",
-                "reference": "a1e2d3c20794b37ac4d0baeb24613e579584033b",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.8.18"
-            },
-            "bin": [
-                "bin/lessc"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Less": "lib/"
-                },
-                "classmap": [
-                    "lessc.inc.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Matt Agar",
-                    "homepage": "https://github.com/agar"
-                },
-                {
-                    "name": "Martin Jantošovič",
-                    "homepage": "https://github.com/Mordred"
-                },
-                {
-                    "name": "Josh Schmidt",
-                    "homepage": "https://github.com/oyejorge"
-                }
-            ],
-            "description": "PHP port of the Javascript version of LESS http://lesscss.org",
-            "homepage": "http://lessphp.gpeasy.com",
-            "keywords": [
-                "css",
-                "less",
-                "less.js",
-                "lesscss",
-                "php",
-                "stylesheet"
-            ],
-            "time": "2015-12-30 05:47:36"
         },
         {
             "name": "pdepend/pdepend",
@@ -943,12 +787,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/coding-standard.git",
-                "reference": "7e859419e15169e4dda1243e684eff0e1a7f4b29"
+                "reference": "5872f031c23b0d5c527e0e61e8b6f2cc4a43134e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcq/coding-standard/zipball/7e859419e15169e4dda1243e684eff0e1a7f4b29",
-                "reference": "7e859419e15169e4dda1243e684eff0e1a7f4b29",
+                "url": "https://api.github.com/repos/phpcq/coding-standard/zipball/5872f031c23b0d5c527e0e61e8b6f2cc4a43134e",
+                "reference": "5872f031c23b0d5c527e0e61e8b6f2cc4a43134e",
                 "shasum": ""
             },
             "require": {
@@ -987,7 +831,7 @@
             ],
             "description": "PHP code quality project coding standard",
             "homepage": "http://phpcq.org/",
-            "time": "2015-08-12 22:32:56"
+            "time": "2016-02-05 07:16:08"
         },
         {
             "name": "phpcq/phpcq",
@@ -2539,59 +2383,6 @@
             "time": "2016-01-19 23:39:10"
         },
         {
-            "name": "swiftmailer/swiftmailer",
-            "version": "v5.4.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/swiftmailer/swiftmailer.git",
-                "reference": "0697e6aa65c83edf97bb0f23d8763f94e3f11421"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/0697e6aa65c83edf97bb0f23d8763f94e3f11421",
-                "reference": "0697e6aa65c83edf97bb0f23d8763f94e3f11421",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.3"
-            },
-            "require-dev": {
-                "mockery/mockery": "~0.9.1,<0.9.4"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "5.4-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "lib/swift_required.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Chris Corbyn"
-                },
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                }
-            ],
-            "description": "Swiftmailer, free feature-rich PHP mailer",
-            "homepage": "http://swiftmailer.org",
-            "keywords": [
-                "email",
-                "mail",
-                "mailer"
-            ],
-            "time": "2015-06-06 14:19:39"
-        },
-        {
             "name": "symfony/config",
             "version": "v2.8.2",
             "source": {
@@ -2813,55 +2604,6 @@
             "time": "2016-01-13 10:28:07"
         },
         {
-            "name": "symfony/finder",
-            "version": "v2.8.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/finder.git",
-                "reference": "c90fabdd97e431ee19b6383999cf35334dff27da"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/c90fabdd97e431ee19b6383999cf35334dff27da",
-                "reference": "c90fabdd97e431ee19b6383999cf35334dff27da",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Finder\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Finder Component",
-            "homepage": "https://symfony.com",
-            "time": "2016-01-14 08:26:52"
-        },
-        {
             "name": "symfony/polyfill-mbstring",
             "version": "v1.1.0",
             "source": {
@@ -2921,55 +2663,6 @@
             "time": "2016-01-20 09:13:37"
         },
         {
-            "name": "symfony/process",
-            "version": "v2.8.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/process.git",
-                "reference": "6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac",
-                "reference": "6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Process\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Process Component",
-            "homepage": "https://symfony.com",
-            "time": "2016-01-06 09:59:23"
-        },
-        {
             "name": "symfony/yaml",
             "version": "v2.8.2",
             "source": {
@@ -3017,70 +2710,6 @@
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
             "time": "2016-01-13 10:28:07"
-        },
-        {
-            "name": "tecnick.com/tcpdf",
-            "version": "6.2.11",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tecnickcom/TCPDF.git",
-                "reference": "354433a33946ae7497c3eab291eaaf814bccbfab"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/TCPDF/zipball/354433a33946ae7497c3eab291eaaf814bccbfab",
-                "reference": "354433a33946ae7497c3eab291eaaf814bccbfab",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "fonts",
-                    "config",
-                    "include",
-                    "tcpdf.php",
-                    "tcpdf_parser.php",
-                    "tcpdf_import.php",
-                    "tcpdf_barcodes_1d.php",
-                    "tcpdf_barcodes_2d.php",
-                    "include/tcpdf_colors.php",
-                    "include/tcpdf_filters.php",
-                    "include/tcpdf_font_data.php",
-                    "include/tcpdf_fonts.php",
-                    "include/tcpdf_images.php",
-                    "include/tcpdf_static.php",
-                    "include/barcodes/datamatrix.php",
-                    "include/barcodes/pdf417.php",
-                    "include/barcodes/qrcode.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPLv3"
-            ],
-            "authors": [
-                {
-                    "name": "Nicola Asuni",
-                    "email": "info@tecnick.com",
-                    "homepage": "http://nicolaasuni.tecnick.com"
-                }
-            ],
-            "description": "TCPDF is a PHP class for generating PDF documents and barcodes.",
-            "homepage": "http://www.tcpdf.org/",
-            "keywords": [
-                "PDFD32000-2008",
-                "TCPDF",
-                "barcodes",
-                "datamatrix",
-                "pdf",
-                "pdf417",
-                "qrcode"
-            ],
-            "abandoned": "tecnickcom/tcpdf",
-            "time": "2015-08-02 12:30:27"
         },
         {
             "name": "theseer/fdomdocument",
@@ -3307,7 +2936,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.3.2"
+        "php": ">=5.4.0"
     },
     "platform-dev": []
 }

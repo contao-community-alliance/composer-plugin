@@ -1,25 +1,10 @@
 language: php
 
 php:
-    - "5.3"
     - "5.4"
     - "5.5"
     - "5.6"
     - "7.0"
-
-env:
-    - CONTAO_VERSION=~2.11.0
-    - CONTAO_VERSION=~3.1.0
-    - CONTAO_VERSION=~3.2.0
-    - CONTAO_VERSION=~3.3.0
-    - CONTAO_VERSION=~3.4.0
-    - CONTAO_VERSION=~3.5.0
-
-# Exclude impossible Contao Version combinations.
-matrix:
-    exclude:
-        - php: "5.3"
-          env: CONTAO_VERSION=~3.5.0
 
 sudo: false
 
@@ -28,14 +13,9 @@ install:
     # circular dependency composer-plugin -> contao/core -> composer-plugin.
     - "cp composer.json composer.tmp && sed '/\"prefer-stable\": true,/a\"version\": \"2.4.x-dev\",' composer.tmp > composer.json && rm composer.tmp"
     - travis_retry composer self-update && composer --version
-    - travis_retry composer require contao/core $CONTAO_VERSION --no-update
-    - travis_retry composer update --prefer-dist --dev --no-interaction
+    - travis_retry composer update --prefer-dist --no-interaction
 
 script: ant -keep-going
-
-after_failure:
-    - find /tmp
-    - ls -al /tmp
 
 # Hack to make things work again - we can not use a shallow repository.
 git:
