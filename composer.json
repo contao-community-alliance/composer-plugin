@@ -28,11 +28,6 @@
         }
     },
     "extra": {
-        "class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin",
-        "branch-alias": {
-            "dev-master": "2.3.x-dev",
-            "dev-release/2.4.0": "2.4.x-dev",
-            "dev-release/3.0.0": "3.0.x-dev"
-        }
+        "class": "ContaoCommunityAlliance\\Composer\\Plugin\\Plugin"
     }
 }
