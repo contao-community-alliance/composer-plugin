@@ -438,11 +438,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         if (($package->getName() === 'contao/core') || in_array($package->getName(), Environment::$bundleNames)) {
             try {
                 $composer = $event->getComposer();
-                $this->getContaoRoot($composer->getPackage());
+                $contao   = $this->getContaoRoot($composer->getPackage());
+                $vendor   = getcwd() . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
 
-                // contao is already installed in parent directory,
-                // prevent installing contao/core in vendor!
-                if (isset($this->contaoVersion)) {
+                // Contao is already installed in parent directory, prevent installing in vendor!
+                if ($contao && $vendor !== substr($contao, 0, strlen($vendor))) {
                     throw new DuplicateContaoException(
                         'Warning: Contao core was about to get installed but has been found in project root, ' .
                         'to recover from this problem please restart the operation'
