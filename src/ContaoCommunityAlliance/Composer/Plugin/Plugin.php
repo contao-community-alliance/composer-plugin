@@ -258,11 +258,17 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      * Inject the currently installed contao/core as meta package.
      *
      * @return void
+     *
+     * @throws ConstantsNotFoundException When the root path could not be determined.
      */
     public function injectContaoCore()
     {
+        $roots = Environment::findContaoRoots($this->composer->getPackage());
+        if (0 === count($roots)) {
+            throw new ConstantsNotFoundException('Could not find contao root path and therefore no constants.php');
+        }
+
         // Duplicate installation, remove from vendor folder
-        $roots             = Environment::findContaoRoots($this->composer->getPackage());
         $removeVendor      = (count($roots) > 1 && isset($roots['vendor']));
         $root              = $this->getContaoRoot($this->composer->getPackage());
         $repositoryManager = $this->composer->getRepositoryManager();
