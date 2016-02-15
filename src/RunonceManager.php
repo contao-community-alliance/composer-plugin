@@ -126,7 +126,7 @@ PHP;
             $buffer .= "\n\$runonce(array('" . $current . "'), true)\n";
         }
 
-        $buffer .= "\n\$runonce(" . var_export(array_unique($this->files), true) . ")\n";
+        $buffer .= "\n\$runonce(" . var_export(array_unique($this->files), true) . ");\n";
 
         $this->filesystem->ensureDirectoryExists(dirname($this->targetFile));
 
