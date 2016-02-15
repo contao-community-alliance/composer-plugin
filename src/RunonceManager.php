@@ -128,6 +128,8 @@ PHP;
 
         $buffer .= "\n\$runonce(" . var_export(array_unique($this->files), true) . ")\n";
 
+        $this->filesystem->ensureDirectoryExists(dirname($this->targetFile));
+
         if (false === file_put_contents($this->targetFile, $buffer)) {
             throw new \RuntimeException(sprintf('Could not write runonce file to "%s"', $this->targetFile));
         }
