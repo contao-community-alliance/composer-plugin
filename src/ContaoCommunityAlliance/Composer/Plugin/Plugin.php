@@ -48,6 +48,8 @@ use RuntimeException;
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
  * into the Contao file hierarchy.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
