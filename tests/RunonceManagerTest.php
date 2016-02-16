@@ -174,4 +174,22 @@ class RunonceManagerTest extends TestCase
         $this->assertNotFalse(strpos(file_get_contents($file), $this->tempdir . '/runonce_'));
         $this->assertNotFalse(strpos(file_get_contents($file), $runonce));
     }
+
+    /**
+     * Test that the parent directory gets created if it does not exist.
+     *
+     * @return void
+     */
+    public function testCreatesMissingParentDirectories()
+    {
+        $file = $this->tempdir . '/test/runonce.php';
+
+        touch($this->tempdir . '/test.php');
+
+        $manager = new RunonceManager($file);
+        $manager->addFile($this->tempdir . '/test.php');
+        $manager->dump();
+
+        $this->assertTrue(is_file($file));
+    }
 }

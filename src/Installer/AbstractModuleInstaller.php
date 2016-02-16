@@ -482,7 +482,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             return false;
         }
 
-        if (!is_link($target) || $source !== readlink($target)) {
+        if (!is_link($target)
+            || $this->filesystem->normalizePath($source) !== $this->filesystem->normalizePath(readlink($target))
+        ) {
             if (self::INVALID_IGNORE === $mode) {
                 return false;
             }
