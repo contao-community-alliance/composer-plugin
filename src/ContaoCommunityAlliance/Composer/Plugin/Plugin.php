@@ -48,6 +48,8 @@ use RuntimeException;
 /**
  * Installer that install Contao extensions via shadow copies or symlinks
  * into the Contao file hierarchy.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
@@ -258,11 +260,17 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      * Inject the currently installed contao/core as meta package.
      *
      * @return void
+     *
+     * @throws ConstantsNotFoundException When the root path could not be determined.
      */
     public function injectContaoCore()
     {
+        $roots = Environment::findContaoRoots($this->composer->getPackage());
+        if (0 === count($roots)) {
+            throw new ConstantsNotFoundException('Could not find contao root path and therefore no constants.php');
+        }
+
         // Duplicate installation, remove from vendor folder
-        $roots             = Environment::findContaoRoots($this->composer->getPackage());
         $removeVendor      = (count($roots) > 1 && isset($roots['vendor']));
         $root              = $this->getContaoRoot($this->composer->getPackage());
         $repositoryManager = $this->composer->getRepositoryManager();
@@ -438,11 +446,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         if (($package->getName() === 'contao/core') || in_array($package->getName(), Environment::$bundleNames)) {
             try {
                 $composer = $event->getComposer();
-                $this->getContaoRoot($composer->getPackage());
+                $contao   = $this->getContaoRoot($composer->getPackage());
+                $vendor   = getcwd() . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
 
-                // contao is already installed in parent directory,
-                // prevent installing contao/core in vendor!
-                if (isset($this->contaoVersion)) {
+                // Contao is already installed in parent directory, prevent installing in vendor!
+                if ($contao && $vendor !== substr($contao, 0, strlen($vendor))) {
                     throw new DuplicateContaoException(
                         'Warning: Contao core was about to get installed but has been found in project root, ' .
                         'to recover from this problem please restart the operation'
