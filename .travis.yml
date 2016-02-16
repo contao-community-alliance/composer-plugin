@@ -26,7 +26,7 @@ sudo: false
 install:
     - travis_retry composer self-update && composer --version
     - travis_retry composer require contao/core $CONTAO_VERSION --no-update
-    - travis_retry COMPOSER_ROOT_VERSION=2.4.x-dev composer update --prefer-dist --dev --no-interaction
+    - COMPOSER_ROOT_VERSION=2.4.x-dev travis_retry composer update --prefer-dist --dev --no-interaction
 
 script: ant -keep-going
 
