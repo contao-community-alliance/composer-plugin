@@ -6,6 +6,6 @@
    For documentation visit:
                https://github.com/phpcq/phpcq
 -->
-<project name="metamodels-core" default="build">
+<project name="contao-community-alliance/composer-plugin" default="build">
   <import file="vendor/phpcq/phpcq/phpcq.main.xml" />
 </project>
