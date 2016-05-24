@@ -9,12 +9,13 @@
     "require": {
         "php": ">=5.4.0",
         "composer-plugin-api": "^1.0",
-        "symfony/finder": "^2.7",
-        "symfony/process": "^2.7"
+        "symfony/finder": "~2.7|~3.0",
+        "symfony/process": "~2.7|~3.0"
     },
     "require-dev": {
         "composer/composer": "~1.0@dev",
-        "phpcq/all-tasks": "~1.1"
+        "phpcq/all-tasks": "~1.1",
+        "symfony/phpunit-bridge": "^3.0"
     },
     "conflict": {
         "contao/core": "*",
