@@ -452,8 +452,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 // Contao is already installed in parent directory, prevent installing in vendor!
                 if ($contao && $vendor !== substr($contao, 0, strlen($vendor))) {
                     throw new DuplicateContaoException(
-                        'Warning: Contao core was about to get installed but has been found in project root, ' .
-                        'to recover from this problem please restart the operation'
+                        sprintf(
+                            'Warning: Contao core %s was about to get installed but %s.%s has been found in ' .
+                            'project root, to recover from this problem please restart the operation',
+                            $package->getFullPrettyVersion(),
+                            $this->contaoVersion,
+                            $this->contaoBuild
+                        )
                     );
                 }
             } catch (ConstantsNotFoundException $e) {
