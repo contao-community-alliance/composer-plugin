@@ -106,6 +106,7 @@ class Environment
      */
     public static function isContao($path)
     {
-        return is_dir($path . DIRECTORY_SEPARATOR . 'system');
+        return file_exists($path . DIRECTORY_SEPARATOR . 'system/config/constants.php')
+            || file_exists($path . DIRECTORY_SEPARATOR . 'system/constants.php');
     }
 }

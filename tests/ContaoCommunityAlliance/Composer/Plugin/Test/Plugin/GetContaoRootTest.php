@@ -91,7 +91,8 @@ class GetContaoRootTest extends TestCase
     public function testOverrideViaExtra()
     {
         $plugin = $this->clearTest('/tmp/path');
-        $this->fs->ensureDirectoryExists($this->testRoot . '/tmp/path/system');
+        $this->fs->ensureDirectoryExists($this->testRoot . '/tmp/path/system/config');
+        touch($this->testRoot . '/tmp/path/system/config/constants.php');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
         $package->setExtra(array('contao' => array('root' => 'tmp/path')));
@@ -105,7 +106,8 @@ class GetContaoRootTest extends TestCase
     public function testCoreAsSubModule()
     {
         $plugin = $this->clearTest('/vendor/contao/core');
-        $this->fs->ensureDirectoryExists($this->testRoot . '/vendor/contao/core/system');
+        $this->fs->ensureDirectoryExists($this->testRoot . '/vendor/contao/core/system/config');
+        touch($this->testRoot . '/vendor/contao/core/system/config/constants.php');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
@@ -118,7 +120,8 @@ class GetContaoRootTest extends TestCase
     public function testCoreIsRoot()
     {
         $plugin = $this->clearTest();
-        $this->fs->ensureDirectoryExists(dirname($this->testRoot) . '/system');
+        $this->fs->ensureDirectoryExists(dirname($this->testRoot) . '/system/config');
+        touch(dirname($this->testRoot) . '/system/config/constants.php');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
@@ -131,7 +134,8 @@ class GetContaoRootTest extends TestCase
     public function testCoreIsCwd()
     {
         $plugin = $this->clearTest();
-        $this->fs->ensureDirectoryExists($this->testRoot . '/system');
+        $this->fs->ensureDirectoryExists($this->testRoot . '/system/config');
+        touch($this->testRoot . '/system/config/constants.php');
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
