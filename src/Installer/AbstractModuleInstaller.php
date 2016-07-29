@@ -236,10 +236,47 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
+            chdir(dirname($target)); // Change directory because the source will be now relative
+            $source = $this->convertPathToRelative($source, $target);
+
             if (!symlink($source, $target)) {
                 throw new \RuntimeException('Failed to create symlink ' . $target);
             }
         }
+    }
+
+    /**
+     * Cover the path to be relative.
+     *
+     * @param string $source The source path.
+     *
+     * @param string $target The target path.
+     *
+     * @return string
+     */
+    protected function convertPathToRelative($source, $target)
+    {
+        $relativePath = [];
+
+        $sourceParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, $source)));
+        $targetParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, $target)));
+
+        $sourcePartsCounts = count($sourceParts);
+        $targetPartsCount  = count($targetParts);
+
+        while ($sourcePartsCounts && $targetPartsCount && $sourceParts[0] == $targetParts[0]) {
+            array_shift($sourceParts);
+            array_shift($targetParts);
+            $sourcePartsCounts = count($sourceParts);
+            $targetPartsCount  = count($targetParts);
+        }
+
+        // start on $i=1 -> skip the link name itself
+        for ($i = 1, $count = count($targetParts); $i < $count; $i++) {
+            $relativePath[] = '..';
+        }
+
+        return implode(DIRECTORY_SEPARATOR, array_merge($relativePath, $sourceParts));
     }
 
     /**
