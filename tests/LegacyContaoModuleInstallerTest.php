@@ -74,6 +74,40 @@ class LegacyContaoModuleInstallerTest extends TestCase
     }
 
     /**
+     * Tests that source symlink is relative.
+     *
+     * @return void
+     */
+    public function testSourcesOnInstallIfSymlinkIsRelative()
+    {
+        $installer = $this->createInstaller();
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage();
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/TL_ROOT/system/modules/foobar/config');
+        touch($basePath . '/TL_ROOT/system/modules/foobar/config/config.php');
+
+        $installer->install($repo, $package);
+
+        $this->assertTrue(file_exists($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertTrue(is_link($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertEquals(
+            $basePath . '/TL_ROOT/system/modules/foobar/config/config.php',
+            realpath($basePath . '/../../../system/modules/foobar/config/config.php')
+        );
+
+        $this->assertEquals(
+            $this->filesystem->findShortestPath(
+                $basePath . '/../../../system/modules/foobar/config/config.php',
+                $basePath . '/TL_ROOT/system/modules/foobar/config/config.php'
+            ),
+            readlink($basePath . '/../../../system/modules/foobar/config/config.php')
+        );
+    }
+
+    /**
      * Tests that nothing happens if a symlink is already present and correct.
      *
      * @return void
