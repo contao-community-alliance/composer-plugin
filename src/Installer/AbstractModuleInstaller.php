@@ -230,7 +230,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             }
         }
 
-        $workingDir = getcwd(); // preserve the current working directory
+        // Preserve the current working directory
+        $workingDir = getcwd();
 
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
@@ -238,7 +239,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
-            chdir(dirname($target)); // change directory because the source will be now relative
+            // Change directory because the source will be now relative
+            chdir(dirname($target));
+
             $source = $this->convertPathToRelative($source, $target);
 
             if (!symlink($source, $target)) {
@@ -246,7 +249,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             }
         }
 
-        chdir($workingDir); // restore the previous working directory
+        // Restore the previous working directory
+        chdir($workingDir);
     }
 
     /**
