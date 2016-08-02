@@ -230,61 +230,16 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             }
         }
 
-        // Preserve the current working directory
-        $workingDir = getcwd();
-
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
             $this->logSymlink($source, $target);
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
-            // Change directory because the source will be now relative
-            chdir(dirname($target));
-
-            $source = $this->convertPathToRelative($source, $target);
-
-            if (!symlink($source, $target)) {
+            if (!$this->filesystem->relativeSymlink($source, $target)) {
                 throw new \RuntimeException('Failed to create symlink ' . $target);
             }
         }
-
-        // Restore the previous working directory
-        chdir($workingDir);
-    }
-
-    /**
-     * Cover the path to be relative.
-     *
-     * @param string $source The source path.
-     *
-     * @param string $target The target path.
-     *
-     * @return string
-     */
-    protected function convertPathToRelative($source, $target)
-    {
-        $sourceParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, $source)));
-        $targetParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, $target)));
-
-        $sourcePartsCounts = count($sourceParts);
-        $targetPartsCount  = count($targetParts);
-
-        while ($sourcePartsCounts && $targetPartsCount && $sourceParts[0] == $targetParts[0]) {
-            array_shift($sourceParts);
-            array_shift($targetParts);
-            $sourcePartsCounts = count($sourceParts);
-            $targetPartsCount  = count($targetParts);
-        }
-
-        $relativePath = [];
-
-        // start on $i=1 -> skip the link name itself
-        for ($i = 1, $count = count($targetParts); $i < $count; $i++) {
-            $relativePath[] = '..';
-        }
-
-        return implode(DIRECTORY_SEPARATOR, array_merge($relativePath, $sourceParts));
     }
 
     /**
