@@ -13,7 +13,8 @@
  * @package    contao-community-alliance/composer-plugin
  * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @copyright  2013-2015 Contao Community Alliance
+ * @author     Kamil Kuzminski <kamil.kuzminski@codefog.pl>
+ * @copyright  2013-2016 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
  * @filesource
@@ -70,6 +71,40 @@ class LegacyContaoModuleInstallerTest extends TestCase
         $this->assertEquals(
             $basePath . '/TL_ROOT/system/modules/foobar/config/config.php',
             realpath($basePath . '/../../../system/modules/foobar/config/config.php')
+        );
+    }
+
+    /**
+     * Tests that source symlink is relative.
+     *
+     * @return void
+     */
+    public function testSourcesOnInstallIfSymlinkIsRelative()
+    {
+        $installer = $this->createInstaller();
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage();
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/TL_ROOT/system/modules/foobar/config');
+        touch($basePath . '/TL_ROOT/system/modules/foobar/config/config.php');
+
+        $installer->install($repo, $package);
+
+        $this->assertTrue(file_exists($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertTrue(is_link($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertEquals(
+            $basePath . '/TL_ROOT/system/modules/foobar/config/config.php',
+            realpath($basePath . '/../../../system/modules/foobar/config/config.php')
+        );
+
+        $this->assertEquals(
+            $this->filesystem->findShortestPath(
+                $basePath . '/../../../system/modules/foobar/config/config.php',
+                $basePath . '/TL_ROOT/system/modules/foobar/config/config.php'
+            ),
+            readlink($basePath . '/../../../system/modules/foobar/config/config.php')
         );
     }
 
