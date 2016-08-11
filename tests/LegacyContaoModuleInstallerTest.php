@@ -13,7 +13,8 @@
  * @package    contao-community-alliance/composer-plugin
  * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @copyright  2013-2015 Contao Community Alliance
+ * @author     Kamil Kuzminski <kamil.kuzminski@codefog.pl>
+ * @copyright  2013-2016 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
  * @filesource
