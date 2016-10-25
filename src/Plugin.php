@@ -83,8 +83,19 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $this->composer = $composer;
 
         if (null === $this->runonceManager) {
+            $rootDir = getcwd() . '/';
+            $extras = $composer->getPackage()->getExtra();
+
+            if (isset($extras['symfony-var-dir']) && is_dir($extras['symfony-var-dir'])) {
+                $rootDir .= trim($extras['symfony-var-dir'], '/');
+            } elseif (isset($extras['symfony-app-dir']) && is_dir($extras['symfony-app-dir'])) {
+                $rootDir .= trim($extras['symfony-app-dir'], '/');
+            } else {
+                $rootDir .= '/app';
+            }
+
             $this->runonceManager = new RunonceManager(
-                dirname($composer->getConfig()->get('vendor-dir')) . '/app/Resources/contao/config/runonce.php'
+                $rootDir . '/Resources/contao/config/runonce.php'
             );
         }
 
