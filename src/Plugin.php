@@ -91,7 +91,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             } elseif (isset($extras['symfony-app-dir']) && is_dir($extras['symfony-app-dir'])) {
                 $rootDir .= trim($extras['symfony-app-dir'], '/');
             } else {
-                $rootDir .= '/app';
+                $rootDir .= 'app';
             }
 
             $this->runonceManager = new RunonceManager(
