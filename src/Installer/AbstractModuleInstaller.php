@@ -497,7 +497,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
                         $target,
                         $source,
                         $this->filesystem->normalizePath($source),
-                        $this->filesystem->normalizePath(readlink($target))
+                        $this->filesystem->normalizePath(realpath($target))
                     )
                 );
             }
