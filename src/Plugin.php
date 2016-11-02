@@ -84,7 +84,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         if (null === $this->runonceManager) {
             $rootDir = getcwd() . '/';
-            $extras = $composer->getPackage()->getExtra();
+            $extras  = $composer->getPackage()->getExtra();
 
             if (isset($extras['symfony-var-dir']) && is_dir($extras['symfony-var-dir'])) {
                 $rootDir .= trim($extras['symfony-var-dir'], '/');
