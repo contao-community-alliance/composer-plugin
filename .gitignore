@@ -14,4 +14,4 @@ nbproject/
 /vendor/
 /components/
 /composer.phar
-
+/composer.lock

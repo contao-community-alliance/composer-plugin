@@ -484,14 +484,22 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         }
 
         if (!is_link($target)
-            || $this->filesystem->normalizePath($source) !== $this->filesystem->normalizePath(readlink($target))
+            || $this->filesystem->normalizePath($source) !== $this->filesystem->normalizePath(realpath($target))
         ) {
             if (self::INVALID_IGNORE === $mode) {
                 return false;
             }
 
             if (self::INVALID_FAIL === $mode) {
-                throw new \RuntimeException(sprintf('"%s" is not a link to "%s"', $target, $source));
+                throw new \RuntimeException(
+                    sprintf(
+                        '"%s" is not a link to "%s" (expected "%s" but got "%s")',
+                        $target,
+                        $source,
+                        $this->filesystem->normalizePath($source),
+                        $this->filesystem->normalizePath(realpath($target))
+                    )
+                );
             }
         }
 

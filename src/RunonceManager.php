@@ -123,7 +123,7 @@ PHP;
             $current = str_replace('.php', '_'.substr(md5(mt_rand()), 0, 8).'.php', $this->targetFile);
             $this->filesystem->rename($this->targetFile, $current);
 
-            $buffer .= "\n\$runonce(array('" . $current . "'), true)\n";
+            $buffer .= "\n\$runonce(array('" . $current . "'), true);\n";
         }
 
         $buffer .= "\n\$runonce(" . var_export(array_unique($this->files), true) . ");\n";
