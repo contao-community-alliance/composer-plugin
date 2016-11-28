@@ -1,0 +1,27 @@
+platform: x86
+clone_folder: c:\projects\tenside-core-bundle
+
+install:
+  - cinst -y OpenSSL.Light
+  - SET PATH=C:\Program Files\OpenSSL;%PATH%
+  - cinst -y php
+  - cd c:\tools\php
+  - copy php.ini-production php.ini
+  - echo date.timezone="UTC" >> php.ini
+  - echo extension_dir=ext >> php.ini
+  - echo extension=php_bz2.dll >> php.ini
+  - echo extension=php_curl.dll >> php.ini
+  - echo extension=php_fileinfo.dll >> php.ini
+  - echo extension=php_intl.dll >> php.ini
+  - echo extension=php_mbstring.dll >> php.ini
+  - echo extension=php_openssl.dll >> php.ini
+  - SET PATH=c:\tools\php;%PATH%
+  - cd c:\projects\contaocommunityalliance-composer-plugin
+  - php -r "readfile('http://getcomposer.org/installer');" | php
+  - php composer.phar install --prefer-source --no-interaction
+
+build: off
+
+test_script:
+  - cd c:\projects\contaocommunityalliance-composer-plugin
+  - vendor\bin\phpunit.bat
