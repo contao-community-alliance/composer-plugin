@@ -86,9 +86,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $rootDir = getcwd() . '/';
             $extras  = $composer->getPackage()->getExtra();
 
-            if (isset($extras['symfony-var-dir']) && is_dir($extras['symfony-var-dir'])) {
-                $rootDir .= trim($extras['symfony-var-dir'], '/');
-            } elseif (isset($extras['symfony-app-dir']) && is_dir($extras['symfony-app-dir'])) {
+            if (isset($extras['symfony-app-dir']) && is_dir($rootDir . $extras['symfony-app-dir'])) {
                 $rootDir .= trim($extras['symfony-app-dir'], '/');
             } else {
                 $rootDir .= 'app';
