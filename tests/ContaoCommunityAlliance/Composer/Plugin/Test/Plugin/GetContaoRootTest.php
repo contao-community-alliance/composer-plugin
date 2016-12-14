@@ -41,7 +41,7 @@ class GetContaoRootTest extends TestCase
     {
         $this->fs       = new Filesystem();
         $this->curDir   = getcwd();
-        $this->testRoot = realpath(sys_get_temp_dir()) . '/composer-test-submodule/composer';
+        $this->testRoot = $this->fs->normalizePath(realpath(sys_get_temp_dir())) . '/composer-test-submodule/composer';
     }
 
     protected function tearDown()
@@ -97,7 +97,7 @@ class GetContaoRootTest extends TestCase
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
         $package->setExtra(array('contao' => array('root' => 'tmp/path')));
 
-        $this->assertEquals($this->testRoot . '/tmp/path', $plugin->getContaoRoot($package));
+        $this->assertEquals($this->testRoot . '/tmp/path', $this->fs->normalizePath($plugin->getContaoRoot($package)));
     }
 
     /**
@@ -111,7 +111,10 @@ class GetContaoRootTest extends TestCase
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
-        $this->assertEquals($this->testRoot . '/vendor/contao/core', $plugin->getContaoRoot($package));
+        $this->assertEquals(
+            $this->testRoot . '/vendor/contao/core',
+            $this->fs->normalizePath($plugin->getContaoRoot($package))
+        );
     }
 
     /**
@@ -125,7 +128,7 @@ class GetContaoRootTest extends TestCase
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
-        $this->assertEquals(dirname($this->testRoot), $plugin->getContaoRoot($package));
+        $this->assertEquals(dirname($this->testRoot), $this->fs->normalizePath($plugin->getContaoRoot($package)));
     }
 
     /**
@@ -139,6 +142,6 @@ class GetContaoRootTest extends TestCase
 
         $package = new RootPackage('test/package', '1.0.0.0', '1.0.0');
 
-        $this->assertEquals($this->testRoot, $plugin->getContaoRoot($package));
+        $this->assertEquals($this->testRoot, $this->fs->normalizePath($plugin->getContaoRoot($package)));
     }
 }
