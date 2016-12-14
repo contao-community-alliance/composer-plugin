@@ -134,7 +134,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         return array(
             PluginEvents::COMMAND              => 'handleCommand',
-            ScriptEvents::POST_UPDATE_CMD      => 'handlePostUpdateCmd',
+            ScriptEvents::POST_INSTALL_CMD     => 'handlePostInstallOrUpdateCmd',
+            ScriptEvents::POST_UPDATE_CMD      => 'handlePostInstallOrUpdateCmd',
             ScriptEvents::POST_AUTOLOAD_DUMP   => 'handlePostAutoloadDump',
             PackageEvents::PRE_PACKAGE_UPDATE  => 'checkContaoPackage',
             PackageEvents::PRE_PACKAGE_INSTALL => 'checkContaoPackage',
@@ -398,7 +399,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @return void
      */
-    public function handlePostUpdateCmd()
+    public function handlePostInstallOrUpdateCmd()
     {
         $package = $this->composer->getPackage();
         $root    = $this->getContaoRoot($package);
