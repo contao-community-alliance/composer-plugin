@@ -452,7 +452,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
         if (file_exists($target)) {
             // Target link already exists and is correct, do nothing
-            if (is_link($target) && $source === readlink($target)) {
+            if (is_link($target) && $source === realpath($target)) {
                 return false;
             }
 
