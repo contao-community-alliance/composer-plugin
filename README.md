@@ -2,9 +2,9 @@
 # Contao Composer Plugin
 
 [![Version](http://img.shields.io/packagist/v/contao-community-alliance/composer-plugin.svg?style=flat-square)](https://packagist.org/packages/contao-community-alliance/composer-plugin)
-[![Stable Build Status Linux](http://img.shields.io/travis/contao-community-alliance/composer-plugin/master.svg?style=flat-square&label=stable build)](https://travis-ci.org/contao-community-alliance/composer-plugin)
+[![Stable Build Status Linux](http://img.shields.io/travis/contao-community-alliance/composer-plugin/master.svg?style=flat-square&label=stable%20build)](https://travis-ci.org/contao-community-alliance/composer-plugin)
 [![Stable Build Status Windows](https://img.shields.io/appveyor/ci/contaocommunityalliance/composer-plugin/master.svg?style=flat-square&label=stable%20build%20%28Windows%29)](https://ci.appveyor.com/project/contaocommunityalliance/composer-plugin)
-[![Upstream Build Status](http://img.shields.io/travis/contao-community-alliance/composer-plugin/develop.svg?style=flat-square&label=dev build)](https://travis-ci.org/contao-community-alliance/composer-plugin)
+[![Upstream Build Status](http://img.shields.io/travis/contao-community-alliance/composer-plugin/develop.svg?style=flat-square&label=dev%20build)](https://travis-ci.org/contao-community-alliance/composer-plugin)
 [![License](http://img.shields.io/packagist/l/contao-community-alliance/composer-plugin.svg?style=flat-square)](http://spdx.org/licenses/LGPL-3.0+)
 [![Downloads](http://img.shields.io/packagist/dt/contao-community-alliance/composer-plugin.svg?style=flat-square)](https://packagist.org/packages/contao-community-alliance/composer-plugin)
 
