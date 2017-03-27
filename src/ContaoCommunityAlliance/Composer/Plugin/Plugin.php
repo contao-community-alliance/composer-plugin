@@ -210,7 +210,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     protected function injectContaoBundles(WritableRepositoryInterface $repository, $version, $prettyVersion)
     {
         foreach (Environment::$bundleNames as $bundleName) {
-            if ($remove = $repository->findPackage($bundleName, '*')) {
+            foreach ($repository->findPackages($bundleName) as $remove) {
                 if ($this->isNotMetaPackageOrHasSameVersion($remove, $version)) {
                     // stop if the package is required somehow and must not be injected or if the virtual package is
                     // already injected.
