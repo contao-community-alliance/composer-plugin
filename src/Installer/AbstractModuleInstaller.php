@@ -236,9 +236,16 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->logSymlink($source, $target);
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
-
-            if (!$this->filesystem->relativeSymlink($source, $target)) {
-                throw new \RuntimeException('Failed to create symlink ' . $target);
+            
+            if('\\' == DIRECTORY_SEPARATOR) {
+                if (!@symlink($source, $target)) {
+                    throw new \RuntimeException('Failed to create absolute symlink (fallback) ' . $target);
+                }
+            }
+            else {
+                if (!$this->filesystem->relativeSymlink($source, $target)) {
+                    throw new \RuntimeException('Failed to create symlink ' . $target);
+                }
             }
         }
     }
