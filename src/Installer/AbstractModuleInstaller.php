@@ -28,6 +28,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 use ContaoCommunityAlliance\Composer\Plugin\UserFilesLocator;
 
@@ -236,16 +237,15 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->logSymlink($source, $target);
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
-            
-            if('\\' == DIRECTORY_SEPARATOR) {
-                if (!@symlink($source, $target)) {
-                    throw new \RuntimeException('Failed to create absolute symlink (fallback) ' . $target);
-                }
+
+            if (Platform::isWindows()) {
+                $success = @symlink($source, $target);
+            } else {
+                $success = $this->filesystem->relativeSymlink($source, $target);
             }
-            else {
-                if (!$this->filesystem->relativeSymlink($source, $target)) {
-                    throw new \RuntimeException('Failed to create symlink ' . $target);
-                }
+
+            if (!$success) {
+                throw new \RuntimeException('Failed to create symlink ' . $target);
             }
         }
     }
