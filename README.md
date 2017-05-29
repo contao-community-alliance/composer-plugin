@@ -155,6 +155,26 @@ can even install multiple Contao extensions at once.
 ```
 
 
+### Userfiles
+
+The `userfiles` property allows to copy files from a Composer package to the `/files` folder in Contao.
+As this folder can be renamed in the Contao configuration, the installer automatically tries to find the correct location.
+
+Be aware that userfiles are only copied once if they do not exist, they are not overwritten on an update.
+
+```json
+{
+	"extra": {
+		"contao": {
+			"userfiles": {
+				"src/system/modules/my-module/files/images": "my-module/images"
+			}
+		}
+	}
+}
+```
+
+
 ### Runonces
 
 Putting `runonce.php` files into your extension's `config` directory is a bad practice with Composer.
