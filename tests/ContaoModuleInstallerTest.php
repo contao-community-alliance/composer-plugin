@@ -398,6 +398,105 @@ class ContaoModuleInstallerTest extends TestCase
     }
 
     /**
+     * Tests that userfiles are copied when installing a package.
+     */
+    public function testUserfilesOnInstall()
+    {
+        $installer = $this->createInstaller($this->mockRunonce());
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
+            [
+                'userfiles' => [
+                    'foo/bar.txt' => 'foo/bar.txt',
+                    'foo/bar' => 'foo/bar',
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+        $projectDir = dirname(dirname(dirname($basePath)));
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/foo/bar');
+        touch($basePath . '/foo/bar.txt');
+        touch($basePath . '/foo/bar/1.txt');
+        touch($basePath . '/foo/bar/2.txt');
+
+        $installer->install($repo, $package);
+
+        $this->assertFileExists($projectDir . '/files/foo/bar.txt');
+        $this->assertFileExists($projectDir . '/files/foo/bar/1.txt');
+        $this->assertFileExists($projectDir . '/files/foo/bar/1.txt');
+        $this->assertFalse(is_link($projectDir . '/files/foo/bar.txt'));
+    }
+
+    /**
+     * Tests that userfiles are not overwritten when installing a package.
+     */
+    public function testUserfilesOnInstallDoesNotOverwrite()
+    {
+        $installer = $this->createInstaller($this->mockRunonce());
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
+            [
+                'userfiles' => [
+                    'foo/bar.txt' => 'foo/bar.txt',
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+        $projectDir = dirname(dirname(dirname($basePath)));
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/foo');
+        $this->filesystem->ensureDirectoryExists($projectDir . '/files/foo');
+        touch($basePath . '/foo/bar.txt');
+        file_put_contents($projectDir . '/files/foo/bar.txt', 'foobar');
+
+        $installer->install($repo, $package);
+
+        $this->assertFileExists($projectDir . '/files/foo/bar.txt');
+        $this->assertFalse(is_link($projectDir . '/files/foo/bar.txt'));
+        $this->assertSame('foobar', file_get_contents($projectDir.'/files/foo/bar.txt'));
+    }
+
+    /**
+     * Tests that userfiles are NOT removed when uninstalling a package.
+     */
+    public function testUserfilesOnUninstall()
+    {
+        $installer = $this->createInstaller($this->mockRunonce());
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
+            [
+                'userfiles' => [
+                    'foo/bar.txt' => 'foo/bar.txt',
+                    'foo/bar' => 'foo/bar',
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+        $projectDir = dirname(dirname(dirname($basePath)));
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/foo/bar');
+        touch($basePath . '/foo/bar.txt');
+        touch($basePath . '/foo/bar/1.txt');
+        touch($basePath . '/foo/bar/2.txt');
+
+        $installer->install($repo, $package);
+
+        $this->assertFileExists($projectDir . '/files/foo/bar.txt');
+        $this->assertFileExists($projectDir . '/files/foo/bar/1.txt');
+        $this->assertFileExists($projectDir . '/files/foo/bar/1.txt');
+
+        $installer->uninstall($repo, $package);
+
+        $this->assertFileExists($projectDir . '/files/foo/bar.txt');
+        $this->assertFileExists($projectDir . '/files/foo/bar/1.txt');
+        $this->assertFileExists($projectDir . '/files/foo/bar/1.txt');
+    }
+
+    /**
      * Create a mock of the runonce manager.
      *
      * @return \PHPUnit_Framework_MockObject_MockObject|RunonceManager

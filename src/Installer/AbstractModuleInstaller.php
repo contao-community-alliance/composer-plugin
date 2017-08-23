@@ -202,11 +202,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package    The package being processed.
-     *
      * @param string           $targetRoot The target directory.
-     *
      * @param array            $pathMap    The path mapping.
-     *
      * @param int              $mode       The mode how to handle duplicate files.
      *
      * @return void
@@ -255,11 +252,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package    The package being processed.
-     *
      * @param string           $targetRoot The target directory.
-     *
      * @param array            $pathMap    The path mapping.
-     *
      * @param int              $mode       The mode how to handle duplicate files.
      *
      * @return void
@@ -291,7 +285,11 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         foreach ($actions as $target) {
             $this->logRemove($target);
 
-            $this->filesystem->unlink($target);
+            if (is_dir($target)) {
+                $this->filesystem->removeDirectory($target);
+            } else {
+                $this->filesystem->unlink($target);
+            }
 
             $this->removeEmptyDirectories(dirname($target), $targetRoot);
         }
@@ -302,11 +300,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Key is the relative path to composer package, whereas "value" is relative to Contao root.
      *
      * @param PackageInterface $package    The package being processed.
-     *
      * @param string           $targetRoot The target directory.
-     *
      * @param array            $pathMap    The path mapping.
-     *
      * @param int              $mode       The mode how to handle duplicate files.
      *
      * @return void
@@ -343,10 +338,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
             $this->logCopy($source, $target);
-
-            $this->filesystem->ensureDirectoryExists(dirname($target));
-
-            copy($source, $target);
+            $this->copyRecursive($source, $target);
         }
     }
 
@@ -393,7 +385,6 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Adds runonce files of a package to the RunonceManager instance.
      *
      * @param PackageInterface $package The package being processed.
-     *
      * @param array            $files   The file names of all runonce files.
      *
      * @return void
@@ -408,10 +399,38 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     }
 
     /**
+     * Recursive copy source file or directory to target path.
+     *
+     * @param string $source
+     * @param string $target
+     */
+    private function copyRecursive($source, $target)
+    {
+        if (!is_dir($source)) {
+            $this->filesystem->ensureDirectoryExists(dirname($target));
+            copy($source, $target);
+
+            return;
+        }
+
+        $it = new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $ri = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::SELF_FIRST);
+        $this->filesystem->ensureDirectoryExists($target);
+
+        foreach ($ri as $file) {
+            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            if ($file->isDir()) {
+                $this->filesystem->ensureDirectoryExists($targetPath);
+            } else {
+                copy($file->getPathname(), $targetPath);
+            }
+        }
+    }
+
+    /**
      * Clean up empty directories.
      *
      * @param string $pathname The path to remove if empty.
-     *
      * @param string $root     The path of the root installation.
      *
      * @return bool
@@ -440,16 +459,14 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      * Check if the source exists, is readable and shall get symlink'ed to the target.
      *
      * @param string $source The source path.
-     *
      * @param string $target The target path.
-     *
      * @param int    $mode   The duplicate file handling mode.
      *
      * @return bool
      *
      * @throws \RuntimeException When the source is not readable.
      */
-    public function canAddSymlink($source, $target, $mode)
+    private function canAddSymlink($source, $target, $mode)
     {
         if (!is_readable($source)) {
             throw new \RuntimeException(
@@ -484,7 +501,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      *
      * @throws \RuntimeException When a file entry is not a symlink to the expected target and mode is INVALID_FAIL.
      */
-    public function canRemoveSymlink($source, $target, $mode)
+    private function canRemoveSymlink($source, $target, $mode)
     {
         if (!file_exists($target)) {
             return false;
