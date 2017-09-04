@@ -123,6 +123,7 @@ class ContaoModuleInstallerTest extends TestCase
 
         $this->assertTrue(file_exists($basePath . '/../../../system/modules/foobar/config/config.php'));
         $this->assertTrue(is_link($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertTrue($installer->isInstalled($repo, $package));
         $this->assertEquals(
             $basePath . '/config/config.php',
             realpath($basePath . '/../../../system/modules/foobar/config/config.php')
@@ -159,10 +160,40 @@ class ContaoModuleInstallerTest extends TestCase
 
         $this->assertTrue(file_exists($basePath . '/../../../system/modules/foobar/config/config.php'));
         $this->assertTrue(is_link($basePath . '/../../../system/modules/foobar/config/config.php'));
+        $this->assertTrue($installer->isInstalled($repo, $package));
         $this->assertEquals(
             $basePath . '/config/config.php',
             realpath($basePath . '/../../../system/modules/foobar/config/config.php')
         );
+    }
+
+    /**
+     * Tests that a package is considered uninstalled if no symlink was created
+     * or has been deleted.
+     *
+     * @return void
+     */
+    public function testPackageIsConsideredUninstalledIfSourceLinksAreMissing()
+    {
+        $runonce   = $this->mockRunonce();
+        $installer = $this->createInstaller($runonce);
+        $repo      = $this->mockRepository();
+        $package   = $this->mockPackage(
+            [
+                'sources' => [
+                    'config/config.php' => 'system/modules/foobar/config/config.php'
+                ]
+            ]
+        );
+
+        $basePath = $installer->getInstallPath($package);
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/config');
+        touch($basePath . '/config/config.php');
+
+        $this->filesystem->ensureDirectoryExists($basePath . '/../../../system/modules/foobar/config');
+
+        $this->assertFalse($installer->isInstalled($repo, $package));
     }
 
     /**
