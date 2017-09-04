@@ -77,6 +77,30 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         $this->runonceManager = $runonceManager;
     }
 
+    /**
+     * Make sure symlinks/directories exist, otherwise consider a package uninstalled
+     * so they are being regenerated.
+     *
+     * {@inheritDoc}
+     */
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        if (false === parent::isInstalled($repo, $package)) {
+
+            return false;
+        }
+
+        $root = $this->getContaoRoot();
+
+        foreach ($this->getSources($package) as $src => $target) {
+            if (!is_dir($root . DIRECTORY_SEPARATOR . $target) && !is_file($root . DIRECTORY_SEPARATOR . $target)) {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Add symlinks for Contao sources after installing a package.
