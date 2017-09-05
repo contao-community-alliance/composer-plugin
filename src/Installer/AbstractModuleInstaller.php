@@ -86,15 +86,13 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (false === parent::isInstalled($repo, $package)) {
-
             return false;
         }
 
-        $root = $this->getContaoRoot();
+        $targetRoot = $this->getContaoRoot();
 
-        foreach ($this->getSources($package) as $src => $target) {
-            if (!is_dir($root . DIRECTORY_SEPARATOR . $target) && !is_file($root . DIRECTORY_SEPARATOR . $target)) {
-
+        foreach ($this->getSources($package) as $sourcePath => $targetPath) {
+            if (!file_exists($this->filesystem->normalizePath($targetRoot . '/' . $targetPath))) {
                 return false;
             }
         }
