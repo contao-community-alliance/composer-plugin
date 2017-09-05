@@ -12,6 +12,7 @@
  *
  * @package    contao-community-alliance/composer-plugin
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @copyright  2013-2015 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -61,7 +62,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function tearDown()
     {
-        $this->filesystem->removeDirectory($this->tempdir);
+        $this->filesystem->removeDirectoryPhp($this->tempdir);
 
         parent::tearDown();
     }
