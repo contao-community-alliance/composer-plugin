@@ -14,6 +14,8 @@
  * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Kamil Kuzminski <kamil.kuzminski@codefog.pl>
+ * @author     M. Vondano <moritz.vondano@gmail.com>
+ * @author     Yanick Witschi <yanick.witschi@terminal42.ch>
  * @copyright  2013-2016 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -77,6 +79,28 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         $this->runonceManager = $runonceManager;
     }
 
+    /**
+     * Make sure symlinks/directories exist, otherwise consider a package uninstalled
+     * so they are being regenerated.
+     *
+     * {@inheritDoc}
+     */
+    public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        if (false === parent::isInstalled($repo, $package)) {
+            return false;
+        }
+
+        $targetRoot = $this->getContaoRoot();
+
+        foreach ($this->getSources($package) as $targetPath) {
+            if (!file_exists($this->filesystem->normalizePath($targetRoot . '/' . $targetPath))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Add symlinks for Contao sources after installing a package.
@@ -286,7 +310,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->logRemove($target);
 
             if (is_dir($target)) {
-                $this->filesystem->removeDirectory($target);
+                $this->filesystem->removeDirectoryPhp($target);
             } else {
                 $this->filesystem->unlink($target);
             }
@@ -401,8 +425,10 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     /**
      * Recursive copy source file or directory to target path.
      *
-     * @param string $source
-     * @param string $target
+     * @param string $source The source file or folder.
+     * @param string $target The target file or folder.
+     *
+     * @return void
      */
     private function copyRecursive($source, $target)
     {
@@ -413,12 +439,15 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             return;
         }
 
-        $it = new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS);
-        $ri = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::SELF_FIRST);
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
         $this->filesystem->ensureDirectoryExists($target);
 
-        foreach ($ri as $file) {
-            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+        foreach ($iterator as $file) {
+            $targetPath = $target . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
             if ($file->isDir()) {
                 $this->filesystem->ensureDirectoryExists($targetPath);
             } else {
@@ -441,7 +470,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             && $pathname !== $root
             && $this->filesystem->isDirEmpty($pathname)
         ) {
-            $this->filesystem->removeDirectory($pathname);
+            $this->filesystem->removeDirectoryPhp($pathname);
 
             if (!$this->removeEmptyDirectories(dirname($pathname), $root)) {
                 if ($this->io->isVeryVerbose()) {
