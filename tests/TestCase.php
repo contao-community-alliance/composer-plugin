@@ -62,7 +62,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function tearDown()
     {
-        $this->filesystem->removeDirectoryPhp($this->tempdir);
+        $this->filesystem->removeDirectory($this->tempdir);
 
         parent::tearDown();
     }
