@@ -310,7 +310,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->logRemove($target);
 
             if (is_dir($target)) {
-                $this->filesystem->removeDirectoryPhp($target);
+                $this->filesystem->removeDirectory($target);
             } else {
                 $this->filesystem->unlink($target);
             }
@@ -470,7 +470,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             && $pathname !== $root
             && $this->filesystem->isDirEmpty($pathname)
         ) {
-            $this->filesystem->removeDirectoryPhp($pathname);
+            $this->filesystem->removeDirectory($pathname);
 
             if (!$this->removeEmptyDirectories(dirname($pathname), $root)) {
                 if ($this->io->isVeryVerbose()) {
