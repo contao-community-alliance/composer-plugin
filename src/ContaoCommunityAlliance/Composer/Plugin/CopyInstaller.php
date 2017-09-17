@@ -126,7 +126,7 @@ class CopyInstaller extends AbstractInstaller
                 foreach ($iterator as $sourceFile) {
                     $unPrefixedPath     = self::unprefixPath(
                         $installPath . DIRECTORY_SEPARATOR . ($source ? $source . DIRECTORY_SEPARATOR : ''),
-                        $sourceFile->getRealPath()
+                        $sourceFile->getPathname()
                     );
                     $targetPath         = $target . DIRECTORY_SEPARATOR . $unPrefixedPath;
                     $files[$targetPath] = $sourceFile;
