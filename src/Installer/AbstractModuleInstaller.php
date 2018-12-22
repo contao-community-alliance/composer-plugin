@@ -16,6 +16,7 @@
  * @author     Kamil Kuzminski <kamil.kuzminski@codefog.pl>
  * @author     M. Vondano <moritz.vondano@gmail.com>
  * @author     Yanick Witschi <yanick.witschi@terminal42.ch>
+ * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2013-2016 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -260,7 +261,9 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
             if (Platform::isWindows()) {
+                // @codingStandardsIgnoreStart
                 $success = @symlink($source, $target);
+                // @codingStandardsIgnoreEnd
             } else {
                 $success = $this->filesystem->relativeSymlink($source, $target);
             }
