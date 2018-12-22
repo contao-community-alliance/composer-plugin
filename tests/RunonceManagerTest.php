@@ -13,6 +13,7 @@
  * @package    contao-community-alliance/composer-plugin
  * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2013-2015 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -22,6 +23,7 @@
 namespace ContaoCommunityAlliance\Composer\Plugin\Test;
 
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
+use Composer\Util\Filesystem;
 
 /**
  * This tests the RunonceManager.
@@ -160,7 +162,7 @@ class RunonceManagerTest extends TestCase
         touch($file);
         touch($runonce);
 
-        $fileSystem = $this->getMock('Composer\\Util\\Filesystem', ['rename']);
+        $fileSystem = $this->getMockBuilder(Filesystem::class)->setMethods(['rename'])->getMock();
         $fileSystem
             ->expects($this->once())
             ->method('rename')

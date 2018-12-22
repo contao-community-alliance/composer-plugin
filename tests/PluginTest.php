@@ -13,6 +13,7 @@
  * @package    contao-community-alliance/composer-plugin
  * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2013-2015 Contao Community Alliance
  * @license    https://github.com/contao-community-alliance/composer-plugin/blob/master/LICENSE LGPL-3.0+
  * @link       http://c-c-a.org
@@ -31,6 +32,9 @@ use ContaoCommunityAlliance\Composer\Plugin\Installer\ContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\LegacyContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\Plugin;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
+use Composer\Config;
+use Composer\Downloader\DownloadManager;
+use Composer\Package\RootPackageInterface;
 
 /**
  * This tests the plugin class.
@@ -55,7 +59,7 @@ class PluginTest extends TestCase
      */
     public function testAddsContaoModuleInstallerOnActivation()
     {
-        $installationManager = $this->getMock('Composer\\Installer\\InstallationManager');
+        $installationManager = $this->getMockBuilder(InstallationManager::class)->getMock();
 
         $installationManager
             ->expects($this->exactly(2))
@@ -104,7 +108,7 @@ class PluginTest extends TestCase
      */
     public function testAddsNoInstallerOnActivationForUnknownRootType($rootType)
     {
-        $installationManager = $this->getMock('Composer\\Installer\\InstallationManager');
+        $installationManager = $this->getMockBuilder(InstallationManager::class)->getMock();
 
         $installationManager
             ->expects($this->never())
@@ -177,12 +181,12 @@ class PluginTest extends TestCase
     private function mockComposer(InstallationManager $installationManager, $rootType)
     {
         $tempdir         = $this->tempdir;
-        $config          = $this->getMock('Composer\\Config');
-        $downloadManager = $this->getMock('Composer\\Downloader\\DownloadManager', [], [], '', false);
-        $composer        = $this->getMock(
-            'Composer\\Composer',
-            ['getConfig', 'getDownloadManager', 'getInstallationManager', 'getPackage']
-        );
+        $config          = $this->getMockBuilder(Config::class)->getMock();
+        $downloadManager = $this->getMockBuilder(DownloadManager::class)->disableOriginalConstructor()->getMock();
+        $composer        = $this
+            ->getMockBuilder(Composer::class)
+            ->setMethods(['getConfig', 'getDownloadManager', 'getInstallationManager', 'getPackage'])
+            ->getMock();
 
         $composer
             ->expects($this->any())
@@ -199,8 +203,7 @@ class PluginTest extends TestCase
             ->method('getInstallationManager')
             ->willReturn($installationManager);
 
-        $rootPackage = $this->getMockBuilder('\Composer\Package\RootPackageInterface')
-            ->getMockForAbstractClass();
+        $rootPackage = $this->getMockBuilder(RootPackageInterface::class)->getMockForAbstractClass();
 
         $rootPackage->method('getType')->willReturn($rootType);
 
@@ -246,7 +249,7 @@ class PluginTest extends TestCase
      */
     private function mockIO()
     {
-        $ioMock = $this->getMock('Composer\\IO\\IOInterface');
+        $ioMock = $this->getMockBuilder(IOInterface::class)->getMock();
 
         $ioMock
             ->expects($this->any())
@@ -273,8 +276,6 @@ class PluginTest extends TestCase
      */
     private function mockRunonce()
     {
-        return $this->getMockBuilder('ContaoCommunityAlliance\\Composer\\Plugin\\RunonceManager')
-            ->disableOriginalConstructor()
-            ->getMock();
+        return $this->getMockBuilder(RunonceManager::class)->disableOriginalConstructor()->getMock();
     }
 }

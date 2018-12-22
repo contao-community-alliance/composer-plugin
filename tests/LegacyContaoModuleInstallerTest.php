@@ -28,6 +28,8 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use ContaoCommunityAlliance\Composer\Plugin\Installer\LegacyContaoModuleInstaller;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
+use Composer\Config;
+use Composer\Downloader\DownloadManager;
 
 /**
  * This tests the ContaoModuleInstaller.
@@ -269,9 +271,7 @@ class LegacyContaoModuleInstallerTest extends TestCase
      */
     private function mockRunonce()
     {
-        return $this->getMockBuilder('ContaoCommunityAlliance\\Composer\\Plugin\\RunonceManager')
-            ->disableOriginalConstructor()
-            ->getMock();
+        return $this->getMockBuilder(RunonceManager::class)->disableOriginalConstructor()->getMock();
     }
 
     /**
@@ -282,9 +282,10 @@ class LegacyContaoModuleInstallerTest extends TestCase
     private function mockComposer()
     {
         $tempdir         = $this->tempdir;
-        $config          = $this->getMock('Composer\\Config');
-        $downloadManager = $this->getMock('Composer\\Downloader\\DownloadManager', [], [], '', false);
-        $composer        = $this->getMock('Composer\\Composer', ['getConfig', 'getDownloadManager']);
+        $config          = $this->getMockBuilder(Config::class)->getMock();
+        $downloadManager = $this->getMockBuilder(DownloadManager::class)->disableOriginalConstructor()->getMock();
+        $composer        = $this
+            ->getMockBuilder(Composer::class)->setMethods(['getConfig', 'getDownloadManager'])->getMock();
 
         $composer
             ->expects($this->any())
@@ -333,7 +334,7 @@ class LegacyContaoModuleInstallerTest extends TestCase
      */
     private function mockPackage()
     {
-        $package = $this->getMock('Composer\\Package\\PackageInterface');
+        $package = $this->getMockBuilder(PackageInterface::class)->getMock();
 
         $package
             ->expects($this->any())
@@ -360,7 +361,7 @@ class LegacyContaoModuleInstallerTest extends TestCase
      */
     private function mockRepository()
     {
-        $repo = $this->getMock('Composer\\Repository\\InstalledRepositoryInterface');
+        $repo = $this->getMockBuilder(InstalledRepositoryInterface::class)->getMock();
 
         $repo
             ->expects($this->any())
@@ -377,7 +378,7 @@ class LegacyContaoModuleInstallerTest extends TestCase
      */
     private function mockIO()
     {
-        $ioMock = $this->getMock('Composer\\IO\\IOInterface');
+        $ioMock = $this->getMockBuilder(IOInterface::class)->getMock();
 
         $ioMock
             ->expects($this->any())
