@@ -169,6 +169,17 @@ class PluginTest extends TestCase
         call_user_func([$plugin, $events[ScriptEvents::POST_UPDATE_CMD]]);
     }
 
+
+    public function testImplementsTheAPI2Methods()
+    {
+        $plugin = new Plugin();
+        $composer = $this->createMock(Composer::class);
+        $io = $this->createMock(IOInterface::class);
+
+        $this->assertNull($plugin->deactivate($composer, $io));
+        $this->assertNull($plugin->uninstall($composer, $io));
+    }
+
     /**
      * Mock a composer instance.
      *

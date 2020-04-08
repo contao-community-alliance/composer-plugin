@@ -108,6 +108,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         );
     }
 
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+        // does nothing
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+        // does nothing
+    }
+
     /**
      * Returns an array of event names this subscriber wants to listen to.
      * The array keys are event names and the value can be:
