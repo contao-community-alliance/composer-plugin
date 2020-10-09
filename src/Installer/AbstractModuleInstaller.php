@@ -34,6 +34,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use ContaoCommunityAlliance\Composer\Plugin\RunonceManager;
 use ContaoCommunityAlliance\Composer\Plugin\UserFilesLocator;
+use React\Promise\PromiseInterface;
 
 /**
  * AbstractModuleInstaller is the parent class that handles file copying and symlinking.
@@ -110,15 +111,22 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->logVerbose(sprintf('Installing Contao sources for %s', $package->getName()));
+        $install = function () use ($package) {
+            $this->logVerbose(sprintf('  - Installing Contao sources for %s', $package->getName()));
+            $this->addSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
+            $this->addCopies($package, $this->getFilesRoot(), $this->getUserFiles($package), self::DUPLICATE_IGNORE);
+            $this->addRunonces($package, $this->getRunonces($package));
+        };
 
-        parent::install($repo, $package);
+        $promise = parent::install($repo, $package);
 
-        $this->addSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
-        $this->addCopies($package, $this->getFilesRoot(), $this->getUserFiles($package), self::DUPLICATE_IGNORE);
-        $this->addRunonces($package, $this->getRunonces($package));
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($install);
+        }
 
-        $this->logVerbose('');
+        $install();
+
+        return null;
     }
 
     /**
@@ -134,19 +142,25 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $this->logVerbose(sprintf('Updating Contao sources for %s', $initial->getName()));
+        $update = function () use ($initial, $target) {
+            $contaoRoot = $this->getContaoRoot();
 
-        $contaoRoot = $this->getContaoRoot();
+            $this->logVerbose(sprintf('  - Updating Contao sources for %s', $initial->getName()));
+            $this->removeSymlinks($initial, $contaoRoot, $this->getSources($initial));
+            $this->addSymlinks($target, $contaoRoot, $this->getSources($target));
+            $this->addCopies($target, $this->getFilesRoot(), $this->getUserFiles($target), self::DUPLICATE_IGNORE);
+            $this->addRunonces($target, $this->getRunonces($target));
+        };
 
-        $this->removeSymlinks($initial, $contaoRoot, $this->getSources($initial));
+        $promise = parent::update($repo, $initial, $target);
 
-        parent::update($repo, $initial, $target);
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($update);
+        }
 
-        $this->addSymlinks($target, $contaoRoot, $this->getSources($target));
-        $this->addCopies($target, $this->getFilesRoot(), $this->getUserFiles($target), self::DUPLICATE_IGNORE);
-        $this->addRunonces($target, $this->getRunonces($target));
+        $update();
 
-        $this->logVerbose('');
+        return null;
     }
 
     /**
@@ -162,13 +176,20 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $this->logVerbose(sprintf('Removing Contao sources for %s', $package->getName()));
+        $uninstall = function () use ($package) {
+            $this->logVerbose(sprintf('  - Removing Contao sources for %s', $package->getName()));
+            $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
+        };
 
-        $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
+        $promise = parent::uninstall($repo, $package);
 
-        parent::uninstall($repo, $package);
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($uninstall);
+        }
 
-        $this->logVerbose('');
+        $uninstall();
+
+        return null;
     }
 
     /**
