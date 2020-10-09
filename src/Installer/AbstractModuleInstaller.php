@@ -112,7 +112,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $install = function () use ($package) {
-            $this->logVerbose(sprintf('  - Installing Contao sources for %s', $package->getName()));
+            $this->io->write('  - Installing Contao sources for '.$package->getName(), true, IOInterface::VERBOSE);
             $this->addSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
             $this->addCopies($package, $this->getFilesRoot(), $this->getUserFiles($package), self::DUPLICATE_IGNORE);
             $this->addRunonces($package, $this->getRunonces($package));
@@ -145,7 +145,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         $update = function () use ($initial, $target) {
             $contaoRoot = $this->getContaoRoot();
 
-            $this->logVerbose(sprintf('  - Updating Contao sources for %s', $initial->getName()));
+            $this->io->write('  - Updating Contao sources for '.$initial->getName(), true, IOInterface::VERBOSE);
             $this->removeSymlinks($initial, $contaoRoot, $this->getSources($initial));
             $this->addSymlinks($target, $contaoRoot, $this->getSources($target));
             $this->addCopies($target, $this->getFilesRoot(), $this->getUserFiles($target), self::DUPLICATE_IGNORE);
@@ -177,7 +177,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         }
 
         $uninstall = function () use ($package) {
-            $this->logVerbose(sprintf('  - Removing Contao sources for %s', $package->getName()));
+            $this->io->write('  - Removing Contao sources for '.$package->getName(), true, IOInterface::VERBOSE);
             $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
         };
 
@@ -277,7 +277,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
-            $this->logSymlink($source, $target);
+            $this->io->write(sprintf('  - Linking "%s" to "%s"', $source, $target), true, IOInterface::VERY_VERBOSE);
 
             $this->filesystem->ensureDirectoryExists(dirname($target));
 
@@ -331,7 +331,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
         // Remove the symlinks if everything is ok.
         foreach ($actions as $target) {
-            $this->logRemove($target);
+            $this->io->write(sprintf('  - Removing "%s"', $target), true, IOInterface::VERY_VERBOSE);
 
             if (is_dir($target)) {
                 $this->filesystem->removeDirectory($target);
@@ -385,7 +385,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
         // Only actually create the links if the checks are successful to prevent orphans.
         foreach ($actions as $source => $target) {
-            $this->logCopy($source, $target);
+            $this->io->write(sprintf('  - Copying "%s" to "%s"', $source, $target), true, IOInterface::VERY_VERBOSE);
             $this->copyRecursive($source, $target);
         }
     }
@@ -421,7 +421,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
 
         // Remove the symlinks if everything is ok.
         foreach ($actions as $target) {
-            $this->logRemove($target);
+            $this->io->write(sprintf('  - Removing "%s"', $target), true, IOInterface::VERY_VERBOSE);
 
             $this->filesystem->unlink($target);
 
@@ -609,73 +609,5 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         }
 
         return true;
-    }
-
-    /**
-     * Log the creation of a symlink.
-     *
-     * @param string $source The source path.
-     *
-     * @param string $target The target path.
-     *
-     * @return void
-     */
-    private function logSymlink($source, $target)
-    {
-        $this->logVeryVerbose(sprintf('  - Linking "%s" to "%s"', $source, $target));
-    }
-
-    /**
-     * Log the copy'ing of a file.
-     *
-     * @param string $source The source path.
-     *
-     * @param string $target The target path.
-     *
-     * @return void
-     */
-    private function logCopy($source, $target)
-    {
-        $this->logVeryVerbose(sprintf('  - Copying "%s" to "%s"', $source, $target));
-    }
-
-    /**
-     * Log the removal of a symlink or file.
-     *
-     * @param string $target The target path.
-     *
-     * @return void
-     */
-    private function logRemove($target)
-    {
-        $this->logVeryVerbose(sprintf('  - Removing "%s"', $target));
-    }
-
-    /**
-     * Log a message if verbose.
-     *
-     * @param string $message The message to log.
-     *
-     * @return void
-     */
-    private function logVerbose($message)
-    {
-        if ($this->io->isVerbose()) {
-            $this->io->writeError($message);
-        }
-    }
-
-    /**
-     * Log a message if very verbose.
-     *
-     * @param string $message The message to log.
-     *
-     * @return void
-     */
-    private function logVeryVerbose($message)
-    {
-        if ($this->io->isVeryVerbose()) {
-            $this->io->writeError($message);
-        }
     }
 }
