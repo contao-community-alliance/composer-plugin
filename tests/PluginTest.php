@@ -59,7 +59,10 @@ class PluginTest extends TestCase
      */
     public function testAddsContaoModuleInstallerOnActivation()
     {
-        $installationManager = $this->getMockBuilder(InstallationManager::class)->getMock();
+        $installationManager = $this->getMockBuilder(InstallationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
 
         $installationManager
             ->expects($this->exactly(2))
@@ -108,7 +111,10 @@ class PluginTest extends TestCase
      */
     public function testAddsNoInstallerOnActivationForUnknownRootType($rootType)
     {
-        $installationManager = $this->getMockBuilder(InstallationManager::class)->getMock();
+        $installationManager = $this->getMockBuilder(InstallationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
 
         $installationManager
             ->expects($this->never())

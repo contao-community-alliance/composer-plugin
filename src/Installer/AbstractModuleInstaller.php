@@ -488,9 +488,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             $this->filesystem->removeDirectory($pathname);
 
             if (!$this->removeEmptyDirectories(dirname($pathname), $root)) {
-                if ($this->io->isVeryVerbose()) {
-                    $this->io->writeError(sprintf('  - Removing empty directory "%s"', $pathname));
-                }
+                $this->io->write(sprintf('  - Removing empty directory "%s"', $pathname), IOInterface::VERY_VERBOSE);
             }
 
             return true;

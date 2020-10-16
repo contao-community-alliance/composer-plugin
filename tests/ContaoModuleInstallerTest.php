@@ -671,10 +671,10 @@ class ContaoModuleInstallerTest extends TestCase
             ->method('isVeryVerbose')
             ->willReturn(true);
 
-        // Should always use writeError() and not write()
+        // Should always use write() and not writeError()
         $ioMock
             ->expects($this->never())
-            ->method('write');
+            ->method('writeError');
 
         return $ioMock;
     }
