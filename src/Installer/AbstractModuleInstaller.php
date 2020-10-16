@@ -142,11 +142,12 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $update = function () use ($initial, $target) {
-            $contaoRoot = $this->getContaoRoot();
+        $contaoRoot = $this->getContaoRoot();
 
+        $this->removeSymlinks($initial, $contaoRoot, $this->getSources($initial));
+
+        $update = function () use ($contaoRoot, $initial, $target) {
             $this->io->write('  - Updating Contao sources for '.$initial->getName(), true, IOInterface::VERBOSE);
-            $this->removeSymlinks($initial, $contaoRoot, $this->getSources($initial));
             $this->addSymlinks($target, $contaoRoot, $this->getSources($target));
             $this->addCopies($target, $this->getFilesRoot(), $this->getUserFiles($target), self::DUPLICATE_IGNORE);
             $this->addRunonces($target, $this->getRunonces($target));
@@ -176,20 +177,10 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $uninstall = function () use ($package) {
-            $this->io->write('  - Removing Contao sources for '.$package->getName(), true, IOInterface::VERBOSE);
-            $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
-        };
+        $this->io->write('  - Removing Contao sources for '.$package->getName(), true, IOInterface::VERBOSE);
+        $this->removeSymlinks($package, $this->getContaoRoot(), $this->getSources($package));
 
-        $promise = parent::uninstall($repo, $package);
-
-        if ($promise instanceof PromiseInterface) {
-            return $promise->then($uninstall);
-        }
-
-        $uninstall();
-
-        return null;
+        return parent::uninstall($repo, $package);
     }
 
     /**
