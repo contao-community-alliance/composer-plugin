@@ -76,6 +76,14 @@ class UserFilesLocator
             return $this->rootDir . '/app/console';
         }
 
+        if (file_exists($this->rootDir . '/bin/console')) {
+            return $this->rootDir . '/bin/console';
+        }
+
+        if (file_exists($this->rootDir . '/vendor/bin/contao-console')) {
+            return $this->rootDir . '/vendor/bin/contao-console';
+        }
+
         $finder = new Finder();
         $files  = $finder->files()->depth(1)->name('console')->in($this->rootDir);
 
@@ -96,7 +104,14 @@ class UserFilesLocator
      */
     private function getPathFromConsole()
     {
-        $console = new Process($this->getConsolePath() . ' debug:container --parameter=contao.upload_path');
+        $command = [$this->getConsolePath(), 'debug:container', '--parameter=contao.upload_path'];
+
+        // Command must be an array in Symfony 5 and a string in Symfony 2.7
+        if (method_exists(Process::class, 'setCommandline')) {
+            $command = implode(' ', array_map('escapeshellarg', $command));
+        }
+
+        $console = new Process($command);
         $console->mustRun();
 
         return $console->getOutput();
