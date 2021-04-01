@@ -516,10 +516,13 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             );
         }
 
+        $realSource = realpath($source) ?: $source;
+        $realTarget = realpath($target) ?: $target;
+
         if (file_exists($target)) {
             // Target link already exists and is correct, do nothing
             if (is_link($target)
-                && $this->filesystem->normalizePath($source) === $this->filesystem->normalizePath(realpath($target))
+                && $this->filesystem->normalizePath($realSource) === $this->filesystem->normalizePath($realTarget)
             ) {
                 return false;
             }
@@ -551,8 +554,11 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
             return false;
         }
 
+        $realSource = realpath($source) ?: $source;
+        $realTarget = realpath($target) ?: $target;
+
         if (!is_link($target)
-            || $this->filesystem->normalizePath($source) !== $this->filesystem->normalizePath(realpath($target))
+            || $this->filesystem->normalizePath($realSource) !== $this->filesystem->normalizePath($realTarget)
         ) {
             if (self::INVALID_IGNORE === $mode) {
                 return false;
@@ -564,8 +570,8 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
                         '"%s" is not a link to "%s" (expected "%s" but got "%s")',
                         $target,
                         $source,
-                        $this->filesystem->normalizePath($source),
-                        $this->filesystem->normalizePath(realpath($target))
+                        $this->filesystem->normalizePath($realSource),
+                        $this->filesystem->normalizePath($realTarget)
                     )
                 );
             }
