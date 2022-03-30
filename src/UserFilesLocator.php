@@ -101,7 +101,7 @@ class UserFilesLocator
 
         // Fallback to string argument if Composer version is lower than 2.3.0 (see #87)
         if (version_compare(Composer::getVersion(), '2.3.0', '<')) {
-            $arguments = $this->getConsolePath() . ' debug:container --parameter=contao.upload_path';
+            $arguments = implode(' ', $arguments);
         }
 
         $console = new Process($arguments);
