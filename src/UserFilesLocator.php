@@ -96,7 +96,7 @@ class UserFilesLocator
      */
     private function getPathFromConsole()
     {
-        $console = new Process([$this->getConsolePath() . ' debug:container --parameter=contao.upload_path']);
+        $console = new Process([$this->getConsolePath(), 'debug:container', '--parameter=contao.upload_path']);
         $console->mustRun();
 
         return $console->getOutput();
