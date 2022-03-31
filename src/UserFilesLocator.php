@@ -21,7 +21,6 @@
 
 namespace ContaoCommunityAlliance\Composer\Plugin;
 
-use Composer\Composer;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -99,8 +98,8 @@ class UserFilesLocator
     {
         $arguments = [$this->getConsolePath(), 'debug:container', '--parameter=contao.upload_path'];
 
-        // Fallback to string argument if Composer version is lower than 2.3.0 (see #87)
-        if (version_compare(Composer::getVersion(), '2.3.0', '<')) {
+        // Backwards compatibility with symfony/process < 3.3 (see #87)
+        if (method_exists(Process::class, 'setCommandline')) {
             $arguments = implode(' ', $arguments);
         }
 
