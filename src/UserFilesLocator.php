@@ -96,7 +96,14 @@ class UserFilesLocator
      */
     private function getPathFromConsole()
     {
-        $console = new Process($this->getConsolePath() . ' debug:container --parameter=contao.upload_path');
+        $arguments = [$this->getConsolePath(), 'debug:container', '--parameter=contao.upload_path'];
+
+        // Backwards compatibility with symfony/process < 3.3 (see #87)
+        if (method_exists(Process::class, 'setCommandline')) {
+            $arguments = implode(' ', array_map('escapeshellarg', $arguments));
+        }
+
+        $console = new Process($arguments);
         $console->mustRun();
 
         return $console->getOutput();
