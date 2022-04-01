@@ -100,7 +100,7 @@ class UserFilesLocator
 
         // Backwards compatibility with symfony/process < 3.3 (see #87)
         if (method_exists(Process::class, 'setCommandline')) {
-            $arguments = implode(' ', $arguments);
+            $arguments = implode(' ', array_map('escapeshellarg', $arguments));
         }
 
         $console = new Process($arguments);
