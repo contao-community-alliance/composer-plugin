@@ -75,7 +75,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         if ($composer->getPackage()->getType() !== 'project') {
             $this->isProject = false;
             $inputOutput->writeError(
-                'Root package is not of type "project", we will not installing Contao extensions.'
+                'Root package is not of type "project", we will not be installing Contao extensions.'
             );
             return;
         }
