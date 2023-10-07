@@ -72,10 +72,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $inputOutput)
     {
-        if ($composer->getPackage()->getType() !== 'project') {
+        if (!\in_array($composer->getPackage()->getType(), ['project', 'contao-theme'], true)) {
             $this->isProject = false;
             $inputOutput->writeError(
-                'Root package is not of type "project", we will not be installing Contao extensions.'
+                'Root package is not of type "project" or "contao-theme", we will not be installing Contao extensions.'
             );
             return;
         }
