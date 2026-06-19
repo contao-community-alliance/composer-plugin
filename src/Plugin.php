@@ -62,7 +62,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
      *
      * @param RunonceManager $runonceManager The run once manager to use.
      */
-    public function __construct(RunonceManager $runonceManager = null)
+    public function __construct(?RunonceManager $runonceManager = null)
     {
         $this->runonceManager = $runonceManager;
     }
