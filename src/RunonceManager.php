@@ -56,7 +56,7 @@ class RunonceManager
      *
      * @param Filesystem $filesystem The file system instance.
      */
-    public function __construct($targetFile, Filesystem $filesystem = null)
+    public function __construct($targetFile, ?Filesystem $filesystem = null)
     {
         $this->targetFile = $targetFile;
         $this->filesystem = $filesystem ?: new Filesystem();
