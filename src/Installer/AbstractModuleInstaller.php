@@ -74,7 +74,7 @@ abstract class AbstractModuleInstaller extends LibraryInstaller
         IOInterface $inputOutput,
         Composer $composer,
         $type,
-        Filesystem $filesystem = null
+        ?Filesystem $filesystem = null
     ) {
         parent::__construct($inputOutput, $composer, $type, $filesystem);
 
