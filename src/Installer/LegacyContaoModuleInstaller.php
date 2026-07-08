@@ -49,7 +49,7 @@ class LegacyContaoModuleInstaller extends AbstractModuleInstaller
         IOInterface $inputOutput,
         Composer $composer,
         $type = 'legacy-contao-module',
-        Filesystem $filesystem = null
+        ?Filesystem $filesystem = null
     // @codingStandardsIgnoreEnd
     ) {
         parent::__construct($runonceManager, $inputOutput, $composer, $type, $filesystem);

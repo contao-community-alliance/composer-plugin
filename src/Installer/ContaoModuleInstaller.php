@@ -48,7 +48,7 @@ class ContaoModuleInstaller extends AbstractModuleInstaller
         IOInterface $inputOutput,
         Composer $composer,
         $type = 'contao-module',
-        Filesystem $filesystem = null
+        ?Filesystem $filesystem = null
     // @codingStandardsIgnoreEnd
     ) {
         parent::__construct($runonceManager, $inputOutput, $composer, $type, $filesystem);
